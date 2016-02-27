@@ -1,0 +1,16 @@
+coarse_cells_x 100
+coarse_cells_y 200
+coarse_cell_dim 0.1
+
+physical_viscosity 1.568e-5
+physical_velocity 10
+physical_length 1
+
+lattice_dt 0.002
+timesteps 1000
+
+refinement no
+buffer_viscosity 0
+
+
+
