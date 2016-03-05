@@ -5,19 +5,14 @@ using namespace std;
 SolutionViewer::SolutionViewer(Grid& grid, int max_pixel_dim)
 {
   int max_cell_dim = (grid.cell_count[0] > grid.cell_count[1]) ? grid.cell_count[0] : grid.cell_count[1];
-  double pixels_per_cell = (double) max_pixel_dim / (double) max_cell_dim;
+  pixels_per_cell = (double) max_pixel_dim / (double) max_cell_dim;
   pixels_per_cell = ( pixels_per_cell < 1 ) ? 1 : pixels_per_cell;
-  // double aspect_ratio = grid.cell_count[0] / grid.cell_count[1];
-
-  cout << pixels_per_cell << endl;
-  cout << grid.cell_count[0] << endl;
-  cout << grid.cell_count[1] << endl;
-  cout << pixels_per_cell*grid.cell_count[0] << endl;
-  cout << pixels_per_cell*grid.cell_count[1] << endl;
-
+  pixels_per_cell = (int) pixels_per_cell;
+  pixels[0] = pixels_per_cell*grid.cell_count[0];
+  pixels[1] = pixels_per_cell*grid.cell_count[1];
   CImg<unsigned char> image_(
-    pixels_per_cell*grid.cell_count[0], // x-resolution
-    pixels_per_cell*grid.cell_count[1], // y-resolution
+    pixels[0], // x-resolution
+    pixels[1], // y-resolution
     1, // 1 z-layer (2D)
     3, // 3 channels (RGB)
     255); // default background color.
@@ -36,9 +31,32 @@ void SolutionViewer::test_draw()
   image.draw_grid(10,10,0,0,false,false,black);
 }
 
-void SolutionViewer::draw_solution(Grid& grid)
+void SolutionViewer::draw_velocity_magnitude(Grid& grid)
 {
-  // image.draw_grid(10,10,0,0,false,false,black);
+  const float black[] = {0,0,0};
+  double min = grid.get_min_velocity_magnitude();
+  double max = grid.get_max_velocity_magnitude();
+  for (int i = 0; i < grid.cell_count[0]; ++i)
+  {
+    for (int j = 0; j < grid.cell_count[1]; ++j)
+    {    
+      // Get color
+      float rgb[3];
+      scalar2rgb(min, max, grid.cells[i+j*grid.cell_count[0]].get_velocity_magnitude(), rgb);
+      // cout << rgb[0] << ", " << rgb[1] << ", " << rgb[2] << endl;
+      // Draw
+      image.draw_rectangle(
+        i*pixels_per_cell, // upper left corner
+        j*pixels_per_cell,
+        (i+1)*pixels_per_cell, // lower right corner
+        (j+1)*pixels_per_cell,
+        rgb );
+    }
+  }
+  if (pixels_per_cell > 2)
+  {
+    image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
+  }
 }
 
 void SolutionViewer::display()
@@ -46,7 +64,7 @@ void SolutionViewer::display()
   image.display(window);
 }
 
-void SolutionViewer::scalar2rgb(double min, double max, double value, int* rgb)
+void SolutionViewer::scalar2rgb(double min, double max, double value, float rgb[3])
 {
   // Derived from: https://www.particleincell.com/2014/colormap/
   // Normalize
@@ -58,6 +76,7 @@ void SolutionViewer::scalar2rgb(double min, double max, double value, int* rgb)
   rgb[0] = 0;
   rgb[1] = 0;
   rgb[2] = 0;
+  if (max == min) X = 4;
   switch(X)
   {
       case 0: 

@@ -10,7 +10,10 @@ Cell::Cell(int level_, double u_, double v_, double rho_) :
     // Iniitalize f via equilibrium distribution function.
 }
 
-
+double Cell::get_velocity_magnitude()
+{
+  return sqrt(u*u + v*v);
+}
 
 
 

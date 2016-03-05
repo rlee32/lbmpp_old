@@ -3,11 +3,13 @@
 // A D2Q9 Lattice Boltzmann cell.
 
 #include <cstdint>
+#include <cmath>
 
 class Cell
 {
   public:
     Cell(int level_, double u_, double v_, double rho_);
+    double get_velocity_magnitude();
     double dim; // dimension of this square cell.
   private:
     Cell* parent;
