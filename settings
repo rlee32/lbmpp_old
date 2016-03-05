@@ -1,0 +1,21 @@
+# Use hashtag for comments.
+# Grid definition.
+coarse_cells_x 100
+coarse_cells_y 200
+coarse_cell_dim 0.1
+# Physical parameters. Used to compute Reynolds number.
+viscosity_physical 1.568e-5
+velocity_physical 10
+length_physical 1
+# Discrete parameters.
+dt_lattice 0.002
+buffer_viscosity_factor 0 # multiple of discrete viscosity
+# Solution run time control.
+timesteps 1000
+refinement no
+# Initial values.
+rho0 1
+u0 0
+v0 0
+
+

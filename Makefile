@@ -12,8 +12,10 @@ SRCS = visual_driver.cc
 LD_FLAGS += -L/usr/X11R6/lib -lm -lpthread -lX11
 endif
 
-SRCS +=	src/ControlPanel.cc
-SRCS +=	src/Cell.cc
+SRCS +=	sim/Simulator.cc
+SRCS +=	cell/Cell.cc
+SRCS +=	grid/Grid.cc
+SRCS +=	viz/SolutionViewer.cc
 
 %.o: %.cc
 	$(CXX) $(CXX_FLAGS) $(OPT_FLAGS) $(DEBUG_FLAGS) -c $< -o $@ $(LD_FLAGS)

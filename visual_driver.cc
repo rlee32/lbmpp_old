@@ -4,7 +4,9 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "src/CImg.h"
+#include "viz/CImg.h"
+#include "viz/SolutionViewer.h"
+#include "sim/Simulator.h"
 
 using namespace std;
 using namespace cimg_library;
@@ -13,24 +15,20 @@ using namespace cimg_library;
 
 int main(int argc, char ** argv)
 {
-  CImg<unsigned char> solution_image(MAXRESDIM,MAXRESDIM,
-    1, // 1 z-layer (2D)
-    3, // 3 channels (RGB)
-    255); // default background color.
-  const float black[] = {0,0,0};
-  solution_image.draw_line(1,1,50,50,black);
 
-  CImgDisplay solution_viewer(solution_image, "Flow solution");
-  while ( !solution_viewer.is_closed() )
+  // First read inputs and instantiate control panel.
+  Simulator sim("settings");
+
+  // Instantiate the solution viewer.
+  SolutionViewer sv(sim.grid, MAXRESDIM);
+
+  while ( not sv.window.is_closed() )
   {
-    solution_viewer.wait();
-    if (solution_viewer.button() && solution_viewer.mouse_y()>=0)
+    sv.window.wait();
+    if (sv.window.button() && sv.window.mouse_y()>=0)
     {
-      solution_image.draw_line(100,100,50,50,black);
-      solution_image.draw_fill(100,100,black);
-      solution_image.draw_rectangle(100,100,150,150,black);
-      solution_image.draw_grid(10,10,0,0,false,false,black);
-      solution_image.display(solution_viewer);
+      sv.test_draw();
+      sv.display();
     }
   }
   return EXIT_SUCCESS;
