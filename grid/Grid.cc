@@ -12,6 +12,16 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
   assign_neighbours();
 }
 
+
+void Grid::iterate()
+{
+  for (vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  {
+    
+  }
+}
+
+
 double Grid::get_max_velocity_magnitude()
 {
   double max = cells[0].get_velocity_magnitude();

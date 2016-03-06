@@ -80,6 +80,9 @@ void Simulator::process_settings()
 
 void iterate()
 {
+  grid.iterate();
   // Enforce BCs.
   grid.enforce_bc(bc[0],);
 }
+
+
