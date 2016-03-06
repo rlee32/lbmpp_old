@@ -60,6 +60,21 @@ Cell::Cell(Cell* parent_)
 //   if ( children[3] != nullptr ) children[3]->recurse();
 // }
 
+// Stands for collide, explode, stream.
+void Cell::ces()
+{
+  if ( physical )
+  {
+    if ( not interface ) collide();
+    explode();
+    stream_parallel();
+    bufferize_parallel();
+  }
+}
+void Cell::coalesce()
+{
+}
+
 // Simple copy of state.
 void Cell::copy_state(Cell* other)
 {
@@ -135,7 +150,7 @@ void Cell::collide()
   fse = omega*feq + (1-omega)*fse;
 }
 
-void Cell::stream_all()
+void Cell::stream_parallel()
 {
   be = (w != nullptr) ? w->fe : 0;
   bn = (s != nullptr) ? s->fn : 0;
@@ -147,7 +162,7 @@ void Cell::stream_all()
   bse = (nw != nullptr) ? nw->fse : 0;
 }
 
-void Cell::bufferize()
+void Cell::bufferize_parallel()
 {
   fe = be;
   fn = bn;

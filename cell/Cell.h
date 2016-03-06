@@ -56,12 +56,9 @@ public:
   Cell* se; 
   double lattice_viscosity;
   double get_velocity_magnitude();
-  void stream();
-  void collide();
-  void explode();
   void copy_state(Cell* parent);
-  void stream_all();
-  void bufferize();
+  void ces();
+  void coalesce();
 private:
   std::vector<Cell>* grid_levels; // array of vectors, where each vector corresponds to a refinement level.
   Cell* parent;
@@ -73,4 +70,8 @@ private:
   bool cut; // true if physical surface resides in this cell.
   double tau; // the relaxation time specific to this cell.
   double omega; // the relaxation frequency specific to this cell.
+  void collide();
+  void explode();
+  void stream_parallel();
+  void bufferize_parallel();
 };

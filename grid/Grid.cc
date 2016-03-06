@@ -14,8 +14,22 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
 }
 
 
-void Grid::iterate()
+void Grid::iterate(int level)
 {
+  if (level >= MAX_LEVELS) return;
+  // Collide, explode and stream all cells on current level.
+  vector<Cell>& cells = grid_levels[level];
+  if (cells.size() == 0) return;
+  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  {
+    it->ces();
+  }
+  iterate(level+1);
+  iterate(level+1);
+  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  {
+    it->coalesce();
+  }
 }
 
 
