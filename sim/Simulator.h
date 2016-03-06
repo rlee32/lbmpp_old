@@ -16,9 +16,9 @@ public:
   Simulator(std::string filename);
   void iterate(); // performs one time step advancement.
   Grid grid;
+  int timesteps;
 private:
   // Run time control.
-  int timesteps;
   bool refinement; // If true, enables solution-adaptive refinement.
 
   // Physical parameters.

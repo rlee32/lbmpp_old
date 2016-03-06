@@ -82,7 +82,12 @@ void Simulator::iterate()
 {
   grid.iterate(0);
   // Enforce BCs.
-  // grid.enforce_bc(bc[0],);
+  grid.enforce_bc('b',bc[0],bcv[0]);
+  grid.enforce_bc('r',bc[1],bcv[1]);
+  grid.enforce_bc('t',bc[2],bcv[2]);
+  grid.enforce_bc('l',bc[3],bcv[3]);
 }
 
-
+// void Simulator::run()
+// {
+// }
