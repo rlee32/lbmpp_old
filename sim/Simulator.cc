@@ -78,11 +78,11 @@ void Simulator::process_settings()
   omega = 1.0 / tau;
 }
 
-void iterate()
+void Simulator::iterate()
 {
-  grid.iterate();
+  grid.iterate(0);
   // Enforce BCs.
-  grid.enforce_bc(bc[0],);
+  // grid.enforce_bc(bc[0],);
 }
 
 

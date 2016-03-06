@@ -5,6 +5,7 @@ using namespace std;
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0)
 {
+  vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
   Cell default_cell(0,rho0,u0,v0);
@@ -15,15 +16,13 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
 
 void Grid::iterate()
 {
-  for (vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
-  {
-    
-  }
 }
 
 
+// Currently only works for coarsest level.
 double Grid::get_max_velocity_magnitude()
 {
+  vector<Cell>& cells = grid_levels[0];
   double max = cells[0].get_velocity_magnitude();
   for(vector<Cell>::iterator it = cells.begin()+1; it != cells.end(); ++it)
   {
@@ -32,8 +31,10 @@ double Grid::get_max_velocity_magnitude()
   }
   return max;
 }
+// Currently only works for coarsest level.
 double Grid::get_min_velocity_magnitude()
 {
+  vector<Cell>& cells = grid_levels[0];
   double min = cells[0].get_velocity_magnitude();
   for(vector<Cell>::iterator it = cells.begin()+1; it != cells.end(); ++it)
   {
@@ -45,6 +46,7 @@ double Grid::get_min_velocity_magnitude()
 
 void Grid::assign_neighbours()
 {
+  vector<Cell>& cells = grid_levels[0];
   for (int i = 0; i < cell_count[0]; ++i)
   {
     for (int j = 0; j < cell_count[1]; ++j)
@@ -82,8 +84,10 @@ void Grid::assign_neighbours()
 // side: b (bottom), r (right), t (top), l (left)
 // type: w (wall), o (outlet), i (inlet), m (moving wall)
 // value: applicable to m, i
+// Currently only works for coarsest level.
 void Grid::enforce_bc(int side, char type, double value)
 {
+  vector<Cell>& cells = grid_levels[0];
   int ii = 0;
   int dii = 1;
   int imax = 1;

@@ -42,7 +42,7 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
     {    
       // Get color
       float rgb[3];
-      scalar2rgb(min, max, grid.cells[i+j*grid.cell_count[0]].get_velocity_magnitude(), rgb);
+      scalar2rgb(min, max, grid.grid_levels[0][i+j*grid.cell_count[0]].get_velocity_magnitude(), rgb);
       // cout << rgb[0] << ", " << rgb[1] << ", " << rgb[2] << endl;
       // Draw
       image.draw_rectangle(

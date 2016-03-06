@@ -23,39 +23,89 @@ Cell::Cell(int level_, double u_, double v_, double rho_) :
   fsw = 0;
   fs = 0;
   fse = 0;
-  fbuffer = 0;
-  double b, be, bne, bn, bnw, bw, bsw, bs, bse;
-  // for(int i = 0; i < 8; ++i) neighbours[i] = nullptr;
-  // for(int i = 0; i < 9; ++i) f[i] = 0;
+  b=0; be=0; bne=0; bn=0; bnw=0; bw=0; bsw=0; bs=0; bse=0;
   // Iniitalize f via equilibrium distribution function.
 }
 
-void Grid::recurse()
+Cell::Cell(Cell* parent_)
 {
-  if ( physical )
+  parent = parent_;
+  for(int i = 0; i < 4; ++i) children[i] = nullptr;
+  // TODO: neighbour assignment.
+  e = nullptr;
+  ne = nullptr;
+  n = nullptr;
+  nw = nullptr;
+  w = nullptr;
+  sw = nullptr;
+  s = nullptr;
+  se = nullptr;
+  copy_state(parent_);
+  b=0; be=0; bne=0; bn=0; bnw=0; bw=0; bsw=0; bs=0; bse=0;
+  level = parent_->level+1;
+  lattice_viscosity = parent_->lattice_viscosity / 2;
+}
+
+// void Cell::recurse()
+// {
+//   if ( physical )
+//   {
+//     if ( not interface ) collide();
+//     explode();
+//     stream_all();
+//   }
+//   if ( children[0] != nullptr ) children[0]->recurse();
+//   if ( children[1] != nullptr ) children[1]->recurse();
+//   if ( children[2] != nullptr ) children[2]->recurse();
+//   if ( children[3] != nullptr ) children[3]->recurse();
+// }
+
+// Simple copy of state.
+void Cell::copy_state(Cell* other)
+{
+  f = other->f;
+  fe = other->fe;
+  fn = other->fn;
+  fs = other->fs;
+  fw = other->fw;
+  fne = other->fne;
+  fnw = other->fnw;
+  fsw = other->fsw;
+  fse = other->fse;
+  rho = other->rho;
+  u = other->u;
+  v = other->v;
+
+}
+
+// For cut cells, the distribution function needs to be paid close attention to for MME conservation.
+// For homogeneous explosion, no problem. 
+void Cell::explode()
+{
+  for (int c = 0; c < 4; ++c)
   {
-    if ( not interface ) collide();
-    explode();
-    stream_all();
+    Cell* ch = children[c];
+    if (ch != nullptr)
+    {
+      ch->copy_state(this);
+    }
+    else
+    {
+      //Create cell
+      Cell new_child(this);
+      grid_levels[level+1].push_back(new_child);
+      children[c] = &grid_levels[level+1].back();
+    }
   }
-  if ( children[0] != nullptr ) children[0]->recurse();
-  if ( children[1] != nullptr ) children[1]->recurse();
-  if ( children[2] != nullptr ) children[2]->recurse();
-  if ( children[3] != nullptr ) children[3]->recurse();
 }
 
-void Grid::explode()
-{
-
-}
-
-void Grid::collide()
+void Cell::collide()
 {
   double usq = u*u;
   double vsq = v*v;
   double uv = u*v;
   double msq = usq + vsq;
-  double ucomp, feq;
+  double feq;
   // Center
   feq = WCENTER*rho*( 1 - 1.5*msq );
   f = omega*feq + (1-omega)*f;
@@ -85,8 +135,7 @@ void Grid::collide()
   fse = omega*feq + (1-omega)*fse;
 }
 
-// Recursive.
-void Grid::stream_all()
+void Cell::stream_all()
 {
   be = (w != nullptr) ? w->fe : 0;
   bn = (s != nullptr) ? s->fn : 0;
@@ -98,7 +147,7 @@ void Grid::stream_all()
   bse = (nw != nullptr) ? nw->fse : 0;
 }
 
-void Grid::bufferize()
+void Cell::bufferize()
 {
   fe = be;
   fn = bn;
