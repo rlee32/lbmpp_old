@@ -44,6 +44,10 @@ void Simulator::read_settings(string filename)
         if ( not parameter.compare("rho0") ) iss >> rho0;
         if ( not parameter.compare("u0") ) iss >> u0;
         if ( not parameter.compare("v0") ) iss >> v0;
+        if ( not parameter.compare("bottom") ) iss >> bc[0];
+        if ( not parameter.compare("right") ) iss >> bc[1];
+        if ( not parameter.compare("top") ) iss >> bc[2];
+        if ( not parameter.compare("left") ) iss >> bc[3];
         // cout << parameter << endl;
       }
     }
@@ -76,5 +80,6 @@ void Simulator::process_settings()
 
 void iterate()
 {
-  
+  // Enforce BCs.
+  grid.enforce_bc(bc[0],);
 }

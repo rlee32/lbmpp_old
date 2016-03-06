@@ -26,6 +26,9 @@ private:
   double velocity_physical;
   double length_physical; 
   double dt_physical; // physical time scale derived from length and velocity.
+  // Boundary conditions
+  char bc[4]; // bottom, right, top, left
+  char bcv[4]; // values; bottom, right, top, left
 
   // Non-dimensional parameters.
   double Re; // Reynolds number.

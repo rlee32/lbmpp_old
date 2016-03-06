@@ -64,6 +64,11 @@ void Grid::assign_neighbours()
   }
 }
 
+// void set_bc(char sides[4])
+// {
+//   for(int i = 0; i < 4; ++i) bc[i] = sides[i];
+// }
+
 // side: b (bottom), r (right), t (top), l (left)
 // type: w (wall), o (outlet), i (inlet), m (moving wall)
 // value: applicable to m, i

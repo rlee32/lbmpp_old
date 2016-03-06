@@ -17,5 +17,10 @@ refinement 0 # 1 = true, 0 = false
 rho0 1
 u0 0
 v0 0
+# boundary conditions
+bottom w
+right o
+top w
+left i
 
 
