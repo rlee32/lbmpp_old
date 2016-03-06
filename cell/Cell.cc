@@ -90,7 +90,6 @@ void Cell::copy_state(Cell* other)
   rho = other->rho;
   u = other->u;
   v = other->v;
-
 }
 
 // For cut cells, the distribution function needs to be paid close attention to for MME conservation.
