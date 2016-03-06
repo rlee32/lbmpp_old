@@ -16,8 +16,8 @@ public:
   std::vector<Cell> cells; // row-major order of cells.
   double get_max_velocity_magnitude(); // Mainly for post-processing purposes.
   double get_min_velocity_magnitude(); // Mainly for post-processing purposes.
+  void enforce_bc(int side, char type, double value);
   int cell_count[2]; // The number of cells in x and y direction.
 private:
-
-
+  void assign_neighbours();
 };

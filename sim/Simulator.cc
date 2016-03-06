@@ -6,14 +6,17 @@ Simulator::Simulator(string filename)
 {
   read_settings(filename); 
   process_settings();
-  create_grid();
-}
-Simulator::~Simulator()
-{
 }
 
 void Simulator::read_settings(string filename)
 {
+  // Grid temporary variables.
+  int cell_count[2]; // coarse cells in the x and y direction.
+  // Initial values.
+  // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
+  double rho0,u0,v0; // initial density and velocity.
+  
+  // Let's begin to read settings.
   ifstream settings_file( filename );
   string line;
   if(settings_file.is_open())
@@ -28,7 +31,7 @@ void Simulator::read_settings(string filename)
       {
         if (parameter[0] == '#') continue;
         // Assign the proper parameter entry.
-        if ( not parameter.compare("coarse_cell_dim") ) iss >> coarse_cell_dim;
+        if ( not parameter.compare("coarse_cell_size") ) iss >> coarse_cell_size;
         if ( not parameter.compare("coarse_cells_x") ) iss >> cell_count[0];
         if ( not parameter.compare("coarse_cells_y") ) iss >> cell_count[1];
         if ( not parameter.compare("viscosity_physical") ) iss >> viscosity_physical;
@@ -44,7 +47,7 @@ void Simulator::read_settings(string filename)
         // cout << parameter << endl;
       }
     }
-    // cout << coarse_cell_dim << endl;
+    // cout << coarse_cell_size << endl;
     // cout << cell_count[0] << endl;
     // cout << cell_count[1] << endl;
     // cout << viscosity_physical << endl;
@@ -55,20 +58,23 @@ void Simulator::read_settings(string filename)
     // cout << timesteps << endl;
     // cout << refinement << endl;
   }
+
+  cout << "Let there be grid! (creating coarse grid)" << endl;
+  grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0);
 }
 
 void Simulator::process_settings()
 {
   Re = length_physical * velocity_physical / viscosity_physical;
+  cout << "Reynolds number: " << Re << endl;
   dt_physical = length_physical / velocity_physical;
-  viscosity_lattice = dt_lattice / coarse_cell_dim / coarse_cell_dim / Re;
-  tau_coarse = 3.0 * viscosity_lattice + 0.5;
-  velocity_lattice = dt_lattice / coarse_cell_dim;
-  omega_coarse = 1.0 / tau_coarse;
+  viscosity_lattice = dt_lattice / coarse_cell_size / coarse_cell_size / Re;
+  tau = 3.0 * viscosity_lattice + 0.5;
+  velocity_lattice = dt_lattice / coarse_cell_size;
+  omega = 1.0 / tau;
 }
 
-void Simulator::create_grid()
+void iterate()
 {
-  cout << "Let there be grid! (creating coarse grid)" << endl;
-  grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0);
+  
 }
