@@ -6,11 +6,8 @@
 #include <cmath>
 #include <vector>
 
-#define WCENTER (4/9)
-#define WORTHO (1/9)
-#define WDIAG (1/36)
 #define OPPOSITE(index) (((index)<4)?((index)+4):((index)-4))
-#define WEIGHT(index) (((index)%2==0)?(WORTHO):(WDIAG))
+#define WEIGHT(index) (((index)%2==0)?((1/9)):((1/36)))
 #define FEQ(W,RHO,UVC,MSQ) (W*RHO*( 1 + 3*(UVC) + 4.5*(UVC)*(UVC) - 1.5*(MSQ) ))
 const int CX[8] = {1,1,0,-1,-1,-1,0,1};
 const int CY[8] = {0,1,1,1,0,-1,-1,-1};
@@ -57,7 +54,6 @@ public:
     double b[8] = {}; // buffers for advected distributions (for parallel advection).
   } numerics;
 private:
-  void copy_state(Cell* parent);
   void collide();
   void explode();
   void stream_parallel();

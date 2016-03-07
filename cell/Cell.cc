@@ -1,11 +1,10 @@
 #include "Cell.h"
 
-
-Cell::Cell(double u, double v, double rho)
+Cell::Cell(double rho, double u, double v)
 {
+  state.rho = rho;
   state.u = u;
   state.v = v;
-  state.rho = rho;
   // Iniitalize f via equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
   state.fc = FEQ(4/9,state.rho,0,msq);
@@ -19,13 +18,14 @@ Cell::Cell(double u, double v, double rho)
   }
 }
 
-Cell::Cell(Cell* parent_)
+// Currently a homogeneous copy of state.
+Cell::Cell(Cell* parent)
 {
-  tree.parent = parent_;
+  tree.parent = parent;
   // TODO: neighbour assignment.
-  copy_state(parent_);
-  tree.level = parent_->tree.level+1;
-  numerics.lattice_viscosity = parent_->numerics.lattice_viscosity / 2.0;
+  state = parent->state;
+  tree.level = parent->tree.level+1;
+  numerics.lattice_viscosity = parent->numerics.lattice_viscosity / 2.0;
 }
 
 // Stands for collide, explode, stream.
@@ -39,15 +39,39 @@ void Cell::ces()
     bufferize_parallel();
   }
 }
+// Currently just averages children.
+// Need to account for cut cells, with different-volume cells.
 void Cell::coalesce()
 {
-  // Call upon and average children values.
-}
-
-// Simple copy of state.
-void Cell::copy_state(Cell* other)
-{
-  state = other->state;
+  double fcavg = 0;
+  double favg[8] = {};
+  double uavg = 0;
+  double vavg = 0;
+  double rhoavg = 0;
+  int nc = 0;
+  // Sum over children.
+  for(int i = 0; i < 4; ++i)
+  {
+    Cell* c = tree.children[i];
+    if (c != nullptr)
+    {
+      uavg += c->state.u;
+      vavg += c->state.v;
+      rhoavg += c->state.rho;
+      fcavg += c->state.fc;
+      for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
+      ++nc;
+    }
+  }
+  // Average.
+  if (nc > 0)
+  {
+    state.u = uavg / nc;
+    state.v = vavg / nc;
+    state.rho = rhoavg / nc;
+    state.fc = fcavg / nc;
+    for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+  }
 }
 
 // For cut cells, the distribution function needs to be paid close attention to for MME conservation.
@@ -59,7 +83,7 @@ void Cell::explode()
     Cell* ch = tree.children[c];
     if (ch != nullptr)
     {
-      ch->copy_state(this);
+      ch->state = state;
     }
     else
     {
