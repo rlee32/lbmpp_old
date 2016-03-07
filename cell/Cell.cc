@@ -1,10 +1,13 @@
 #include "Cell.h"
 
-Cell::Cell(double rho, double u, double v)
+using namespace std;
+
+Cell::Cell(double rho, double u, double v, vector<Cell>* grid_levels_)
 {
   state.rho = rho;
   state.u = u;
   state.v = v;
+  tree.grid_levels = grid_levels_;
   // Iniitalize f via equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
   state.fc = FEQ(4/9,state.rho,0,msq);
@@ -24,6 +27,7 @@ Cell::Cell(Cell* parent)
   tree.parent = parent;
   // TODO: neighbour assignment.
   state = parent->state;
+  tree.grid_levels = parent->tree.grid_levels;
   tree.level = parent->tree.level+1;
   numerics.lattice_viscosity = parent->numerics.lattice_viscosity / 2.0;
 }
@@ -34,7 +38,7 @@ void Cell::ces()
   if ( numerics.physical )
   {
     if ( not numerics.interface ) collide();
-    explode();
+    if ( numerics.interface ) explode();
     stream_parallel();
     bufferize_parallel();
   }

@@ -8,7 +8,7 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
-  Cell default_cell(rho0,u0,v0);
+  Cell default_cell(rho0,u0,v0,grid_levels);
   cells.resize(cell_count_x*cell_count_y, default_cell);
   assign_coarse_neighbours();
 }
@@ -20,6 +20,7 @@ void Grid::iterate(int level)
   // Collide, explode and stream all cells on current level.
   vector<Cell>& cells = grid_levels[level];
   if (cells.size() == 0) return;
+  cout << "Doing level " << level << endl;
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
     it->ces();
