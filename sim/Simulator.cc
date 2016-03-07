@@ -82,10 +82,10 @@ void Simulator::iterate()
 {
   grid.iterate(0);
   // Enforce BCs.
-  grid.enforce_bc('b',bc[0],bcv[0]);
-  grid.enforce_bc('r',bc[1],bcv[1]);
-  grid.enforce_bc('t',bc[2],bcv[2]);
-  grid.enforce_bc('l',bc[3],bcv[3]);
+  grid.enforce_coarse_bc('b',bc[0],velocity_lattice);
+  grid.enforce_coarse_bc('r',bc[1],velocity_lattice);
+  grid.enforce_coarse_bc('t',bc[2],velocity_lattice);
+  grid.enforce_coarse_bc('l',bc[3],velocity_lattice);
 }
 
 // void Simulator::run()
