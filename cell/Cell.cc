@@ -47,34 +47,37 @@ void Cell::ces()
 // Need to account for cut cells, with different-volume cells.
 void Cell::coalesce()
 {
-  double fcavg = 0;
-  double favg[8] = {};
-  double uavg = 0;
-  double vavg = 0;
-  double rhoavg = 0;
-  int nc = 0;
-  // Sum over children.
-  for(int i = 0; i < 4; ++i)
+  if ( numerics.interface )
   {
-    Cell* c = tree.children[i];
-    if (c != nullptr)
+    double fcavg = 0;
+    double favg[8] = {};
+    double uavg = 0;
+    double vavg = 0;
+    double rhoavg = 0;
+    int nc = 0;
+    // Sum over children.
+    for(int i = 0; i < 4; ++i)
     {
-      uavg += c->state.u;
-      vavg += c->state.v;
-      rhoavg += c->state.rho;
-      fcavg += c->state.fc;
-      for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
-      ++nc;
+      Cell* c = tree.children[i];
+      if (c != nullptr)
+      {
+        uavg += c->state.u;
+        vavg += c->state.v;
+        rhoavg += c->state.rho;
+        fcavg += c->state.fc;
+        for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
+        ++nc;
+      }
     }
-  }
-  // Average.
-  if (nc > 0)
-  {
-    state.u = uavg / nc;
-    state.v = vavg / nc;
-    state.rho = rhoavg / nc;
-    state.fc = fcavg / nc;
-    for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+    // Average.
+    if (nc > 0)
+    {
+      state.u = uavg / nc;
+      state.v = vavg / nc;
+      state.rho = rhoavg / nc;
+      state.fc = fcavg / nc;
+      for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+    }
   }
 }
 
@@ -128,6 +131,17 @@ double Cell::get_velocity_magnitude()
   return sqrt(state.u*state.u + state.v*state.v);
 }
 
+void Cell::reconstruct_macro()
+{
+  state.rho = state.fc;
+  for (int i = 0; i < 8; ++i) state.rho += state.f[i];
+  state.u = 0;
+  state.v = 0;
+  for (int i = 0; i < 8; ++i) state.u += state.f[i]*CX[i];
+  for (int i = 0; i < 8; ++i) state.v += state.f[i]*CX[i];
+  state.u /= state.rho;
+  state.v /= state.rho;
+}
 
 
 

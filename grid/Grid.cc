@@ -20,9 +20,9 @@ void Grid::iterate(int level)
   // Collide, explode and stream all cells on current level.
   vector<Cell>& cells = grid_levels[level];
   if (cells.size() == 0) return;
-  cout << "Doing level " << level << endl;
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
+    it->reconstruct_macro();
     it->ces();
   }
   iterate(level+1);
@@ -30,6 +30,7 @@ void Grid::iterate(int level)
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
     it->coalesce();
+    it->reconstruct_macro();
   }
 }
 
@@ -106,10 +107,12 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
   switch (side)
   {
     case 'b': // bottom
-      ii = 0;
+      // ii = 0;
+      ii = (cell_count[1]-1)*cell_count[0];
       dii = 1;
       djj = -cell_count[0];
-      imax = cell_count[0] - 1;
+      // imax = cell_count[0] - 1;
+      imax = cell_count[1]*cell_count[0] - 1;
       ortho = 2;
       break;
     case 'r': // right
@@ -120,10 +123,12 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
       ortho = 4;
       break;
     case 't': // top
-      ii = (cell_count[1]-1)*cell_count[0];
+      // ii = (cell_count[1]-1)*cell_count[0];
+      ii = 0;
       dii = 1;
       djj = cell_count[0];
-      imax = cell_count[1]*cell_count[0] - 1;
+      // imax = cell_count[1]*cell_count[0] - 1;
+      imax = cell_count[0] - 1;
       ortho = 6;
       break;
     case 'l': // left

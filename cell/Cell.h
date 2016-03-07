@@ -24,11 +24,12 @@ public:
   double get_velocity_magnitude();
   void ces();
   void coalesce();
+  void reconstruct_macro();
   struct
   {
-    double fc = 0; // center distribution.
+    double fc = 1; // center distribution.
     double f[8] = {}; // advected distributions ( to index-correspond to the neighbours ).
-    double rho = 0;
+    double rho = 1;
     double u = 0;
     double v = 0;
   } state;
