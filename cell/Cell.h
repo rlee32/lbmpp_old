@@ -19,8 +19,10 @@ const int CY[8] = {0,1,1,1,0,-1,-1,-1};
 class Cell
 {
 public:
-  Cell(double u_, double v_, double rho_, std::vector<Cell>* grid_levels_); // Meant to make coarsest cells.
-  Cell(Cell* parent); // meant to be called in a refine operation.
+  Cell(double u_, double v_, double rho_, 
+    double tau, double omega, double nu, double nuc, 
+    std::vector<Cell>* grid_levels); // Meant to make coarsest cells.
+  Cell(Cell* parent); // meant to be called in a (single-level) refine operation.
   double get_velocity_magnitude();
   void ces();
   void coalesce();
@@ -49,9 +51,10 @@ public:
     bool physical = true; // flag whether this cell is participating in the flow solution.
     bool interface = false; // a flag for interface status. An interface cell will not collide, only advect. Being an interface and being a 'real' cell are not mutually exclusive. Real cells must ALWAYS have neighbours (whether real or interface), but interface cells do not need (to create new) neighbours.
     bool cut = false; // true if physical surface resides in this cell.
-    double tau = 0;
-    double omega = 0;
-    double lattice_viscosity = 0;
+    double tau = 0; // relaxation time.
+    double omega = 0; // relaxation frequency.
+    double nu = 0; // lattice viscosity.
+    double nuc = 0; // counteraction viscosity. 
     double b[8] = {}; // buffers for advected distributions (for parallel advection).
   } numerics;
 private:
@@ -59,4 +62,5 @@ private:
   void explode();
   void stream_parallel();
   void bufferize_parallel();
+  void recompute_relaxation();
 };

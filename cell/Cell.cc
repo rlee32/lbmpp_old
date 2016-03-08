@@ -2,12 +2,14 @@
 
 using namespace std;
 
-Cell::Cell(double rho, double u, double v, vector<Cell>* grid_levels_)
+Cell::Cell(double rho, double u, double v, 
+  double tau, double omega, double nu, double nuc, 
+  vector<Cell>* grid_levels)
 {
   state.rho = rho;
   state.u = u;
   state.v = v;
-  tree.grid_levels = grid_levels_;
+  tree.grid_levels = grid_levels;
   // Iniitalize f via equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
   state.fc = FEQ(4/9,state.rho,0,msq);
@@ -29,7 +31,7 @@ Cell::Cell(Cell* parent)
   state = parent->state;
   tree.grid_levels = parent->tree.grid_levels;
   tree.level = parent->tree.level+1;
-  numerics.lattice_viscosity = parent->numerics.lattice_viscosity / 2.0;
+  numerics.nu = parent->numerics.nu / 2.0;
 }
 
 // Stands for collide, explode, stream.
@@ -144,7 +146,12 @@ void Cell::reconstruct_macro()
 }
 
 
-
+void Cell::recompute_relaxation()
+{
+  // After a refine operation, the lattice viscosity is updated.
+  tau = 3*(nu + nuc) + 0.5;
+  omega = 1.0 / tau;
+}
 
 
 

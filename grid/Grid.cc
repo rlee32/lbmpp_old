@@ -3,12 +3,15 @@
 using namespace std;
 
 void Grid::initialize(int cell_count_x, int cell_count_y, 
-  double rho0, double u0, double v0)
+  double rho0, double u0, double v0, 
+  double tau, double omega, double nu, double nuc)
 {
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
-  Cell default_cell(rho0,u0,v0,grid_levels);
+  Cell default_cell(rho0,u0,v0,
+    tau, omega, nu, nuc, 
+    grid_levels);
   cells.resize(cell_count_x*cell_count_y, default_cell);
   assign_coarse_neighbours();
 }

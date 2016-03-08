@@ -42,6 +42,12 @@ private:
   double velocity_lattice; // lattice velocity of the coarsest cell.
   double buffer_viscosity_factor; // For the viscosity-counteracting approach. The multiple of the discrete viscosity to add as a buffer viscosity.
 
+  // Grid temporary variables.
+  int cell_count[2]; // coarse cells in the x and y direction.
+  // Initial values.
+  // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
+  double rho0,u0,v0; // initial density and velocity.
+
   void read_settings(std::string filename);
   void process_settings();
 };

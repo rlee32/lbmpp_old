@@ -10,12 +10,6 @@ Simulator::Simulator(string filename)
 
 void Simulator::read_settings(string filename)
 {
-  // Grid temporary variables.
-  int cell_count[2]; // coarse cells in the x and y direction.
-  // Initial values.
-  // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
-  double rho0,u0,v0; // initial density and velocity.
-  
   // Let's begin to read settings.
   ifstream settings_file( filename );
   string line;
@@ -62,9 +56,6 @@ void Simulator::read_settings(string filename)
     // cout << timesteps << endl;
     // cout << refinement << endl;
   }
-
-  cout << "Let there be grid! (creating coarse grid)" << endl;
-  grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0);
 }
 
 void Simulator::process_settings()
@@ -73,9 +64,13 @@ void Simulator::process_settings()
   cout << "Reynolds number: " << Re << endl;
   dt_physical = length_physical / velocity_physical;
   viscosity_lattice = dt_lattice / coarse_cell_size / coarse_cell_size / Re;
-  tau = 3.0 * viscosity_lattice + 0.5;
+  double nuc = buffer_viscosity_factor*viscosity_lattice; // counteracting viscosity.
+  tau = 3.0 * (viscosity_lattice + nuc) + 0.5;
   velocity_lattice = dt_lattice / coarse_cell_size;
   omega = 1.0 / tau;
+  cout << "Let there be grid! (creating coarse grid)" << endl;
+  grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
+  tau, omega, viscosity_lattice, nuc );
 }
 
 void Simulator::iterate()
