@@ -42,17 +42,6 @@ Cell::Cell(Cell* parent)
   numerics.nu = parent->numerics.nu / 2.0;
 }
 
-// Stands for collide, explode, stream.
-void Cell::ces()
-{
-  if ( numerics.physical )
-  {
-    // cout << numerics.interface << endl;
-    if ( not numerics.interface ) collide();
-    if ( numerics.interface ) explode();
-    stream_parallel();
-  }
-}
 // Currently just averages children.
 // Need to account for cut cells, with different-volume cells.
 void Cell::coalesce()
@@ -95,39 +84,49 @@ void Cell::coalesce()
 // For homogeneous explosion, no problem. 
 void Cell::explode()
 {
-  for (int c = 0; c < 4; ++c)
+  if ( numerics.physical and numerics.interface ) 
   {
-    Cell* ch = tree.children[c];
-    if (ch != nullptr)
+    for (int c = 0; c < 4; ++c)
     {
-      ch->state = state;
-    }
-    else
-    {
-      //Create cell
-      Cell new_child(this);
-      tree.grid_levels[tree.level+1].push_back(new_child);
-      tree.children[c] = &tree.grid_levels[tree.level+1].back();
+      Cell* ch = tree.children[c];
+      if (ch != nullptr)
+      {
+        ch->state = state;
+      }
+      else
+      {
+        //Create cell
+        Cell new_child(this);
+        tree.grid_levels[tree.level+1].push_back(new_child);
+        tree.children[c] = &tree.grid_levels[tree.level+1].back();
+      }
     }
   }
 }
 
 void Cell::collide()
 {
-  double msq = state.u*state.u + state.v*state.v;
-  state.fc = numerics.omega * FEQ( 4.0/9.0, state.rho, 0, msq ) + ( 1 - numerics.omega ) * state.fc;
-  for (int i = 0; i < 8; ++i)
+  if ( numerics.physical and not numerics.interface )
   {
-    state.f[i] = numerics.omega * FEQ(WEIGHT(i), state.rho, CX[i]*state.u + CY[i]*state.v, msq) 
-      + ( 1 - numerics.omega ) * state.f[i];
+    double msq = state.u*state.u + state.v*state.v;
+    state.fc = numerics.omega * FEQ( 4.0/9.0, state.rho, 0, msq ) + ( 1 - numerics.omega ) * state.fc;
+    for (int i = 0; i < 8; ++i)
+    {
+      state.f[i] = numerics.omega * FEQ(WEIGHT(i), state.rho, CX[i]*state.u + CY[i]*state.v, msq) 
+        + ( 1 - numerics.omega ) * state.f[i];
+    }
   }
+
 }
 
 void Cell::stream_parallel()
 {
-  for(int i = 0; i < 8; ++i)
+  if( numerics.physical )
   {
-    numerics.b[i] = (tree.neighbours[OPPOSITE(i)] != nullptr) ? tree.neighbours[OPPOSITE(i)]->state.f[i] : state.f[i];
+    for(int i = 0; i < 8; ++i)
+    {
+      numerics.b[i] = (tree.neighbours[OPPOSITE(i)] != nullptr) ? tree.neighbours[OPPOSITE(i)]->state.f[i] : state.f[i];
+    }
   }
 }
 

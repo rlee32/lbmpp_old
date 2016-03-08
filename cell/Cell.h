@@ -25,9 +25,11 @@ public:
     std::vector<Cell>* grid_levels); // Meant to make coarsest cells.
   Cell(Cell* parent); // meant to be called in a (single-level) refine operation.
   double get_velocity_magnitude();
-  void ces();
   void coalesce();
   void reconstruct_macro();
+  void collide();
+  void explode();
+  void stream_parallel();
   void bufferize_parallel();
   struct
   {
@@ -60,8 +62,5 @@ public:
     double b[8] = {}; // buffers for advected distributions (for parallel advection).
   } numerics;
 private:
-  void collide();
-  void explode();
-  void stream_parallel();
   void recompute_relaxation();
 };

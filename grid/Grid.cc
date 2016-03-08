@@ -26,8 +26,13 @@ void Grid::iterate(int level)
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
     it->reconstruct_macro();
-    it->ces(); // particles are not actually streamed yet; just sitting in the buffers.
+    it->collide();
+    it->explode();
     // it->reconstruct_macro();
+  }
+  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  {
+    it->stream_parallel();
   }
   iterate(level+1);
   iterate(level+1);

@@ -1,7 +1,7 @@
 # Use hashtag for comments.
 # Grid definition.
-coarse_cells_x 20
-coarse_cells_y 20
+coarse_cells_x 100
+coarse_cells_y 100
 coarse_cell_size 0.01
 # Physical parameters. Used to compute Reynolds number.
 viscosity_physical 1.568e-3
