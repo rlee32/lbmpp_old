@@ -17,11 +17,19 @@ public:
   int cell_count[2]; // The number of cells in x and y direction on the coarsest level.
   void initialize(int cell_count_x, int cell_count_y, 
     double rho0, double u0, double v0, 
-    double tau, double omega, double nu, double nuc);
-  void enforce_coarse_bc(int side, char type, double value);
+    double tau, double omega, double nu, double nuc,
+    char bc_[4], double bcv_[4], double lattice_velocity);
   void iterate(int level);
   double get_max_velocity_magnitude(); // Mainly for post-processing purposes.
   double get_min_velocity_magnitude(); // Mainly for post-processing purposes.
 private:
+  double lattice_velocity = 0;
+  char bc[4] = {'w', 'w', 'w', 'w'}; // Boundary conditions for bottom, right, top, left, respectively.
+  double bcv[4] = {0, 0, 0, 0}; // Boundary condition values for bottom, right, top, left, respectively.
   void assign_coarse_neighbours();
+  void enforce_bc_side(int side, char type, double value);
+  void enforce_bc();
+  void reconstruct_macro(int level);
+  void bufferize_parallel(int level);
+  void stream_parallel(int level);
 };

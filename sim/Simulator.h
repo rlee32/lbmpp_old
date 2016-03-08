@@ -26,9 +26,6 @@ private:
   double velocity_physical;
   double length_physical; 
   double dt_physical; // physical time scale derived from length and velocity.
-  // Boundary conditions
-  char bc[4]; // bottom, right, top, left
-  char bcv[4]; // values; bottom, right, top, left
 
   // Non-dimensional parameters.
   double Re; // Reynolds number.
@@ -47,6 +44,9 @@ private:
   // Initial values.
   // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
   double rho0,u0,v0; // initial density and velocity.
+  // Boundary conditions
+  char bc[4]; // bottom, right, top, left
+  double bcv[4]; // values; bottom, right, top, left
 
   void read_settings(std::string filename);
   void process_settings();

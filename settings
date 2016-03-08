@@ -4,11 +4,11 @@ coarse_cells_x 100
 coarse_cells_y 100
 coarse_cell_size 0.01
 # Physical parameters. Used to compute Reynolds number.
-viscosity_physical 1.568e-3
+viscosity_physical 1.568e-4
 velocity_physical 1
 length_physical 1
 # Discrete parameters.
-dt_lattice 0.0002
+dt_lattice 0.002
 buffer_viscosity_factor 0 # multiple of discrete viscosity
 # Solution run time control.
 timesteps 1000
@@ -18,9 +18,9 @@ rho0 1
 u0 0
 v0 0
 # boundary conditions
-bottom w
-right w
+bottom w 0
+right w 0
 top m 1
-left w
+left w 0
 
 

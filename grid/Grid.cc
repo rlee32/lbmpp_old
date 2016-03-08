@@ -4,8 +4,10 @@ using namespace std;
 
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0, 
-  double tau, double omega, double nu, double nuc)
+  double tau, double omega, double nu, double nuc,
+  char bc_[4], double bcv_[4], double lattice_velocity_)
 {
+  lattice_velocity = lattice_velocity_;
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
@@ -14,34 +16,71 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
     grid_levels);
   cells.resize(cell_count_x*cell_count_y, default_cell);
   assign_coarse_neighbours();
+  for (int i = 0; i < 4; ++i) bc[i] = bc_[i];
+  for (int i = 0; i < 4; ++i) bcv[i] = bcv_[i];
+  // cout << bcv[0] << endl;
+  // cout << bcv[1] << endl;
+  // cout << bcv[2] << endl;
+  // cout << bcv[3] << endl;
 }
 
 
 void Grid::iterate(int level)
 {
+  // Check to see if this level needs to iterate.
   if (level >= MAX_LEVELS) return;
   // Collide, explode and stream all cells on current level.
   vector<Cell>& cells = grid_levels[level];
   if (cells.size() == 0) return;
+
+  // 
+  reconstruct_macro(level);
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
-    it->reconstruct_macro();
     it->collide();
     it->explode();
-    // it->reconstruct_macro();
   }
+  // enforce_bc();
+  reconstruct_macro(level);
+  stream_parallel(level);
+  bufferize_parallel(level);
+  iterate(level+1);
+  iterate(level+1);
+  reconstruct_macro(level);
+  enforce_bc();
+}
+
+void Grid::stream_parallel(int level)
+{
+  vector<Cell>& cells = grid_levels[level];
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
     it->stream_parallel();
   }
-  iterate(level+1);
-  iterate(level+1);
+}
+void Grid::bufferize_parallel(int level)
+{
+  vector<Cell>& cells = grid_levels[level];
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
-    it->bufferize_parallel(); // transfer particles from the buffers.
-    it->coalesce();
+    it->bufferize_parallel();
+  }
+}
+void Grid::reconstruct_macro(int level)
+{
+  vector<Cell>& cells = grid_levels[level];
+  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  {
     it->reconstruct_macro();
   }
+}
+
+void Grid::enforce_bc()
+{
+  enforce_bc_side('b',bc[0],lattice_velocity);
+  enforce_bc_side('r',bc[1],lattice_velocity);
+  enforce_bc_side('t',bc[2],lattice_velocity);
+  enforce_bc_side('l',bc[3],lattice_velocity);
 }
 
 // Currently only works for coarsest level.
@@ -106,7 +145,7 @@ void Grid::assign_coarse_neighbours()
 // type: w (wall), o (outlet), i (inlet), m (moving wall)
 // value: applicable to m, i
 // Currently only works for coarsest level.
-void Grid::enforce_coarse_bc(int side, char type, double value)
+void Grid::enforce_bc_side(int side, char type, double value)
 {
   vector<Cell>& cells = grid_levels[0];
   int ii = -1;
@@ -114,6 +153,7 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
   int imax = -1;
   int ortho = -1; // the index pointing inwards, (unknown) orthogonal to boundary.
   int before = -1; // the index before ortho. In the case of 0, it is 7.
+  double ubc = 0, vbc = 0;
   switch (side)
   {
     case 'b': // bottom
@@ -157,14 +197,21 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
     case 'w': // wall
       for (; ii <= imax; ii+=dii)
       {
+        // meso
         cells[ii].state.f[ortho] = cells[ii].state.f[OPPOSITE(ortho)];
         cells[ii].state.f[before] = cells[ii].state.f[OPPOSITE(before)];
         cells[ii].state.f[ortho+1] = cells[ii].state.f[OPPOSITE(ortho+1)];
+        // macro
+        cells[ii].state.u = 0;
+        cells[ii].state.v = 0;
       }
       break;
     case 'i': // inlet
+      ubc = (side == 'b' or side == 't') ? 0 : value;
+      vbc = (side == 'r' or side == 'l') ? 0 : value;
       for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
+        //meso
         int parallel = ( ortho + OPPOSITE(ortho) ) / 2.0;
         double coeff = 1.0 / ( 1.0 - value );
         double tangent = cells[ii].state.fc
@@ -179,6 +226,10 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
         cells[ii].state.f[ortho] = cells[ii].state.f[OPPOSITE(ortho)] + normal;
         cells[ii].state.f[ortho+1] = cells[ii].state.f[OPPOSITE(ortho+1)] + diagonal;
         cells[ii].state.f[before] = cells[ii].state.f[OPPOSITE(before)] + diagonal;
+        // macro
+        // cells[ii].state.rho = density;
+        cells[ii].state.u = ubc;
+        cells[ii].state.v = vbc;
       }
       break;
     case 'o': // outlet (zero-gradient extrapolation)
@@ -190,8 +241,11 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
       }
       break;
     case 'm': // moving wall
+      ubc = (side == 'b' or side == 't') ? value : 0;
+      vbc = (side == 'r' or side == 'l') ? value : 0;
       for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
+        // meso
         int sign = (side == 't' or side == 'l') ? 1.0: -1.0;
         int parallel = ( ortho + OPPOSITE(ortho) ) / 2.0;
         double coeff = 1.0 / ( 1.0 - value );
@@ -208,6 +262,10 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
           + sign * diagonal;
         cells[ii].state.f[before] = cells[ii].state.f[OPPOSITE(before)] 
           - sign * diagonal;
+        // macro
+        // cells[ii].state.rho = density;
+        cells[ii].state.u = ubc;
+        cells[ii].state.v = vbc;
       }
       break;
     default:

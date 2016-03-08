@@ -38,10 +38,26 @@ void Simulator::read_settings(string filename)
         if ( not parameter.compare("rho0") ) iss >> rho0;
         if ( not parameter.compare("u0") ) iss >> u0;
         if ( not parameter.compare("v0") ) iss >> v0;
-        if ( not parameter.compare("bottom") ) iss >> bc[0];
-        if ( not parameter.compare("right") ) iss >> bc[1];
-        if ( not parameter.compare("top") ) iss >> bc[2];
-        if ( not parameter.compare("left") ) iss >> bc[3];
+        if ( not parameter.compare("bottom") ) 
+        {
+          iss >> bc[0];
+          iss >> bcv[0];
+        }
+        if ( not parameter.compare("right") )
+        {
+          iss >> bc[1];
+          iss >> bcv[1];
+        }
+        if ( not parameter.compare("top") )
+        {
+          iss >> bc[2];
+          iss >> bcv[2];
+        }
+        if ( not parameter.compare("left") )
+        {
+          iss >> bc[3];
+          iss >> bcv[3];
+        }
         // cout << parameter << endl;
       }
     }
@@ -71,17 +87,12 @@ void Simulator::process_settings()
   omega = 1.0 / tau;
   cout << "Let there be grid! (creating coarse grid)" << endl;
   grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
-  tau, omega, viscosity_lattice, nuc );
+  tau, omega, viscosity_lattice, nuc, bc, bcv, velocity_lattice );
 }
 
 void Simulator::iterate()
 {
   grid.iterate(0);
-  // Enforce BCs.
-  grid.enforce_coarse_bc('b',bc[0],velocity_lattice);
-  grid.enforce_coarse_bc('r',bc[1],velocity_lattice);
-  grid.enforce_coarse_bc('t',bc[2],velocity_lattice);
-  grid.enforce_coarse_bc('l',bc[3],velocity_lattice);
 }
 
 // void Simulator::run()
