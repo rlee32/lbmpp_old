@@ -9,6 +9,10 @@ Cell::Cell(double rho, double u, double v,
   state.rho = rho;
   state.u = u;
   state.v = v;
+  numerics.tau = tau;
+  numerics.omega = omega;
+  numerics.nu = nu;
+  numerics.nuc = nuc;
   tree.grid_levels = grid_levels;
   // Iniitalize f via equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
@@ -149,8 +153,8 @@ void Cell::reconstruct_macro()
 void Cell::recompute_relaxation()
 {
   // After a refine operation, the lattice viscosity is updated.
-  tau = 3*(nu + nuc) + 0.5;
-  omega = 1.0 / tau;
+  numerics.tau = 3*(numerics.nu + mumerics.nuc) + 0.5;
+  numerics.omega = 1.0 / numerics.tau;
 }
 
 
