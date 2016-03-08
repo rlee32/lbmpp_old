@@ -22,15 +22,16 @@ void Grid::iterate(int level)
   if (cells.size() == 0) return;
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
-    it->reconstruct_macro();
-    it->ces();
+    // it->reconstruct_macro();
+    // it->ces();
+    // it->reconstruct_macro();
   }
   iterate(level+1);
   iterate(level+1);
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
     it->coalesce();
-    it->reconstruct_macro();
+    // it->reconstruct_macro();
   }
 }
 
