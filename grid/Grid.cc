@@ -25,19 +25,19 @@ void Grid::iterate(int level)
   if (cells.size() == 0) return;
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
-    // it->reconstruct_macro();
-    // it->ces();
+    it->reconstruct_macro();
+    it->ces(); // particles are not actually streamed yet; just sitting in the buffers.
     // it->reconstruct_macro();
   }
   iterate(level+1);
   iterate(level+1);
   for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
   {
+    it->bufferize_parallel(); // transfer particles from the buffers.
     it->coalesce();
-    // it->reconstruct_macro();
+    it->reconstruct_macro();
   }
 }
-
 
 // Currently only works for coarsest level.
 double Grid::get_max_velocity_magnitude()
@@ -76,22 +76,23 @@ void Grid::assign_coarse_neighbours()
       bool top = j == 0;
       bool left = i == 0;
       bool bottom = j == cell_count[1]-1;
+      int dj = -cell_count[0];
       // East
       if ( not right ) cells[ii].tree.neighbours[0] = &cells[ii+1];
       // Northeast
-      if ( not right and not top ) cells[ii].tree.neighbours[1] = &cells[ii+1-j];
+      if ( not right and not top ) cells[ii].tree.neighbours[1] = &cells[ii+1+dj];
       // North
-      if ( not top ) cells[ii].tree.neighbours[2] = &cells[ii-j];
+      if ( not top ) cells[ii].tree.neighbours[2] = &cells[ii+dj];
       // Northwest
-      if ( not top and not left ) cells[ii].tree.neighbours[3] = &cells[ii-1-j];
+      if ( not top and not left ) cells[ii].tree.neighbours[3] = &cells[ii-1+dj];
       // West
       if ( not left ) cells[ii].tree.neighbours[4] = &cells[ii-1];
       // Southwest
-      if ( not left and not bottom ) cells[ii].tree.neighbours[5] = &cells[ii-1+j];
+      if ( not left and not bottom ) cells[ii].tree.neighbours[5] = &cells[ii-1-dj];
       // South
-      if ( not bottom ) cells[ii].tree.neighbours[6] = &cells[ii+j];
+      if ( not bottom ) cells[ii].tree.neighbours[6] = &cells[ii-dj];
       // Southeast
-      if ( not bottom and not right ) cells[ii].tree.neighbours[7] = &cells[ii+j+1];
+      if ( not bottom and not right ) cells[ii].tree.neighbours[7] = &cells[ii-dj+1];
     }
   }
 }
@@ -157,9 +158,9 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
       }
       break;
     case 'i': // inlet
-      for (; ii <= imax; ii+=dii)
+      for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
-        int parallel = ( ortho + OPPOSITE(ortho) ) / 2;
+        int parallel = ( ortho + OPPOSITE(ortho) ) / 2.0;
         double coeff = 1.0 / ( 1.0 - value );
         double tangent = cells[ii].state.fc
           + cells[ii].state.f[parallel] 
@@ -167,16 +168,16 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
         double out = cells[ii].state.f[OPPOSITE(ortho)]
           + cells[ii].state.f[OPPOSITE(ortho+1)]
           + cells[ii].state.f[OPPOSITE(before)];
-        double density = coeff * ( tangent + 2 * out );
-        double normal = 2 / 3 * value * density;
-        double diagonal = value / 6 * density;
+        double density = coeff * ( tangent + 2.0 * out );
+        double normal = 2.0 / 3.0 * value * density;
+        double diagonal = value / 6.0 * density;
         cells[ii].state.f[ortho] = cells[ii].state.f[OPPOSITE(ortho)] + normal;
         cells[ii].state.f[ortho+1] = cells[ii].state.f[OPPOSITE(ortho+1)] + diagonal;
         cells[ii].state.f[before] = cells[ii].state.f[OPPOSITE(before)] + diagonal;
       }
       break;
     case 'o': // outlet (zero-gradient extrapolation)
-      for (; ii <= imax; ii+=dii)
+      for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
         cells[ii].state.f[ortho] = cells[ii+djj].state.f[ortho];
         cells[ii].state.f[ortho+1] = cells[ii+djj].state.f[ortho+1];
@@ -184,10 +185,10 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
       }
       break;
     case 'm': // moving wall
-      for (; ii <= imax; ii+=dii)
+      for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
-        int sign = (side == 't' or side == 'l') ? 1: -1;
-        int parallel = ( ortho + OPPOSITE(ortho) ) / 2;
+        int sign = (side == 't' or side == 'l') ? 1.0: -1.0;
+        int parallel = ( ortho + OPPOSITE(ortho) ) / 2.0;
         double coeff = 1.0 / ( 1.0 - value );
         double tangent = cells[ii].state.fc
           + cells[ii].state.f[parallel] 
@@ -195,8 +196,8 @@ void Grid::enforce_coarse_bc(int side, char type, double value)
         double out = cells[ii].state.f[OPPOSITE(ortho)]
           + cells[ii].state.f[OPPOSITE(ortho+1)]
           + cells[ii].state.f[OPPOSITE(before)];
-        double density = coeff * ( tangent + 2 * out );
-        double diagonal = value / 6 * density;
+        double density = coeff * ( tangent + 2.0 * out );
+        double diagonal = value / 6.0 * density;
         cells[ii].state.f[ortho] = cells[ii].state.f[OPPOSITE(ortho)];
         cells[ii].state.f[ortho+1] = cells[ii].state.f[OPPOSITE(ortho+1)] 
           + sign * diagonal;

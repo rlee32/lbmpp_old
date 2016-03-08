@@ -64,6 +64,7 @@ void Simulator::process_settings()
   cout << "Reynolds number: " << Re << endl;
   dt_physical = length_physical / velocity_physical;
   viscosity_lattice = dt_lattice / coarse_cell_size / coarse_cell_size / Re;
+  cout << "Lattice viscosity: " << viscosity_lattice << endl;
   double nuc = buffer_viscosity_factor*viscosity_lattice; // counteracting viscosity.
   tau = 3.0 * (viscosity_lattice + nuc) + 0.5;
   velocity_lattice = dt_lattice / coarse_cell_size;

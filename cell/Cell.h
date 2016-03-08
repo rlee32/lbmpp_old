@@ -5,10 +5,11 @@
 #include <cstdint>
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 #define OPPOSITE(index) (((index)<4)?((index)+4):((index)-4))
-#define WEIGHT(index) (((index)%2==0)?((1/9)):((1/36)))
-#define FEQ(W,RHO,UVC,MSQ) (W*RHO*( 1 + 3*(UVC) + 4.5*(UVC)*(UVC) - 1.5*(MSQ) ))
+#define WEIGHT(index) (((index)%2==0)?((1.0/9.0)):((1.0/36.0)))
+#define FEQ(W,RHO,UVC,MSQ) ((W)*(RHO)*( 1 + 3.0*(UVC) + 4.5*(UVC)*(UVC) - 1.5*(MSQ) ))
 const int CX[8] = {1,1,0,-1,-1,-1,0,1};
 const int CY[8] = {0,1,1,1,0,-1,-1,-1};
 
@@ -27,6 +28,7 @@ public:
   void ces();
   void coalesce();
   void reconstruct_macro();
+  void bufferize_parallel();
   struct
   {
     double fc = 1; // center distribution.
@@ -61,6 +63,5 @@ private:
   void collide();
   void explode();
   void stream_parallel();
-  void bufferize_parallel();
   void recompute_relaxation();
 };

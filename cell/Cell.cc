@@ -7,6 +7,7 @@ Cell::Cell(double rho, double u, double v,
   vector<Cell>* grid_levels)
 {
   state.rho = rho;
+  // cout << state.rho << endl;
   state.u = u;
   state.v = v;
   numerics.tau = tau;
@@ -16,7 +17,9 @@ Cell::Cell(double rho, double u, double v,
   tree.grid_levels = grid_levels;
   // Iniitalize f via equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
-  state.fc = FEQ(4/9,state.rho,0,msq);
+  // cout << state.rho << endl;
+  state.fc = FEQ(4.0/9.0,state.rho,0,msq);
+  // cout << state.fc << endl;
   for (int i = 0; i < 8; ++i) 
   {
     state.f[i] = FEQ(
@@ -24,6 +27,7 @@ Cell::Cell(double rho, double u, double v,
       state.rho,
       CX[i] * state.u + CY[i] * state.v,
       msq );
+    // cout << state.f[i] << endl;
   }
 }
 
@@ -43,10 +47,10 @@ void Cell::ces()
 {
   if ( numerics.physical )
   {
+    // cout << numerics.interface << endl;
     if ( not numerics.interface ) collide();
     if ( numerics.interface ) explode();
     stream_parallel();
-    bufferize_parallel();
   }
 }
 // Currently just averages children.
@@ -111,11 +115,11 @@ void Cell::explode()
 void Cell::collide()
 {
   double msq = state.u*state.u + state.v*state.v;
-  state.fc = numerics.omega * FEQ( 4/9, state.rho, 0, msq ) + ( 1 - numerics.omega ) * state.fc;
+  state.fc = numerics.omega * FEQ( 4.0/9.0, state.rho, 0, msq ) + ( 1 - numerics.omega ) * state.fc;
   for (int i = 0; i < 8; ++i)
   {
     state.f[i] = numerics.omega * FEQ(WEIGHT(i), state.rho, CX[i]*state.u + CY[i]*state.v, msq) 
-      + ( 1-numerics.omega ) * state.f[i];
+      + ( 1 - numerics.omega ) * state.f[i];
   }
 }
 
@@ -144,16 +148,17 @@ void Cell::reconstruct_macro()
   state.u = 0;
   state.v = 0;
   for (int i = 0; i < 8; ++i) state.u += state.f[i]*CX[i];
-  for (int i = 0; i < 8; ++i) state.v += state.f[i]*CX[i];
+  for (int i = 0; i < 8; ++i) state.v += state.f[i]*CY[i];
   state.u /= state.rho;
   state.v /= state.rho;
+  // cout << state.rho << endl;
 }
 
 
 void Cell::recompute_relaxation()
 {
   // After a refine operation, the lattice viscosity is updated.
-  numerics.tau = 3*(numerics.nu + mumerics.nuc) + 0.5;
+  numerics.tau = 3*(numerics.nu + numerics.nuc) + 0.5;
   numerics.omega = 1.0 / numerics.tau;
 }
 

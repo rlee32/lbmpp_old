@@ -36,6 +36,7 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   const float black[] = {0,0,0};
   double min = grid.get_min_velocity_magnitude();
   double max = grid.get_max_velocity_magnitude();
+  cout << "Velocity magnitude min, max: " << min << ", " << max << endl;
   for (int i = 0; i < grid.cell_count[0]; ++i)
   {
     for (int j = 0; j < grid.cell_count[1]; ++j)
