@@ -21,40 +21,30 @@ int main(int argc, char ** argv)
   SolutionViewer sv(sim.grid, max_pixel_dim);
 
   // Solution loop.
-  // cout << WEIGHT(0) << endl;
-  // cout << WEIGHT(1) << endl;
-  // cout << WEIGHT(2) << endl;
-  // cout << WEIGHT(3) << endl;
-  // cout << WEIGHT(4) << endl;
-  // cout << WEIGHT(5) << endl;
-  // cout << WEIGHT(6) << endl;
-  // cout << WEIGHT(7) << endl;
-  // for (int i = 0; i < 8; ++i)
-  // {
-  //   cout << i << ", " << OPPOSITE(i) << endl;
-  // }
   cout << "Running " << sim.timesteps << " timesteps." << endl;
-  bool done = false;
+  //bool done = false;
+  int k = 0;
   while ( not sv.window.is_closed() )
   {
-    if (not done)
+    //if (not done)
     {
-      for (int k = 0; k < sim.timesteps; ++k)
+      // for (int k = 0; k < sim.timesteps; ++k)
       {
-        sv.window.wait();
-        if (sv.window.button() && sv.window.mouse_y()>=0)
+        // sv.window.wait();
+        // if (sv.window.button() && sv.window.mouse_y()>=0)
         {
           cout << "Performing iteration " << k << endl;
           sim.iterate();
           sv.draw_velocity_magnitude(sim.grid);
           sv.display();
+          ++k;
         }
-        else
-        {
-          --k;
-        }
+        // else
+        //{
+        //  --k;
+        //}
       }
-      done = true;
+      //done = true;
     }
   }
   return EXIT_SUCCESS;
