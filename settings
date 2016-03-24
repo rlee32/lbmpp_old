@@ -8,7 +8,7 @@ viscosity_physical 1.568e-3
 velocity_physical 1
 length_physical 1
 # Discrete parameters.
-dt_lattice 0.003
+dt_lattice 0.001
 buffer_viscosity_factor 0 # multiple of discrete viscosity
 # Solution run time control.
 timesteps 10000

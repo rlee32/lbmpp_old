@@ -77,15 +77,16 @@ void Simulator::read_settings(string filename)
 void Simulator::process_settings()
 {
   Re = length_physical * velocity_physical / viscosity_physical;
-  cout << "Reynolds number: " << Re << endl;
+  // cout << "Reynolds number: " << Re << endl;
   dt_physical = length_physical / velocity_physical;
   viscosity_lattice = dt_lattice / coarse_cell_size / coarse_cell_size / Re;
-  cout << "Lattice viscosity: " << viscosity_lattice << endl;
+  // cout << "Lattice viscosity: " << viscosity_lattice << endl;
   double nuc = buffer_viscosity_factor*viscosity_lattice; // counteracting viscosity.
   tau = 3.0 * (viscosity_lattice + nuc) + 0.5;
   velocity_lattice = dt_lattice / coarse_cell_size;
+  // cout << "Lattice velocity: " << velocity_lattice << endl;
   omega = 1.0 / tau;
-  cout << "Let there be grid! (creating coarse grid)" << endl;
+  // cout << "Let there be grid! (creating coarse grid)" << endl;
   grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
   tau, omega, viscosity_lattice, nuc, bc, bcv, velocity_lattice );
 }

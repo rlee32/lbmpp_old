@@ -21,9 +21,10 @@ int main(int argc, char ** argv)
   SolutionViewer sv(sim.grid, max_pixel_dim);
 
   // Solution loop.
-  cout << "Running " << sim.timesteps << " timesteps." << endl;
+  // cout << "Running " << sim.timesteps << " timesteps." << endl;
   //bool done = false;
   int k = 0;
+  int display_interval = 1000;
   while ( not sv.window.is_closed() )
   {
     //if (not done)
@@ -33,10 +34,14 @@ int main(int argc, char ** argv)
         // sv.window.wait();
         // if (sv.window.button() && sv.window.mouse_y()>=0)
         {
-          cout << "Performing iteration " << k << endl;
+          // cout << "Performing iteration " << k << endl;
           sim.iterate();
-          sv.draw_velocity_magnitude(sim.grid);
-          sv.display();
+          if ( k % display_interval == 0 )
+          {
+            sv.draw_velocity_magnitude(sim.grid);
+            sv.draw_status( k, sim.get_Re(), sim.get_viscosity_lattice() );
+            sv.display();
+          }
           ++k;
         }
         // else

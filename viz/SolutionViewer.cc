@@ -12,7 +12,7 @@ SolutionViewer::SolutionViewer(Grid& grid, int max_pixel_dim)
   pixels[1] = pixels_per_cell*grid.cell_count[1];
   CImg<unsigned char> image_(
     pixels[0], // x-resolution
-    pixels[1], // y-resolution
+    pixels[1]+TEXT_DISPLAY_DIM, // y-resolution
     1, // 1 z-layer (2D)
     3, // 3 channels (RGB)
     255); // default background color.
@@ -36,7 +36,7 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   const float black[] = {0,0,0};
   double min = grid.get_min_velocity_magnitude();
   double max = grid.get_max_velocity_magnitude();
-  cout << "Velocity magnitude min, max: " << min << ", " << max << endl;
+  // cout << "Velocity magnitude min, max: " << min << ", " << max << endl;
   for (int i = 0; i < grid.cell_count[0]; ++i)
   {
     for (int j = 0; j < grid.cell_count[1]; ++j)
@@ -58,6 +58,36 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   {
     image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
   }
+
+}
+
+void SolutionViewer::draw_status( int iteration, double Re, 
+  double lattice_viscosity )
+{
+  const float white[] = { 255, 255, 255 };
+  image.draw_rectangle(
+    1, // upper left corner
+    pixels[1]+1,
+    pixels[0], // lower right corner
+    pixels[1]+TEXT_DISPLAY_DIM,
+    white );
+  string text = "Iteration: " + to_string(iteration);
+  draw_text_line( text, 0 );
+  text = "Reynolds number: " + to_string(Re);
+  draw_text_line( text, 1 );
+  text = "Lattice viscosity: " + to_string(lattice_viscosity);
+  draw_text_line( text, 2 );
+}
+
+void SolutionViewer::draw_text_line( string text, int line )
+{
+  unsigned char black[] = { 0, 0, 0 };
+  int pixel_increment = TEXT_HEIGHT + TEXT_PADDING;
+  image.draw_text(
+    1 + TEXT_PADDING, // upper left corner
+    1 + TEXT_PADDING + pixels[1] + pixel_increment * line, 
+    text.c_str(), // string to display
+    black ); // foreground color
 }
 
 void SolutionViewer::display()

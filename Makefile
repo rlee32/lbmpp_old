@@ -2,7 +2,7 @@ CXX = c++
 CXX_FLAGS = -std=c++11
 OPT_FLAGS = -O3 
 # OPT_FLAGS += -ffast-math -fopenmp
-DEBUG_FLAGS = -g -Wall -pedantic
+DEBUG_FLAGS = -g -Wall -pedantic -Wno-strict-overflow
 LD_FLAGS = 
 
 ifeq ($(NOVIZ),1)

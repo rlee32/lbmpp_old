@@ -17,6 +17,8 @@ public:
   void iterate(); // performs one time step advancement.
   Grid grid;
   int timesteps;
+  double get_Re(){ return Re; }
+  double get_viscosity_lattice(){ return viscosity_lattice; }
 private:
   // Run time control.
   bool refinement; // If true, enables solution-adaptive refinement.
