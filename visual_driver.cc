@@ -52,5 +52,7 @@ int main(int argc, char ** argv)
       //done = true;
     }
   }
+  sim.output_coarse_field("velocity_field.dat");
+
   return EXIT_SUCCESS;
 }
