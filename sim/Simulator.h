@@ -19,6 +19,7 @@ public:
   int timesteps;
   double get_Re(){ return Re; }
   double get_viscosity_lattice(){ return viscosity_lattice; }
+  void output_coarse_field(std::string output_file_name);
 private:
   // Run time control.
   bool refinement; // If true, enables solution-adaptive refinement.

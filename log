@@ -1,0 +1,2 @@
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/Grid.cc -o grid/Grid.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow visual_driver.o sim/Simulator.o cell/Cell.o grid/Grid.o viz/SolutionViewer.o -o lbmpp  -L/usr/X11R6/lib -lm -lpthread -lX11

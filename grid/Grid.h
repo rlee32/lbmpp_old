@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <omp.h>
 
 #include "../cell/Cell.h"
 

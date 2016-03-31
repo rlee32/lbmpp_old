@@ -1,7 +1,7 @@
 CXX = c++
-CXX_FLAGS = -std=c++11
+CXX_FLAGS = -std=c++11 -fopenmp
 OPT_FLAGS = -O3 
-# OPT_FLAGS += -ffast-math -fopenmp
+# OPT_FLAGS += -fopenmp -ffast-math
 DEBUG_FLAGS = -g -Wall -pedantic -Wno-strict-overflow
 LD_FLAGS = 
 

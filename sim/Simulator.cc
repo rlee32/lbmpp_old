@@ -99,3 +99,19 @@ void Simulator::iterate()
 // void Simulator::run()
 // {
 // }
+
+void Simulator::output_coarse_field(string output_file_name)
+{
+  ofstream output_file;
+  output_file.open(output_file_name);
+
+  vector<Cell>& g = grid.grid_levels[0];
+
+  output_file << grid.cell_count[0] << "\t" << grid.cell_count[1] << endl;
+
+  vector<Cell>::iterator it = g.begin();
+  for (; it != g.end(); ++it)
+  {
+    output_file << it->state.u << "\t" << it->state.v << endl;
+  }
+}

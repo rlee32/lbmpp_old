@@ -35,10 +35,11 @@ void Grid::iterate(int level)
 
   // 
   reconstruct_macro(level);
-  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 0; i < cells.size(); ++i)
   {
-    it->collide();
-    it->explode();
+    cells[i].collide();
+    cells[i].explode();
   }
   // enforce_bc();
   reconstruct_macro(level);
@@ -52,26 +53,26 @@ void Grid::iterate(int level)
 
 void Grid::stream_parallel(int level)
 {
-  vector<Cell>& cells = grid_levels[level];
-  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 0; i < grid_levels[level].size(); ++i)
   {
-    it->stream_parallel();
+    grid_levels[level][i].stream_parallel();
   }
 }
 void Grid::bufferize_parallel(int level)
 {
-  vector<Cell>& cells = grid_levels[level];
-  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 0; i < grid_levels[level].size(); ++i)
   {
-    it->bufferize_parallel();
+    grid_levels[level][i].bufferize_parallel();
   }
 }
 void Grid::reconstruct_macro(int level)
 {
-  vector<Cell>& cells = grid_levels[level];
-  for(vector<Cell>::iterator it = cells.begin(); it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 0; i < grid_levels[level].size(); ++i)
   {
-    it->reconstruct_macro();
+    grid_levels[level][i].reconstruct_macro();
   }
 }
 
@@ -88,9 +89,10 @@ double Grid::get_max_velocity_magnitude()
 {
   vector<Cell>& cells = grid_levels[0];
   double max = cells[0].get_velocity_magnitude();
-  for(vector<Cell>::iterator it = cells.begin()+1; it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 1; i < cells.size(); ++i)
   {
-    double test = it->get_velocity_magnitude();
+    double test = cells[i].get_velocity_magnitude();
     if (test > max) max = test;
   }
   return max;
@@ -100,9 +102,10 @@ double Grid::get_min_velocity_magnitude()
 {
   vector<Cell>& cells = grid_levels[0];
   double min = cells[0].get_velocity_magnitude();
-  for(vector<Cell>::iterator it = cells.begin()+1; it != cells.end(); ++it)
+  #pragma omp parallel for
+  for(uint i = 1; i < cells.size(); ++i)
   {
-    double test = it->get_velocity_magnitude();
+    double test = cells[i].get_velocity_magnitude();
     if (test < min) min = test;
   }
   return min;
@@ -111,6 +114,7 @@ double Grid::get_min_velocity_magnitude()
 void Grid::assign_coarse_neighbours()
 {
   vector<Cell>& cells = grid_levels[0];
+  #pragma omp parallel for
   for (int i = 0; i < cell_count[0]; ++i)
   {
     for (int j = 0; j < cell_count[1]; ++j)
