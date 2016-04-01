@@ -100,18 +100,23 @@ void Simulator::iterate()
 // {
 // }
 
-void Simulator::output_coarse_field(string output_file_name)
+void Simulator::output_coarse_field(string output_suffix)
 {
-  ofstream output_file;
-  output_file.open(output_file_name);
-
+  ofstream u, v;
   vector<Cell>& g = grid.grid_levels[0];
 
-  output_file << grid.cell_count[0] << "\t" << grid.cell_count[1] << endl;
-
-  vector<Cell>::iterator it = g.begin();
-  for (; it != g.end(); ++it)
+  u.open("u_"+output_suffix);
+  v.open("v_"+output_suffix);
+  for (int j = 0; j < grid.cell_count[1]; ++j)
   {
-    output_file << it->state.u << "\t" << it->state.v << endl;
+    for (int i = 0; i < grid.cell_count[0]; ++i)
+    {
+      u << g[i+j*grid.cell_count[0]].state.u << "\t";
+      v << g[i+j*grid.cell_count[0]].state.v << "\t";
+    }
+    u << endl;
+    v << endl;
   }
+  u.close();
+  v.close();
 }
