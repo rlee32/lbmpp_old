@@ -4,14 +4,10 @@
 #include <iostream>
 
 #include "CImg.h"
+#include "../sim/Simulator.h"
 #include "../grid/Grid.h"
 
 using namespace cimg_library;
-
-// Text display settings.
-#define TEXT_DISPLAY_DIM 50
-#define TEXT_HEIGHT 10
-#define TEXT_PADDING 3
 
 class SolutionViewer
 {
@@ -20,10 +16,12 @@ public:
   void test_draw();
   void display();
   void draw_velocity_magnitude(Grid& grid);
-  void draw_status( int iteration, double Re, double lattice_viscosity );
+  void draw_status( int iteration, Simulator& sim, double elapsed_time );
   CImgDisplay window;
-
 private:
+  static const uint TextDisplayDim = 70;
+  static const uint TextHeight = 10;
+  static const uint TextPadding = 3;
   int pixels[2]; // The pixel dimension of the windows.
   int pixels_per_cell; // The number of pixels per coarsest cell.
   CImg<unsigned char> image;

@@ -5,9 +5,9 @@ using namespace std;
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0, 
   double tau, double omega, double nu, double nuc,
-  char bc_[4], double bcv_[4], double lattice_velocity_)
+  char bc_[4], double bcv_[4], double uc_)
 {
-  lattice_velocity = lattice_velocity_;
+  uc = uc_;
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
@@ -78,10 +78,10 @@ void Grid::reconstruct_macro(int level)
 
 void Grid::enforce_bc()
 {
-  enforce_bc_side('b',bc[0],lattice_velocity);
-  enforce_bc_side('r',bc[1],lattice_velocity);
-  enforce_bc_side('t',bc[2],lattice_velocity);
-  enforce_bc_side('l',bc[3],lattice_velocity);
+  enforce_bc_side('b',bc[0],bcv[0]*uc);
+  enforce_bc_side('r',bc[1],bcv[1]*uc);
+  enforce_bc_side('t',bc[2],bcv[2]*uc);
+  enforce_bc_side('l',bc[3],bcv[3]*uc);
 }
 
 // Currently only works for coarsest level.

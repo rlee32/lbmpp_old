@@ -18,29 +18,24 @@ public:
   Grid grid;
   int timesteps;
   double get_Re(){ return Re; }
-  double get_viscosity_lattice(){ return viscosity_lattice; }
+  double get_nu(){ return nu; }
+  double get_tau(){ return tau; }
   void output_coarse_field(std::string output_file_name);
 private:
   // Run time control.
   bool refinement; // If true, enables solution-adaptive refinement.
 
-  // Physical parameters.
-  double viscosity_physical;
-  double velocity_physical;
-  double length_physical; 
-  double dt_physical; // physical time scale derived from length and velocity.
-
   // Non-dimensional parameters.
   double Re; // Reynolds number.
 
   // Discrete parameters (for the coarsest cells!).
-  double dt_lattice; // discrete, Lattice Boltzmann time step.
+  double uc; // lattice velocity.
+  double dt; // discrete, Lattice Boltzmann time step.
   double coarse_cell_size; // dimension of the square coarsest cell.
-  double viscosity_lattice; // lattice viscosity of the coarsest cells.
+  double nu; // lattice viscosity of the coarsest cells.
+  double nuc; // For the viscosity-counteracting approach. The buffer viscosity.
   double tau; // relaxation time of the coarsest cells.
   double omega; // relaxation frequency of the coarsest cells.
-  double velocity_lattice; // lattice velocity of the coarsest cell.
-  double buffer_viscosity_factor; // For the viscosity-counteracting approach. The multiple of the discrete viscosity to add as a buffer viscosity.
 
   // Grid temporary variables.
   int cell_count[2]; // coarse cells in the x and y direction.

@@ -12,7 +12,7 @@ SolutionViewer::SolutionViewer(Grid& grid, int max_pixel_dim)
   pixels[1] = pixels_per_cell*grid.cell_count[1];
   CImg<unsigned char> image_(
     pixels[0], // x-resolution
-    pixels[1]+TEXT_DISPLAY_DIM, // y-resolution
+    pixels[1]+TextDisplayDim, // y-resolution
     1, // 1 z-layer (2D)
     3, // 3 channels (RGB)
     255); // default background color.
@@ -61,31 +61,37 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
 
 }
 
-void SolutionViewer::draw_status( int iteration, double Re, 
-  double lattice_viscosity )
+void SolutionViewer::draw_status( int iteration, Simulator& sim, 
+  double elapsed_time )
 {
   const float white[] = { 255, 255, 255 };
   image.draw_rectangle(
     1, // upper left corner
     pixels[1]+1,
     pixels[0], // lower right corner
-    pixels[1]+TEXT_DISPLAY_DIM,
+    pixels[1]+TextDisplayDim,
     white );
-  string text = "Iteration: " + to_string(iteration);
-  draw_text_line( text, 0 );
-  text = "Reynolds number: " + to_string(Re);
-  draw_text_line( text, 1 );
-  text = "Lattice viscosity: " + to_string(lattice_viscosity);
-  draw_text_line( text, 2 );
+  string text = "";
+  uint line = 0;
+  text = "Iteration: " + to_string(iteration);
+  draw_text_line( text, line++ );
+  text = "Elapsed time: " + to_string(elapsed_time) + " seconds";
+  draw_text_line( text, line++ );
+  text = "Reynolds number: " + to_string(sim.get_Re());
+  draw_text_line( text, line++ );
+  text = "Viscosity: " + to_string(sim.get_nu());
+  draw_text_line( text, line++ );
+  text = "Relaxation time: " + to_string(sim.get_tau());
+  draw_text_line( text, line++ );
 }
 
 void SolutionViewer::draw_text_line( string text, int line )
 {
   unsigned char black[] = { 0, 0, 0 };
-  int pixel_increment = TEXT_HEIGHT + TEXT_PADDING;
+  int pixel_increment = TextHeight + TextPadding;
   image.draw_text(
-    1 + TEXT_PADDING, // upper left corner
-    1 + TEXT_PADDING + pixels[1] + pixel_increment * line, 
+    1 + TextPadding, // upper left corner
+    1 + TextPadding + pixels[1] + pixel_increment * line, 
     text.c_str(), // string to display
     black ); // foreground color
 }

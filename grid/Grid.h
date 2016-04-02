@@ -19,12 +19,12 @@ public:
   void initialize(int cell_count_x, int cell_count_y, 
     double rho0, double u0, double v0, 
     double tau, double omega, double nu, double nuc,
-    char bc_[4], double bcv_[4], double lattice_velocity);
+    char bc_[4], double bcv_[4], double uc_);
   void iterate(int level);
   double get_max_velocity_magnitude(); // Mainly for post-processing purposes.
   double get_min_velocity_magnitude(); // Mainly for post-processing purposes.
 private:
-  double lattice_velocity = 0;
+  double uc = 0; // lattice velocity.
   char bc[4] = {'w', 'w', 'w', 'w'}; // Boundary conditions for bottom, right, top, left, respectively.
   double bcv[4] = {0, 0, 0, 0}; // Boundary condition values for bottom, right, top, left, respectively.
   void assign_coarse_neighbours();

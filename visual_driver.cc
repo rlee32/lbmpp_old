@@ -7,6 +7,7 @@
 #include "viz/CImg.h"
 #include "viz/SolutionViewer.h"
 #include "sim/Simulator.h"
+#include "Timer.h"
 
 using namespace std;
 using namespace cimg_library;
@@ -20,11 +21,15 @@ int main(int argc, char ** argv)
   int max_pixel_dim = (argc < 2) ? 800 : atoi(argv[1]);
   SolutionViewer sv(sim.grid, max_pixel_dim);
 
+  // timer
+  Timer timer;
+
   // Solution loop.
   // cout << "Running " << sim.timesteps << " timesteps." << endl;
-  //bool done = false;
+  // bool done = false;
   int k = 0;
   int display_interval = 1000;
+  timer.start();
   while ( not sv.window.is_closed() )
   {
     //if (not done)
@@ -39,7 +44,7 @@ int main(int argc, char ** argv)
           if ( k % display_interval == 0 )
           {
             sv.draw_velocity_magnitude(sim.grid);
-            sv.draw_status( k, sim.get_Re(), sim.get_viscosity_lattice() );
+            sv.draw_status( k, sim, timer.stop() );
             sv.display();
           }
           ++k;
