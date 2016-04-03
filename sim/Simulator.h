@@ -17,9 +17,10 @@ public:
   void iterate(); // performs one time step advancement.
   Grid grid;
   int timesteps;
-  double get_Re(){ return Re; }
-  double get_nu(){ return nu; }
-  double get_tau(){ return tau; }
+  const double get_Re(){ return Re; }
+  const double get_nu(){ return nu; }
+  const double get_tau(){ return tau; }
+  const double get_uc(){ return uc; }
   void output_coarse_field(std::string output_file_name);
 private:
   // Run time control.

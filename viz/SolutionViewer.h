@@ -19,9 +19,10 @@ public:
   void draw_status( int iteration, Simulator& sim, double elapsed_time );
   CImgDisplay window;
 private:
-  static const uint TextDisplayDim = 70;
   static const uint TextHeight = 10;
   static const uint TextPadding = 3;
+  static const uint TextDisplayDim = 6*( TextHeight + TextPadding ) 
+    + TextPadding;
   int pixels[2]; // The pixel dimension of the windows.
   int pixels_per_cell; // The number of pixels per coarsest cell.
   CImg<unsigned char> image;

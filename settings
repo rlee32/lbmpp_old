@@ -1,10 +1,10 @@
 # Use hashtag for comments.
 # Grid definition.
 domain_dimension 1 # corresponds to magnitude of x range. 
-coarse_cells 100 100 # cells in x, y direction.
+coarse_cells 150 150 # cells in x, y direction.
 Re 100 # Reynolds number
 # Discrete parameters.
-dt 0.00005
+dt 0.00008
 nucf 0 # multiple of viscosity to serve as a buffer viscosity.
 # Solution run time control.
 timesteps 10000

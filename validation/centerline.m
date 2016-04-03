@@ -1,6 +1,6 @@
 clear; close all; clc;
 
-U = 0.005;
+U = 0.003 * 4;
 
 u = dlmread('../u_velocity_field.dat');
 v = dlmread('../v_velocity_field.dat');

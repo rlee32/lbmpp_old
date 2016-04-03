@@ -83,6 +83,8 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   draw_text_line( text, line++ );
   text = "Relaxation time: " + to_string(sim.get_tau());
   draw_text_line( text, line++ );
+  text = "Lattice Velocity: " + to_string(sim.get_uc());
+  draw_text_line( text, line++ );
 }
 
 void SolutionViewer::draw_text_line( string text, int line )
