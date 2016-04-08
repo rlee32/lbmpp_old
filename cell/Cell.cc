@@ -135,7 +135,7 @@ void Cell::bufferize_parallel()
   for(int i = 0; i < 8; ++i) state.f[i] = numerics.b[i];
 }
 
-double Cell::get_velocity_magnitude()
+double Cell::get_velocity_magnitude() const
 {
   return sqrt(state.u*state.u + state.v*state.v);
 }

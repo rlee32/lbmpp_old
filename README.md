@@ -2,6 +2,11 @@ A C++ LBM code.
 
 Focus is on incompressible, isothermal high-Re flows. The goal is to simulate multi-element airfoils.
 
+## Assumptions
+
+1. Incompressible and isothermal fluid.  
+2. Coarsest grid and time steps are equal to 1.  
+
 ## Development Notes / TODO
 
 1. Make tables for each grid level for quantities that are the same within a grid level.  

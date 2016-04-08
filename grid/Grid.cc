@@ -2,22 +2,26 @@
 
 using namespace std;
 
+// void Grid::initialize(int cell_count_x, int cell_count_y, 
+//   double rho0, double u0, double v0, 
+//   double tau, double omega, double nu, double nuc,
+//   char bc_[4], double bcv_[4], double uc_)
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0, 
   double tau, double omega, double nu, double nuc,
-  char bc_[4], double bcv_[4], double uc_)
+  char bc_[4], double U_)
 {
-  uc = uc_;
+  U = U_;
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
-  Cell default_cell(rho0,u0,v0,
+  Cell default_cell( rho0, u0, v0,
     tau, omega, nu, nuc, 
-    grid_levels);
+    grid_levels );
   cells.resize(cell_count_x*cell_count_y, default_cell);
   assign_coarse_neighbours();
-  for (int i = 0; i < 4; ++i) bc[i] = bc_[i];
-  for (int i = 0; i < 4; ++i) bcv[i] = bcv_[i];
+  for (size_t i = 0; i < 4; ++i) bc[i] = bc_[i];
+  // for (size_t i = 0; i < 4; ++i) bcv[i] = bcv_[i];
   // cout << bcv[0] << endl;
   // cout << bcv[1] << endl;
   // cout << bcv[2] << endl;
@@ -25,7 +29,7 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
 }
 
 
-void Grid::iterate(int level)
+void Grid::iterate(size_t level)
 {
   // Check to see if this level needs to iterate.
   if (level >= MAX_LEVELS) return;
@@ -78,16 +82,16 @@ void Grid::reconstruct_macro(int level)
 
 void Grid::enforce_bc()
 {
-  enforce_bc_side('b',bc[0],bcv[0]*uc);
-  enforce_bc_side('r',bc[1],bcv[1]*uc);
-  enforce_bc_side('t',bc[2],bcv[2]*uc);
-  enforce_bc_side('l',bc[3],bcv[3]*uc);
+  enforce_bc_side('b',bc[0], U);
+  enforce_bc_side('r',bc[1], U);
+  enforce_bc_side('t',bc[2], U);
+  enforce_bc_side('l',bc[3], U);
 }
 
 // Currently only works for coarsest level.
-double Grid::get_max_velocity_magnitude()
+double Grid::get_max_velocity_magnitude() const
 {
-  vector<Cell>& cells = grid_levels[0];
+  const vector<Cell>& cells = grid_levels[0];
   double max = cells[0].get_velocity_magnitude();
   #pragma omp parallel for
   for(uint i = 1; i < cells.size(); ++i)
@@ -98,9 +102,9 @@ double Grid::get_max_velocity_magnitude()
   return max;
 }
 // Currently only works for coarsest level.
-double Grid::get_min_velocity_magnitude()
+double Grid::get_min_velocity_magnitude() const
 {
-  vector<Cell>& cells = grid_levels[0];
+  const vector<Cell>& cells = grid_levels[0];
   double min = cells[0].get_velocity_magnitude();
   #pragma omp parallel for
   for(uint i = 1; i < cells.size(); ++i)
@@ -115,9 +119,9 @@ void Grid::assign_coarse_neighbours()
 {
   vector<Cell>& cells = grid_levels[0];
   #pragma omp parallel for
-  for (int i = 0; i < cell_count[0]; ++i)
+  for (size_t i = 0; i < cell_count[0]; ++i)
   {
-    for (int j = 0; j < cell_count[1]; ++j)
+    for (size_t j = 0; j < cell_count[1]; ++j)
     {
       int ii = i + j*cell_count[0];
       bool right = i == cell_count[0]-1;
@@ -274,5 +278,15 @@ void Grid::enforce_bc_side(int side, char type, double value)
       break;
     default:
       break;
+  }
+}
+
+void Grid::calculate_scale_factors()
+{
+  double mult = 1;
+  for (size_t i = 0; i < MAX_LEVELS; ++i)
+  {
+    scale_factors[i] = 1.0 / mult;
+    mult *= 2;
   }
 }

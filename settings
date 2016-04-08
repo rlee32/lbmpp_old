@@ -1,22 +1,33 @@
 # Use hashtag for comments.
+
 # Grid definition.
-domain_dimension 1 # corresponds to magnitude of x range. 
 coarse_cells 150 150 # cells in x, y direction.
+
+# These are used to compute the viscosity.
+M 0.1 # Characteristic Mach number. This value is also used for BC.
+L 150 # Characteristic Length. Must ensure consistency with cell count. 
 Re 100 # Reynolds number
+
 # Discrete parameters.
-dt 0.00008
 nucf 0 # multiple of viscosity to serve as a buffer viscosity.
+
 # Solution run time control.
 timesteps 10000
-refinement 0 # 1 = true, 0 = false
-# Initial values.
+refinement 0 # solution-adaptive refinement: 1 = true, 0 = false
+
+# Initial macro-scale variable values.
 rho0 1
 u0 0
 v0 0
+
 # boundary conditions
-bottom w 0
-right w 0
-top m 1
-left w 0
+# m: moving wall (value is M)
+# w: stationary wall
+# i: inlet (value is M)
+# o: zero-gradient distribution outlet
+bottom w
+right w
+top m
+left w
 
 

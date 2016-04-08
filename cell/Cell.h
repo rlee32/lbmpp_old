@@ -10,8 +10,8 @@
 #define OPPOSITE(index) (((index)<4)?((index)+4):((index)-4))
 #define WEIGHT(index) (((index)%2==0)?((1.0/9.0)):((1.0/36.0)))
 #define FEQ(W,RHO,UVC,MSQ) ((W)*(RHO)*( 1 + 3.0*(UVC) + 4.5*(UVC)*(UVC) - 1.5*(MSQ) ))
-const int CX[8] = {1,1,0,-1,-1,-1,0,1};
-const int CY[8] = {0,1,1,1,0,-1,-1,-1};
+const static int CX[8] = {1,1,0,-1,-1,-1,0,1};
+const static int CY[8] = {0,1,1,1,0,-1,-1,-1};
 
 // Indexing of distribution functions and neighbours correspond to the same direction. 
 // Index goes from 0 to 7 in this order (starting from E, go CCW): E, NE, N, NW, W,SW, S, SE.
@@ -24,7 +24,7 @@ public:
     double tau, double omega, double nu, double nuc, 
     std::vector<Cell>* grid_levels); // Meant to make coarsest cells.
   Cell(Cell* parent); // meant to be called in a (single-level) refine operation.
-  double get_velocity_magnitude();
+  double get_velocity_magnitude() const;
   void coalesce();
   void reconstruct_macro();
   void collide();
@@ -34,16 +34,16 @@ public:
   struct
   {
     double fc = 1; // center distribution.
-    double f[8] = {}; // advected distributions ( to index-correspond to the neighbours ).
+    double f[8] = { 0 }; // advected distributions ( to index-correspond to the neighbours ).
     double rho = 1;
     double u = 0;
     double v = 0;
   } state;
   struct
   {
-    int level = 0; // tree level. default coarse cell.
-    double dim = 0; // dimension of this cell. used for adaptive-gridding.
-    std::vector<Cell>* grid_levels;
+    int level = 0; // tree level. 0: coarsest cell.
+    // double dim = 0; // dimension of this cell. used for adaptive-gridding.
+    std::vector<Cell>* grid_levels = nullptr;
     Cell* parent = nullptr;
     Cell* children[4] = { nullptr };
     Cell* neighbours[8] = { nullptr }; // cell neighbours for every lattice direction (have same level)

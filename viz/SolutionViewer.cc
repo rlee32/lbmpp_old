@@ -37,9 +37,9 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   double min = grid.get_min_velocity_magnitude();
   double max = grid.get_max_velocity_magnitude();
   // cout << "Velocity magnitude min, max: " << min << ", " << max << endl;
-  for (int i = 0; i < grid.cell_count[0]; ++i)
+  for (size_t i = 0; i < grid.cell_count[0]; ++i)
   {
-    for (int j = 0; j < grid.cell_count[1]; ++j)
+    for (size_t j = 0; j < grid.cell_count[1]; ++j)
     {    
       // Get color
       float rgb[3];
@@ -79,12 +79,12 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   draw_text_line( text, line++ );
   text = "Reynolds number: " + to_string(sim.get_Re());
   draw_text_line( text, line++ );
-  text = "Viscosity: " + to_string(sim.get_nu());
-  draw_text_line( text, line++ );
+  // text = "Viscosity: " + to_string(sim.get_nu());
+  // draw_text_line( text, line++ );
   text = "Relaxation time: " + to_string(sim.get_tau());
   draw_text_line( text, line++ );
-  text = "Lattice Velocity: " + to_string(sim.get_uc());
-  draw_text_line( text, line++ );
+  // text = "Lattice Velocity: " + to_string(sim.get_uc());
+  // draw_text_line( text, line++ );
 }
 
 void SolutionViewer::draw_text_line( string text, int line )
