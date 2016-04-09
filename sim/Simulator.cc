@@ -10,7 +10,6 @@ Simulator::Simulator(string filename)
 void Simulator::read_settings(string filename)
 {
   double nucf = 0;
-  double M = 0;
   double L = 0;
 
   // Let's begin to read settings.
@@ -67,8 +66,6 @@ void Simulator::read_settings(string filename)
     U = M / sqrt(3);
     nu = U * L / Re;
     nuc = nucf*nu; // counteracting viscosity.
-    // cs2 = uc*uc / 3; // lattice speed squared.
-    // tau = (nu + nuc) / cs2 + dt / 2.0;
     tau = 3 * (nu + nuc) + 0.5;
     omega = 1.0 / tau;
     // grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
@@ -103,3 +100,4 @@ void Simulator::output_coarse_field(string output_suffix)
   u.close();
   v.close();
 }
+

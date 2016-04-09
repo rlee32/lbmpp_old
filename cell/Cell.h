@@ -12,6 +12,14 @@
 #define FEQ(W,RHO,UVC,MSQ) ((W)*(RHO)*( 1 + 3.0*(UVC) + 4.5*(UVC)*(UVC) - 1.5*(MSQ) ))
 const static int CX[8] = {1,1,0,-1,-1,-1,0,1};
 const static int CY[8] = {0,1,1,1,0,-1,-1,-1};
+const static double W_orth = 1.0/9.0;
+const static double W_diag = 1.0/36.0;
+const static double W[8] = { 
+  W_orth, W_diag, 
+  W_orth, W_diag, 
+  W_orth, W_diag, 
+  W_orth, W_diag
+}; 
 
 // Indexing of distribution functions and neighbours correspond to the same direction. 
 // Index goes from 0 to 7 in this order (starting from E, go CCW): E, NE, N, NW, W,SW, S, SE.

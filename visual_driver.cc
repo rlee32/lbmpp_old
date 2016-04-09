@@ -30,7 +30,7 @@ int main(int argc, char ** argv)
   int k = 0;
   int display_interval = 1000;
   timer.start();
-  while ( not sv.window.is_closed() )
+  while ( not sv.window.is_closed() and k <= sim.get_timesteps() )
   {
     //if (not done)
     {
@@ -57,7 +57,17 @@ int main(int argc, char ** argv)
       //done = true;
     }
   }
-  sim.output_coarse_field("velocity_field.dat");
+  
+  string grid_string = to_string( sim.get_cell_count_0() );
+  string mach_string = to_string( (size_t)(sim.get_M()*1000.0) );
+  string timesteps_string = to_string( (size_t)(sim.get_timesteps()/1000) );
+  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string;
+  
+  sim.output_coarse_field( case_name+".dat" );
+  sv.save_image( "velocity_"+case_name+".png" );
+  
+  cout << "Simulation finished!" << endl;
+  std::cin.ignore();
 
   return EXIT_SUCCESS;
 }

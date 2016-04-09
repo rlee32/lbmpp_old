@@ -16,9 +16,11 @@ public:
   Simulator(std::string filename);
   void iterate(); // performs one time step advancement.
   Grid grid;
+  const std::size_t get_cell_count_0() const { return cell_count[0]; }
   const double get_Re() const { return Re; }
   const double get_nu() const { return nu; }
   const double get_tau() const { return tau; }
+  const double get_M() const { return M; }
   const double get_U() const { return U; }
   const double get_timesteps() const { return timesteps; }
   void output_coarse_field(std::string output_file_name);
@@ -30,6 +32,7 @@ private:
   double Re = 0; // Reynolds number.
 
   // Discrete parameters (for the coarsest cells!).
+  double M = 0; // Mach number for characteristic velocity.
   double U = 0; // characteristic velocity, used for velocity BC values.
   double nu = 0; // lattice viscosity of the coarsest cells.
   double nuc = 0; // For the viscosity-counteracting approach. The buffer viscosity.
@@ -37,7 +40,7 @@ private:
   double omega = 0; // relaxation frequency of the coarsest cells.
 
   // Grid temporary variables.
-  int cell_count[2] = { 0, 0 }; // coarse cells in the x and y direction.
+  std::size_t cell_count[2] = { 0, 0 }; // coarse cells in the x and y direction.
   // Initial values.
   // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
   double rho0 = 0, u0 = 0, v0 = 0; // initial density and velocity.
@@ -45,7 +48,7 @@ private:
   char bc[4] = { 'w', 'w', 'w', 'w' }; // bottom, right, top, left
   // double bcv[4] = {  }; // values; bottom, right, top, left
 
-  std::size_t timesteps;
+  std::size_t timesteps = 0;
 
   void read_settings(std::string filename);
   void process_settings();

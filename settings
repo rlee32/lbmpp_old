@@ -1,18 +1,18 @@
 # Use hashtag for comments.
 
 # Grid definition.
-coarse_cells 150 150 # cells in x, y direction.
+coarse_cells 128 128 # cells in x, y direction.
 
 # These are used to compute the viscosity.
-M 0.1 # Characteristic Mach number. This value is also used for BC.
-L 150 # Characteristic Length. Must ensure consistency with cell count. 
+M 0.25 # Characteristic Mach number. This value is also used for BC.
+L 128 # Characteristic Length. Must ensure consistency with cell count. 
 Re 100 # Reynolds number
 
 # Discrete parameters.
 nucf 0 # multiple of viscosity to serve as a buffer viscosity.
 
 # Solution run time control.
-timesteps 10000
+timesteps 250000 # maximum number of timesteps to run.
 refinement 0 # solution-adaptive refinement: 1 = true, 0 = false
 
 # Initial macro-scale variable values.

@@ -26,6 +26,7 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
   // cout << bcv[1] << endl;
   // cout << bcv[2] << endl;
   // cout << bcv[3] << endl;
+  calculate_scale_factors();
 }
 
 
