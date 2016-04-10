@@ -23,6 +23,7 @@ public:
   const double get_M() const { return M; }
   const double get_U() const { return U; }
   const double get_timesteps() const { return timesteps; }
+  const double get_relax_model() const { return relax_model; }
   void output_coarse_field(std::string output_file_name);
 private:
   // Run time control.
@@ -49,6 +50,8 @@ private:
   // double bcv[4] = {  }; // values; bottom, right, top, left
 
   std::size_t timesteps = 0;
+
+  std::size_t relax_model = 1;
 
   void read_settings(std::string filename);
   void process_settings();

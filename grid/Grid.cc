@@ -9,9 +9,10 @@ using namespace std;
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0, 
   double tau, double omega, double nu, double nuc,
-  char bc_[4], double U_)
+  char bc_[4], double U_, size_t relax_model_)
 {
   U = U_;
+  relax_model = relax_model_;
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
@@ -43,7 +44,7 @@ void Grid::iterate(size_t level)
   #pragma omp parallel for
   for(uint i = 0; i < cells.size(); ++i)
   {
-    cells[i].collide();
+    cells[i].collide(relax_model);
     cells[i].explode();
   }
   // enforce_bc();

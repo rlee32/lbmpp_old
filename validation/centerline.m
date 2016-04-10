@@ -1,9 +1,9 @@
 clear; close all; clc;
 
-U = 0.005 / sqrt(3);
+U = 0.006 / sqrt(3);
 
-u = dlmread('../results/u_128_5_250.dat');
-v = dlmread('../results/v_128_5_250.dat');
+u = dlmread('../results/u_128_6_250_3.dat');
+v = dlmread('../results/v_128_6_250_3.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;

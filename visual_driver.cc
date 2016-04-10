@@ -61,7 +61,8 @@ int main(int argc, char ** argv)
   string grid_string = to_string( sim.get_cell_count_0() );
   string mach_string = to_string( (size_t)(sim.get_M()*1000.0) );
   string timesteps_string = to_string( (size_t)(sim.get_timesteps()/1000) );
-  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string;
+  string relax_model_string = to_string( (size_t)(sim.get_relax_model()) );
+  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"+relax_model_string;
   
   sim.output_coarse_field( case_name+".dat" );
   sv.save_image( "velocity_"+case_name+".png" );

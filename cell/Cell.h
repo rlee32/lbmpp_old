@@ -35,10 +35,11 @@ public:
   double get_velocity_magnitude() const;
   void coalesce();
   void reconstruct_macro();
-  void collide();
+  void collide(size_t relax_model);
   void explode();
   void stream_parallel();
   void bufferize_parallel();
+  void test_mrt();
   struct
   {
     double fc = 1; // center distribution.
@@ -46,6 +47,10 @@ public:
     double rho = 1;
     double u = 0;
     double v = 0;
+    // Strain rate tensor values.
+    double s11 = 0;
+    double s12 = 0;
+    double s22 = 0;
   } state;
   struct
   {
@@ -71,4 +76,14 @@ public:
   } numerics;
 private:
   void recompute_relaxation();
+  // SRT
+  inline double next_fc_srt(double msq) const;
+  inline double next_fi_srt(std::size_t i, double msq) const;
+  // MRT
+  inline double premultiply_M(size_t i) const;
+  inline double premultiply_MinvS( size_t i, const double m[9] ) const;
+  inline void compute_moment( double m[9] ) const;
+  void next_f_mrt( const double m[9] );
+  inline double next_fc_mrt( const double m[9] ) const;
+  inline double next_fi_mrt( size_t i, const double m[9] ) const;
 };
