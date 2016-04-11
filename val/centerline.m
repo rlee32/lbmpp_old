@@ -2,12 +2,12 @@ clear; close all; clc;
 
 U = 0.006 / sqrt(3);
 
-% H = 1.5;
-% u = dlmread('../results/u_128x192_6_250_1_0_1.dat');
-% v = dlmread('../results/v_128x192_6_250_1_0_1.dat');
-H = 1;
-u = dlmread('../results/u_128_6_250_3_1_10.dat');
-v = dlmread('../results/v_128_6_250_3_1_10.dat');
+H = 1.5;
+u = dlmread('../results/u_128x192_6_250_1_0_1.dat');
+v = dlmread('../results/v_128x192_6_250_1_0_1.dat');
+% H = 1;
+% u = dlmread('../results/u_128_6_250_3_1_10.dat');
+% v = dlmread('../results/v_128_6_250_3_1_10.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -15,8 +15,10 @@ cols_even = mod(cols, 2) == 0;
 
 dx = 1 / cols;
 dy = 1 / rows;
-x = ( linspace(0,1-dx,cols) ) / ( 1 - dx );
-y = ( linspace(0,1-dy,rows) ) / ( 1 - dy );
+% x = ( linspace(0,1-dx,cols) ) / ( 1 - dx );
+% y = ( linspace(0,1-dy,rows) ) / ( 1 - dy );
+x = ( linspace(0,1,cols) );
+y = ( linspace(0,H,rows) );
 
 if rows_even
     rows = [rows/2, rows/2+1];
