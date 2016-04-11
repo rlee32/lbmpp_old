@@ -35,7 +35,7 @@ public:
   double get_velocity_magnitude() const;
   void coalesce();
   void reconstruct_macro();
-  void collide(size_t relax_model);
+  void collide(size_t relax_model, size_t vc_model);
   void explode();
   void stream_parallel();
   void bufferize_parallel();
@@ -47,11 +47,23 @@ public:
     double rho = 1;
     double u = 0;
     double v = 0;
-    // Strain rate tensor values.
+  } state;
+  // For viscosity-counteracting approach.
+  struct
+  {
+    // Strain rate tensor values 
+    // (with 2*rho omitted, since it cancels in differencing).
     double s11 = 0;
     double s12 = 0;
     double s22 = 0;
-  } state;
+    // spatial differences.
+    double s11x = 0;
+    double s12x = 0;
+    double s12y = 0;
+    double s22y = 0;
+    double scale = 1; // 2^(tree level)
+    double scale_inv = 1; // 1 / 2^(tree level)
+  } vc;
   struct
   {
     int level = 0; // tree level. 0: coarsest cell.
@@ -60,6 +72,11 @@ public:
     Cell* parent = nullptr;
     Cell* children[4] = { nullptr };
     Cell* neighbours[8] = { nullptr }; // cell neighbours for every lattice direction (have same level)
+    // the number of neighbours in each orthogonal direction (at least).
+    // going ccw from {1,0}.
+    std::size_t nn[4] = {2,2,2,2};
+    // following meaning there are at least 2 neighbours in every direction.
+    bool fully_interior_cell = true;
     uint64_t mk = (uint64_t)0; // Morton N-order key (interleave x and y, x first).
     bool refined = false; // a flag for presence of active children.
   } tree;
@@ -86,4 +103,11 @@ private:
   void next_f_mrt( const double m[9] );
   inline double next_fc_mrt( const double m[9] ) const;
   inline double next_fi_mrt( size_t i, const double m[9] ) const;
+  // VC
+  inline void compute_feq( double feq[9] ) const;
+  inline void compute_strain_terms( double& s11, double& s12, double& s22, const double feq[9] ) const;
+  inline void fill_strain_terms();
+  inline void compute_strain_differences( double& s11x, double& s12x, double& s12y, double& s22y ) const;
+  inline void compute_vc_body_force( double g[9] ) const;
+  inline void apply_steady_vc_body_force();
 };

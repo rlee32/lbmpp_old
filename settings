@@ -9,7 +9,13 @@ L 128 # Characteristic Length. Must ensure consistency with cell count.
 Re 100 # Reynolds number
 
 # Numerical parameters.
-nucf 0 # multiple of viscosity to serve as a buffer viscosity.
+nucf 1 # multiple of viscosity to serve as a buffer viscosity.
+# Viscosity counteraction model
+# 0: no viscosity counteraction.
+# 1: steady body force assumption ( explicit ).
+# 2: include spatial term ( not implemented, explicit ).
+# 3: include spatial and temporal terms ( not implemented, implicit ).
+vc_model 1
 # Relaxation time model:
 # 1: Single-relaxation time.
 # 2: Two-relaxation time.

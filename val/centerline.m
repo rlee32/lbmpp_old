@@ -2,8 +2,12 @@ clear; close all; clc;
 
 U = 0.006 / sqrt(3);
 
-u = dlmread('../results/u_128_6_250_3.dat');
-v = dlmread('../results/v_128_6_250_3.dat');
+% H = 1.5;
+% u = dlmread('../results/u_128x192_6_250_1_0_1.dat');
+% v = dlmread('../results/v_128x192_6_250_1_0_1.dat');
+H = 1;
+u = dlmread('../results/u_128_6_250_3_1_10.dat');
+v = dlmread('../results/v_128_6_250_3_1_10.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -30,22 +34,30 @@ end
 [y_ref, u_ref] = validation_data_u_vs_y();
 
 figure;
-plot(y_ref,u_ref, 'x');
-hold on;
+if H == 1
+    plot(y_ref,u_ref, 'x');
+    hold on;
+end
 plot( y, flipud(mean(u(:,cols),2)/U) );
 title('Centerline y vs. u-velocity at Re = 100');
 xlabel('y');
 ylabel('u');
-legend('Ghia et al', 'Present LBM');
+if H == 1
+    legend('Ghia et al', 'Present LBM');
+end
 
 figure;
-plot(x_ref,v_ref, 'x');
-hold on;
+if H == 1
+    plot(x_ref,v_ref, 'x');
+    hold on;
+end
 plot( x, mean(v(rows,:),1)/U );
 title('Centerline x vs. v-velocity at Re = 100');
 xlabel('x');
 ylabel('v');
-legend('Ghia et al', 'Present LBM');
+if H == 1
+    legend('Ghia et al', 'Present LBM');
+end
 
 figure;
 [X,Y] = meshgrid(x,y);

@@ -17,6 +17,7 @@ public:
   void iterate(); // performs one time step advancement.
   Grid grid;
   const std::size_t get_cell_count_0() const { return cell_count[0]; }
+  const std::size_t get_cell_count_1() const { return cell_count[1]; }
   const double get_Re() const { return Re; }
   const double get_nu() const { return nu; }
   const double get_tau() const { return tau; }
@@ -24,6 +25,8 @@ public:
   const double get_U() const { return U; }
   const double get_timesteps() const { return timesteps; }
   const double get_relax_model() const { return relax_model; }
+  const double get_vc_model() const { return vc_model; }
+  const double get_nucf() const { return nuc / nu; }
   void output_coarse_field(std::string output_file_name);
 private:
   // Run time control.
@@ -52,6 +55,7 @@ private:
   std::size_t timesteps = 0;
 
   std::size_t relax_model = 1;
+  std::size_t vc_model = 0;
 
   void read_settings(std::string filename);
   void process_settings();

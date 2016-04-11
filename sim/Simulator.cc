@@ -35,6 +35,7 @@ void Simulator::read_settings(string filename)
         if ( not parameter.compare("M") ) iss >> M;
         if ( not parameter.compare("L") ) iss >> L;
         if ( not parameter.compare("Re") ) iss >> Re;
+        if ( not parameter.compare("vc_model") ) iss >> vc_model;
         if ( not parameter.compare("nucf") ) iss >> nucf;
         if ( not parameter.compare("relax_model") ) iss >> relax_model;
         if ( not parameter.compare("timesteps") ) iss >> timesteps;
@@ -72,7 +73,7 @@ void Simulator::read_settings(string filename)
     // grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
     // tau, omega, nu, nuc, bc, bcv, uc );
     grid.initialize( cell_count[0], cell_count[1], rho0, u0, v0, 
-    tau, omega, nu, nuc, bc, U, relax_model );
+    tau, omega, nu, nuc, bc, U, relax_model, vc_model );
   }
 }
 

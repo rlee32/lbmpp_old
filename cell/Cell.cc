@@ -104,16 +104,19 @@ void Cell::explode()
   }
 }
 
-void Cell::collide(size_t relax_model)
+void Cell::collide(size_t relax_model, size_t vc_model)
 {
   if ( numerics.physical and not numerics.interface )
   {
-    double msq = state.u*state.u + state.v*state.v;
+    // Relaxation
     switch(relax_model)
     {
       case 1:
+        {
+        double msq = state.u*state.u + state.v*state.v;
         state.fc = next_fc_srt(msq);
         for (size_t i = 0; i < 8; ++i) state.f[i] = next_fi_srt(i, msq);
+        }
         break;
       case 2:
 
@@ -123,14 +126,275 @@ void Cell::collide(size_t relax_model)
         double m[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         compute_moment( m );
         next_f_mrt( m );
-        // state.fc = next_fc_mrt( m );
-        // for (size_t i = 0; i < 8; ++i) state.f[i] = next_fi_mrt( i, m );
         }
         break;
       default:
         break;
     }
+    // VC
+    switch(vc_model)
+    {
+      case 0:
+        break;
+      case 1:
+        apply_steady_vc_body_force();
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      default:
+        break;
+    }
   }
+}
+
+// For viscosity counteraction method.
+// Compute equilibrium distribution function.
+inline void Cell::compute_feq( double feq[9] ) const
+{
+  const double& rho = state.rho;
+  const double& u = state.u;
+  const double& v = state.v;
+  double uu = u * u;
+  double vv = v * v;
+  double upv = u + v;
+  double upvupv = upv * upv;
+  double magmag = uu + vv;
+  double mag_term = 1.5 * magmag;
+  double center_term = 4.0 / 9.0 * rho;
+  double orth_term = 1.0 / 9.0 * rho;
+  double diag_term = 1.0 / 36.0 * rho;
+  feq[0] = center_term * ( 1.0 - mag_term );
+  feq[1] = orth_term * ( 1.0 + 3.0*u + 4.5*uu - mag_term );
+  feq[2] = diag_term * ( 1.0 + 3.0*upv + 4.5*upvupv - mag_term );
+  feq[3] = orth_term * ( 1.0 + 3.0*v + 4.5*vv - mag_term );
+  feq[4] = diag_term * ( 1.0 + 3.0*(-u+v) + 4.5*(-u+v)*(-u+v) - mag_term );
+  feq[5] = orth_term * ( 1.0 - 3.0*u + 4.5*uu - mag_term );
+  feq[6] = diag_term * ( 1.0 - 3.0*upv + 4.5*upvupv - mag_term );
+  feq[7] = orth_term * ( 1.0 - 3.0*v + 4.5*vv - mag_term );
+  feq[8] = diag_term * ( 1.0 + 3.0*(u-v) + 4.5*(u-v)*(u-v) - mag_term );
+}
+// This computes the strain terms S11, S12, and S22, 
+// but without 2*rho (it cancels in the spatial differencing). 
+inline void Cell::compute_strain_terms( double& s11, double& s12, double& s22, const double feq[9] ) const
+{
+  double coeff = 3.0*numerics.omega;
+  double df1 = state.f[1] - feq[2] + state.f[5] - feq[6];
+  double df2 = state.f[3] - feq[4] + state.f[7] - feq[8];
+  double df3 = df1 + df2;
+  s11 = coeff * ( df1 - df2 );
+  s12 = coeff * ( df3 + state.f[0] - feq[1] + state.f[4] - feq[5] );
+  s22 = coeff * ( df3 + state.f[2] - feq[3] + state.f[6] - feq[7] );
+}
+inline void Cell::fill_strain_terms()
+{
+  double feq[9] = {0,0,0,0,0,0,0,0,0};
+  compute_feq(feq);
+  compute_strain_terms(vc.s11, vc.s12, vc.s22, feq);
+}
+// differencing.
+// we assume for each x and y direction, 
+//  there can only be a one-way deficiency of neighbours (if any).
+// assumes at least 5 cells present in domain in each x and y direction.
+inline void Cell::compute_strain_differences( double& s11x, double& s12x, double& s12y, double& s22y ) const
+{
+  switch ( tree.fully_interior_cell )
+  {
+    case true: // 4th order, 4-point stencil
+      {
+      const Cell* const& e1 = tree.neighbours[0];
+      const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+      const Cell* const& w1 = tree.neighbours[4];
+      const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+      s11x = vc.scale * ( 
+        -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
+      s12x = vc.scale * ( 
+        -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
+      const Cell* const& n1 = tree.neighbours[2];
+      const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+      const Cell* const& s1 = tree.neighbours[6];
+      const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+      s12y = vc.scale * ( 
+        -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
+      s22y = vc.scale * ( 
+        -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
+      }
+      break;
+    case false:
+      {
+      // x-direction
+      switch( tree.nn[0] )
+      {
+        case 0: // backward 2nd order, 3-point stencil
+          {
+          const Cell* const& w1 = tree.neighbours[4];
+          const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+          s11x = vc.scale * -( 
+            -3.0*vc.s11 + 4.0*w1->vc.s11 - w2->vc.s11 ) / 2.0;
+          s12x = vc.scale * -( 
+            -3.0*vc.s12 + 4.0*w1->vc.s12 - w2->vc.s12 ) / 2.0;
+          }
+          break;
+        case 1: // backward 4th order, 5-point stencil
+          {
+          const Cell* const& e1 = tree.neighbours[0];
+          const Cell* const& w1 = tree.neighbours[4];
+          const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+          const Cell* const& w3 = 
+            tree.neighbours[4]->tree.neighbours[4]->tree.neighbours[4];
+          s11x = vc.scale * -( 
+            - 3.0*e1->vc.s11 - 10.0*vc.s11 + 18.0*w1->vc.s11 
+            - 6.0*w2->vc.s11 + w3->vc.s11 ) / 12.0;
+          s12x = vc.scale * -( 
+            - 3.0*e1->vc.s12 - 10.0*vc.s12 + 18.0*w1->vc.s12 
+            - 6.0*w2->vc.s12 + w3->vc.s12 ) / 12.0;
+          }
+          break;
+        default: // now check other direction. 
+          switch( tree.nn[2] )
+          {
+            case 0: // forward 2nd order, 3-point stencil
+              {
+              const Cell* const& e1 = tree.neighbours[0];
+              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+              s11x = vc.scale * (
+                -3.0*vc.s11 + 4.0*e1->vc.s11 - e2->vc.s11 ) / 2.0;
+              s12x = vc.scale * ( 
+                -3.0*vc.s12 + 4.0*e1->vc.s12 - e2->vc.s12 ) / 2.0;
+              }
+              break;
+            case 1: // forward 4th order, 5-point stencil
+              {
+              const Cell* const& w1 = tree.neighbours[4];
+              const Cell* const& e1 = tree.neighbours[0];
+              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+              const Cell* const& e3 = 
+                tree.neighbours[0]->tree.neighbours[0]->tree.neighbours[0];
+              s11x = vc.scale * ( 
+                - 3.0*w1->vc.s11 - 10.0*vc.s11 + 18.0*e1->vc.s11 
+                - 6.0*e2->vc.s11 + e3->vc.s11 ) / 12.0;
+              s12x = vc.scale * ( 
+                - 3.0*w1->vc.s12 - 10.0*vc.s12 + 18.0*e1->vc.s12 
+                - 6.0*e2->vc.s12 + e3->vc.s12 ) / 12.0;
+              }
+              break;
+            default: // centered 4th order, 4-point stencil
+              {
+              const Cell* const& e1 = tree.neighbours[0];
+              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+              const Cell* const& w1 = tree.neighbours[4];
+              const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+              s11x = vc.scale * ( 
+                -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
+              s12x = vc.scale * ( 
+                -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
+              }
+              break;
+          }
+        break;
+      }
+      // y-direction
+      switch( tree.nn[1] )
+      {
+        case 0: // backward 2nd order, 3-point stencil
+          {
+          const Cell* const& s1 = tree.neighbours[6];
+          const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+          s11x = vc.scale * -(
+            -3.0*vc.s11 + 4.0*s1->vc.s11 - s2->vc.s11 ) / 2.0;
+          s12x = vc.scale * -(
+            -3.0*vc.s12 + 4.0*s1->vc.s12 - s2->vc.s12 ) / 2.0;
+          }
+          break;
+        case 1: // backward 4th order, 5-point stencil
+          {
+          const Cell* const& n1 = tree.neighbours[2];
+          const Cell* const& s1 = tree.neighbours[6];
+          const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+          const Cell* const& s3 = 
+            tree.neighbours[6]->tree.neighbours[6]->tree.neighbours[6];
+          s11x = vc.scale * -( 
+            - 3.0*n1->vc.s11 - 10.0*vc.s11 + 18.0*s1->vc.s11 
+            - 6.0*s2->vc.s11 + s3->vc.s11 ) / 12.0;
+          s12x = vc.scale * -( 
+            - 3.0*n1->vc.s12 - 10.0*vc.s12 + 18.0*s1->vc.s12 
+            - 6.0*s2->vc.s12 + s3->vc.s12 ) / 12.0;
+          }
+          break;
+        default: // now check other direction. 
+          switch( tree.nn[3] )
+          {
+            case 0: // forward 2nd order, 3-point stencil
+              {
+              const Cell* const& n1 = tree.neighbours[2];
+              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+              s11x = vc.scale * (
+                -3.0*vc.s11 + 4.0*n1->vc.s11 - n2->vc.s11 ) / 2.0;
+              s12x = vc.scale * ( 
+                -3.0*vc.s12 + 4.0*n1->vc.s12 - n2->vc.s12 ) / 2.0;
+              }
+              break;
+            case 1: // forward 4th order, 5-point stencil
+              {
+              const Cell* const& s1 = tree.neighbours[6];
+              const Cell* const& n1 = tree.neighbours[2];
+              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+              const Cell* const& n3 = 
+                tree.neighbours[2]->tree.neighbours[2]->tree.neighbours[2];
+              s11x = vc.scale * ( 
+                - 3.0*s1->vc.s11 - 10.0*vc.s11 + 18.0*n1->vc.s11 
+                - 6.0*n2->vc.s11 + n3->vc.s11 ) / 12.0;
+              s12x = vc.scale * ( 
+                - 3.0*s1->vc.s12 - 10.0*vc.s12 + 18.0*n1->vc.s12 
+                - 6.0*n2->vc.s12 + n3->vc.s12 ) / 12.0;
+              }
+              break;
+            default: // centered 4th order, 4-point stencil
+              {
+              const Cell* const& n1 = tree.neighbours[2];
+              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+              const Cell* const& s1 = tree.neighbours[6];
+              const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+              s12y = vc.scale * ( 
+                -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
+              s22y = vc.scale * ( 
+                -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
+              }
+              break;
+          }
+        break;
+      }
+      }
+      break;
+    default:
+      break;
+  }
+}
+inline void Cell::compute_vc_body_force( double g[9] ) const
+{
+  double Fx = -numerics.nuc * ( vc.s11x + vc.s12x );
+  double Fy = -numerics.nuc * ( vc.s22y + vc.s12y );
+  const double& u = state.u;
+  const double& v = state.v;
+  g[0] = 4.0 / 3.0 * ( Fx*(-u) + Fy*(-v) );
+  g[1] = 1.0 / 3.0 * ( Fx*(1+2*u) + Fy*(-v) );
+  g[2] = 1.0 / 12.0 * ( Fx*(1+2*u+3*v) + Fy*(1+3*u+2*v) );
+  g[3] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(1+2*v) );
+  g[4] = 1.0 / 12.0 * ( Fx*(-1+2*u-3*v) + Fy*(1-3*u+2*v) );
+  g[5] = 1.0 / 3.0 * ( Fx*(-1+2*u) + Fy*(-v) );
+  g[6] = 1.0 / 12.0 * ( Fx*(-1+2*u+3*v) + Fy*(-1+3*u+2*v) );
+  g[7] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(-1+2*v) );
+  g[8] = 1.0 / 12.0 * ( Fx*(1+2*u-3*v) + Fy*(-1-3*u+2*v) );
+}
+inline void Cell::apply_steady_vc_body_force()
+{
+  double g[9] = {0,0,0,0,0,0,0,0,0};
+  fill_strain_terms();
+  compute_strain_differences(vc.s11x, vc.s12x, vc.s12y, vc.s22y);
+  compute_vc_body_force(g);
+  state.fc += vc.scale_inv*g[0];
+  for(size_t i = 0; i < 8; ++i) state.f[i] += vc.scale_inv*g[i+1];
 }
 
 // Single-relaxation time advance of fc.

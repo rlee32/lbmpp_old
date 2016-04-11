@@ -59,10 +59,16 @@ int main(int argc, char ** argv)
   }
   
   string grid_string = to_string( sim.get_cell_count_0() );
+  if(sim.get_cell_count_0() != sim.get_cell_count_1())
+  {
+    grid_string += "x"+to_string( sim.get_cell_count_1() );
+  }
   string mach_string = to_string( (size_t)(sim.get_M()*1000.0) );
   string timesteps_string = to_string( (size_t)(sim.get_timesteps()/1000) );
   string relax_model_string = to_string( (size_t)(sim.get_relax_model()) );
-  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"+relax_model_string;
+  string vc_model_string = to_string( (size_t)(sim.get_vc_model()) );
+  string nucf_string = to_string( (size_t)round(sim.get_nucf()*10.0) );
+  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"+relax_model_string+"_"+vc_model_string+"_"+nucf_string;
   
   sim.output_coarse_field( case_name+".dat" );
   sv.save_image( "velocity_"+case_name+".png" );

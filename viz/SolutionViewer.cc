@@ -58,7 +58,6 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   {
     image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
   }
-
 }
 
 void SolutionViewer::draw_status( int iteration, Simulator& sim, 
@@ -71,11 +70,19 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
     pixels[0], // lower right corner
     pixels[1]+TextDisplayDim,
     white );
+  double dt = elapsed_time - last_elapsed_time;
+  double di = iteration - last_iteration;
+  double speed = (dt > 0) ? di / dt : 0;
+  double elapsed_time_seconds = fmod(elapsed_time,60);
+  size_t elapsed_time_minutes = (size_t)( elapsed_time / 60 );
   string text = "";
   uint line = 0;
   text = "Iteration: " + to_string(iteration);
   draw_text_line( text, line++ );
-  text = "Elapsed time: " + to_string(elapsed_time) + " seconds";
+  text = "Elapsed time: " + to_string(elapsed_time_minutes) + " minutes, " 
+    + to_string(elapsed_time_seconds) + " seconds";
+  draw_text_line( text, line++ );
+  text = "Computation speed: " + to_string(speed) + " timesteps / second";
   draw_text_line( text, line++ );
   text = "Reynolds number: " + to_string(sim.get_Re());
   draw_text_line( text, line++ );
@@ -85,6 +92,8 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   draw_text_line( text, line++ );
   // text = "Lattice Velocity: " + to_string(sim.get_uc());
   // draw_text_line( text, line++ );
+  last_elapsed_time = elapsed_time;
+  last_iteration = iteration;
 }
 
 void SolutionViewer::draw_text_line( string text, int line )

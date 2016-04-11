@@ -29,4 +29,6 @@ private:
   CImg<unsigned char> image;
   void scalar2rgb(double min, double max, double value, float rgb[3]);
   void draw_text_line( std::string text, int line );
+  double last_elapsed_time = 0;
+  double last_iteration = 0;
 };

@@ -9,10 +9,11 @@ using namespace std;
 void Grid::initialize(int cell_count_x, int cell_count_y, 
   double rho0, double u0, double v0, 
   double tau, double omega, double nu, double nuc,
-  char bc_[4], double U_, size_t relax_model_)
+  char bc_[4], double U_, size_t relax_model_, size_t vc_model_)
 {
   U = U_;
   relax_model = relax_model_;
+  vc_model = vc_model_;
   vector<Cell>& cells = grid_levels[0];
   cell_count[0] = cell_count_x;
   cell_count[1] = cell_count_y;
@@ -44,7 +45,7 @@ void Grid::iterate(size_t level)
   #pragma omp parallel for
   for(uint i = 0; i < cells.size(); ++i)
   {
-    cells[i].collide(relax_model);
+    cells[i].collide(relax_model, vc_model);
     cells[i].explode();
   }
   // enforce_bc();
@@ -148,6 +149,44 @@ void Grid::assign_coarse_neighbours()
       // Southeast
       if ( not bottom and not right ) cells[ii].tree.neighbours[7] = &cells[ii-dj+1];
     }
+  }
+  for (size_t i = 0; i < cell_count[0]; ++i)
+  {
+    size_t j = 0;
+    size_t ii = i + j*cell_count[0];
+    cells[ii].tree.nn[1] = 0;
+    cells[ii].tree.fully_interior_cell = false;
+    j = 1;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[1] = 1;
+    cells[ii].tree.fully_interior_cell = false;
+    j = cell_count[1]-2;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[3] = 1;
+    cells[ii].tree.fully_interior_cell = false;
+    j = cell_count[1]-1;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[3] = 0;
+    cells[ii].tree.fully_interior_cell = false;
+  }
+  for (size_t j = 0; j < cell_count[1]; ++j)
+  {
+    size_t i = 0;
+    size_t ii = i + j*cell_count[0];
+    cells[ii].tree.nn[2] = 0;
+    cells[ii].tree.fully_interior_cell = false;
+    i = 1;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[2] = 1;
+    cells[ii].tree.fully_interior_cell = false;
+    i = cell_count[0]-2;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[0] = 1;
+    cells[ii].tree.fully_interior_cell = false;
+    i = cell_count[0]-1;
+    ii = i + j*cell_count[0];
+    cells[ii].tree.nn[0] = 0;
+    cells[ii].tree.fully_interior_cell = false;
   }
 }
 
