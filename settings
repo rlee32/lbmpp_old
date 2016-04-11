@@ -1,12 +1,12 @@
 # Use hashtag for comments.
 
 # Grid definition.
-coarse_cells 128 128 # cells in x, y direction.
+coarse_cells 128 192 # cells in x, y direction.
 
 # Physical parameters; these are used to compute the viscosity.
-M 0.006 # Characteristic Mach number. This value is also used for BC.
+M 0.015 # Characteristic Mach number. This value is also used for BC.
 L 128 # Characteristic Length. Must ensure consistency with cell count. 
-Re 100 # Reynolds number
+Re 500 # Reynolds number
 
 # Numerical parameters.
 nucf 1 # multiple of viscosity to serve as a buffer viscosity.
@@ -15,12 +15,12 @@ nucf 1 # multiple of viscosity to serve as a buffer viscosity.
 # 1: steady body force assumption ( explicit ).
 # 2: include spatial term ( not implemented, explicit ).
 # 3: include spatial and temporal terms ( not implemented, implicit ).
-vc_model 1
+vc_model 0
 # Relaxation time model:
 # 1: Single-relaxation time.
 # 2: Two-relaxation time.
 # 3: Multiple-relaxation time.
-relax_model 3 
+relax_model 1 
 
 # Solution and run time control.
 timesteps 250000 # maximum number of timesteps to run.

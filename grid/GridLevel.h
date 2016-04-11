@@ -9,7 +9,7 @@
 
 #include "../cell/Cell.h"
 
-class Grid 
+class GridLevel
 {
 public:
   std::vector<Cell> cells;
@@ -20,13 +20,10 @@ public:
   double omega = 0; // inverse of tau. relaxation frequency.
   double nu = 0; // viscosity.
   double nuc = 0; // viscosity buffer.
-  void initialize(int cell_count_x, int cell_count_y, 
-    double rho0, double u0, double v0, 
-    double tau, double omega, double nu, double nuc,
-    char bc_[4], double U_, std::size_t relax_model_, std::size_t vc_model_);
-  void iterate(std::size_t level);
-  double get_max_velocity_magnitude() const; // Mainly for post-processing purposes.
-  double get_min_velocity_magnitude() const; // Mainly for post-processing purposes.
+  std::size_t total_cells() { return cells.size(); }
+  // Mainly for post-processing purposes.
+  double get_max_velocity_magnitude() const;
+  double get_min_velocity_magnitude() const;
 private:
   void assign_coarse_neighbours();
   void enforce_bc_side(int side, char type, double value);

@@ -77,7 +77,8 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   size_t elapsed_time_minutes = (size_t)( elapsed_time / 60 );
   string text = "";
   uint line = 0;
-  text = "Iteration: " + to_string(iteration);
+  text = "Iteration: " + to_string(iteration) + " / " 
+    + to_string((size_t) sim.get_timesteps());
   draw_text_line( text, line++ );
   text = "Elapsed time: " + to_string(elapsed_time_minutes) + " minutes, " 
     + to_string(elapsed_time_seconds) + " seconds";

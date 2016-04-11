@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
   // cout << "Running " << sim.timesteps << " timesteps." << endl;
   // bool done = false;
   int k = 0;
-  int display_interval = 1000;
+  int display_interval = 2000;
   timer.start();
   while ( not sv.window.is_closed() and k <= sim.get_timesteps() )
   {
@@ -58,22 +58,27 @@ int main(int argc, char ** argv)
     }
   }
   
-  string grid_string = to_string( sim.get_cell_count_0() );
+  string grid_string = "G"+to_string( sim.get_cell_count_0() );
   if(sim.get_cell_count_0() != sim.get_cell_count_1())
   {
     grid_string += "x"+to_string( sim.get_cell_count_1() );
   }
-  string mach_string = to_string( (size_t)(sim.get_M()*1000.0) );
-  string timesteps_string = to_string( (size_t)(sim.get_timesteps()/1000) );
-  string relax_model_string = to_string( (size_t)(sim.get_relax_model()) );
-  string vc_model_string = to_string( (size_t)(sim.get_vc_model()) );
-  string nucf_string = to_string( (size_t)round(sim.get_nucf()*10.0) );
-  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"+relax_model_string+"_"+vc_model_string+"_"+nucf_string;
+  string mach_string = "M"+to_string( (size_t)(sim.get_M()*1000.0) );
+  string timesteps_string = "T"+to_string( (size_t)(sim.get_timesteps()/1000) );
+  string relax_model_string = "RM"+to_string( (size_t)(sim.get_relax_model()) );
+  string vc_model_string = "VCM"+to_string( (size_t)(sim.get_vc_model()) );
+  string nucf_string = "VCF"+to_string( (size_t)round(sim.get_nucf()*10.0) );
+  string re_string = "Re"+to_string( (size_t)round(sim.get_Re()) );
+  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"
+    +relax_model_string+"_"+vc_model_string+"_"+nucf_string+"_"+re_string;
   
-  sim.output_coarse_field( case_name+".dat" );
-  sv.save_image( "velocity_"+case_name+".png" );
-  
-  cout << "Simulation finished!" << endl;
+  if ( k >= sim.get_timesteps() )
+  {
+    sim.output_coarse_field( case_name+".dat" );
+    sv.save_image( "mag_"+case_name+".png" );
+  }
+
+  cout << "Simulation finished! Press enter to continue." << endl;
   std::cin.ignore();
 
   return EXIT_SUCCESS;

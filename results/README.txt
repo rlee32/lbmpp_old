@@ -2,7 +2,9 @@ These results are for lid-driven cavity flow.
 
 Each run has 2 files: u and v for the velocity components.  
 
-The name format is:  <component>_<grid dimension>_<milliMach number>_<thousands of timesteps>_<relaxation model>_<VC model>_<nucf tenths>.dat  
+The name format is:  <component>_G<grid dimension>_M<milliMach number>_T<thousands of timesteps>_RM<relaxation model>_VCM<VC model>_VCF<nucf tenths>_Re<Reynolds number>.dat  
+
+Each component is preceded by a tag to indicate the field value.  
 
 milliMach number is thousandths of a Mach number.  
 
