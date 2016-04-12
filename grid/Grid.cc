@@ -29,6 +29,9 @@ void Grid::initialize(int cell_count_x, int cell_count_y,
   // cout << bcv[2] << endl;
   // cout << bcv[3] << endl;
   calculate_scale_factors();
+
+  // Cells have been initialized to equilibrium distribution in constructor.
+  enforce_bc();
 }
 
 
@@ -48,12 +51,13 @@ void Grid::iterate(size_t level)
     cells[i].collide(relax_model, vc_model);
     cells[i].explode();
   }
-  // enforce_bc();
-  reconstruct_macro(level);
+  enforce_bc();
+  // reconstruct_macro(level);
   stream_parallel(level);
   bufferize_parallel(level);
-  iterate(level+1);
-  iterate(level+1);
+  // iterate(level+1);
+  // iterate(level+1);
+  enforce_bc();
   reconstruct_macro(level);
   enforce_bc();
 }
@@ -87,8 +91,16 @@ void Grid::enforce_bc()
 {
   enforce_bc_side('b',bc[0], U);
   enforce_bc_side('r',bc[1], U);
-  enforce_bc_side('t',bc[2], U);
   enforce_bc_side('l',bc[3], U);
+  enforce_bc_side('t',bc[2], U);
+}
+
+void Grid::enforce_macro_bc()
+{
+  enforce_macro_bc_side('b',bc[0], U);
+  enforce_macro_bc_side('r',bc[1], U);
+  enforce_macro_bc_side('l',bc[3], U);
+  enforce_macro_bc_side('t',bc[2], U);
 }
 
 // Currently only works for coarsest level.
@@ -290,32 +302,143 @@ void Grid::enforce_bc_side(int side, char type, double value)
       }
       break;
     case 'm': // moving wall
-      ubc = (side == 'b' or side == 't') ? value : 0;
-      vbc = (side == 'r' or side == 'l') ? value : 0;
+      switch ( side )
+      {
+        case 't':
+          // for (ii+=dii; ii <= imax-dii; ii+=dii)
+          for (; ii <= imax; ii+=dii)
+          {
+            double incident = cells[ii].state.f[1] 
+              + cells[ii].state.f[2] + cells[ii].state.f[3];
+            double rho = cells[ii].state.fc + cells[ii].state.f[0] 
+              + cells[ii].state.f[4] + 2*incident;
+            double A = ( rho * value ) / 6.0;
+            cells[ii].state.f[7] = cells[ii].state.f[3] + A;
+            cells[ii].state.f[6] = cells[ii].state.f[2];
+            cells[ii].state.f[5] = cells[ii].state.f[1] - A;
+            cells[ii].state.rho = rho;
+            cells[ii].state.u = value;
+            cells[ii].state.v = 0;
+          }
+          break;
+        case 'r':
+          // Needs to be implemented.
+          break;
+        case 'b':
+          // Needs to be implemented.
+          break;
+        case 'l':
+          // Needs to be implemented.
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+
+// side: b (bottom), r (right), t (top), l (left)
+// type: w (wall), o (outlet), i (inlet), m (moving wall)
+// value: applicable to m, i
+// Currently only works for coarsest level.
+void Grid::enforce_macro_bc_side(int side, char type, double value)
+{
+  vector<Cell>& cells = grid_levels[0];
+  int ii = -1;
+  int dii = -1;
+  // int djj = -1;
+  int imax = -1;
+  // int ortho = -1; // the index pointing inwards, (unknown) orthogonal to boundary.
+  // int before = -1; // the index before ortho. In the case of 0, it is 7.
+  double ubc = 0, vbc = 0;
+  switch (side)
+  {
+    case 'b': // bottom
+      // ii = 0;
+      ii = (cell_count[1]-1)*cell_count[0];
+      dii = 1;
+      // djj = -cell_count[0];
+      // imax = cell_count[0] - 1;
+      imax = cell_count[1]*cell_count[0] - 1;
+      // ortho = 2;
+      break;
+    case 'r': // right
+      ii = cell_count[0]-1;
+      dii = cell_count[0];
+      // djj = -1;
+      imax = cell_count[1]*cell_count[0] - 1;
+      // ortho = 4;
+      break;
+    case 't': // top
+      // ii = (cell_count[1]-1)*cell_count[0];
+      ii = 0;
+      dii = 1;
+      // djj = cell_count[0];
+      // imax = cell_count[1]*cell_count[0] - 1;
+      imax = cell_count[0] - 1;
+      // ortho = 6;
+      break;
+    case 'l': // left
+      ii = 0;
+      dii = cell_count[0];
+      // djj = 1;
+      imax = (cell_count[1]-1)*cell_count[0];
+      // ortho = 0;
+      break;
+    default:
+      break;
+  }
+  // before = (ortho != 0) ? ortho-1 : 7;
+  switch (type)
+  {
+    case 'w': // wall
+      for (; ii <= imax; ii+=dii)
+      {
+        cells[ii].state.u = 0;
+        cells[ii].state.v = 0;
+      }
+      break;
+    case 'i': // inlet
+      ubc = (side == 'b' or side == 't') ? 0 : value;
+      vbc = (side == 'r' or side == 'l') ? 0 : value;
       for (ii+=dii; ii <= imax-dii; ii+=dii)
       {
-        // meso
-        int sign = (side == 't' or side == 'l') ? 1.0: -1.0;
-        int parallel = ( ortho + OPPOSITE(ortho) ) / 2.0;
-        double coeff = 1.0 / ( 1.0 - value );
-        double tangent = cells[ii].state.fc
-          + cells[ii].state.f[parallel] 
-          + cells[ii].state.f[OPPOSITE(parallel)];
-        double out = cells[ii].state.f[OPPOSITE(ortho)]
-          + cells[ii].state.f[OPPOSITE(ortho+1)]
-          + cells[ii].state.f[OPPOSITE(before)];
-        double density = coeff * ( tangent + 2.0 * out );
-        double diagonal = value / 6.0 * density;
-        cells[ii].state.f[ortho] = cells[ii].state.f[OPPOSITE(ortho)];
-        cells[ii].state.f[ortho+1] = cells[ii].state.f[OPPOSITE(ortho+1)] 
-          + sign * diagonal;
-        cells[ii].state.f[before] = cells[ii].state.f[OPPOSITE(before)] 
-          - sign * diagonal;
-        // macro
-        // cells[ii].state.rho = density;
         cells[ii].state.u = ubc;
         cells[ii].state.v = vbc;
       }
+      break;
+    case 'o': // outlet (zero-gradient extrapolation)
+      for (ii+=dii; ii <= imax-dii; ii+=dii)
+      {
+      }
+      break;
+    case 'm': // moving wall
+      switch ( side )
+      {
+        case 't':
+          // for (ii+=dii; ii <= imax-dii; ii+=dii)
+          for (; ii <= imax; ii+=dii)
+          {
+            cells[ii].state.u = value;
+            cells[ii].state.v = 0;
+          }
+          break;
+        case 'r':
+          // Needs to be implemented.
+          break;
+        case 'b':
+          // Needs to be implemented.
+          break;
+        case 'l':
+          // Needs to be implemented.
+          break;
+        default:
+          break;
+      }
+      // END SIMPLE VERSION
       break;
     default:
       break;

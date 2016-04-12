@@ -36,7 +36,9 @@ private:
   std::size_t vc_model = 0;
   void assign_coarse_neighbours();
   void enforce_bc_side(int side, char type, double value);
+  void enforce_macro_bc_side(int side, char type, double value);
   void enforce_bc();
+  void enforce_macro_bc();
   void reconstruct_macro(int level);
   void bufferize_parallel(int level);
   void stream_parallel(int level);
