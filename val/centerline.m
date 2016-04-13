@@ -1,4 +1,20 @@
-% clear; close all; clc;
+clear; close all; clc;
+
+% Change the dlmread entry according to the desired solution file.
+% The solution file nomencalture descriptions can be found in 
+%  the README.txt in the '../results/' folder. 
+
+M = 0.2;
+H = 1.5;
+Re = 100;
+u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
+v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
+
+% M = 0.2;
+% H = 1.5;
+% Re = 500;
+% u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
+% v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
 
 % M = 0.2;
 % H = 1;
@@ -8,33 +24,45 @@
 
 % M = 0.2;
 % H = 1;
+% Re = 500;
+% u = dlmread('../results/u_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
+% v = dlmread('../results/v_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
+
+% M = 0.004;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
+
+% M = 0.2;
+% H = 1;
 % Re = 100;
 % u = dlmread('../results/u_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 % v = dlmread('../results/v_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 
-M = 0.2;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 
-M = 0.2;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
-M = 0.2;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
-M = 0.2;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% 
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% 
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
 
 % M = 0.1;
 % H = 1;
@@ -62,35 +90,6 @@ v = dlmread('../results/v_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
 
 
 
-% U = 0.006 / sqrt(3);
-% H = 1.5;
-% Re = 100;
-% u = dlmread('../results/u_128x192_6_250_1_0_1.dat');
-% v = dlmread('../results/v_128x192_6_250_1_0_1.dat');
-
-% U = 0.006 / sqrt(3);
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_128_6_250_3_1_10.dat');
-% % v = dlmread('../results/v_128_6_250_3_1_10.dat');
-
-% U = 0.03 / sqrt(3);
-% H = 1;
-% Re = 10000;
-% u = dlmread('../results/u_128_30_250_3_1_10_Re10000.dat');
-% v = dlmread('../results/v_128_30_250_3_1_10_Re10000.dat');
-
-% U = 0.015 / sqrt(3);
-% H = 1;
-% Re = 500;
-% u = dlmread('../results/u_128_15_250_1_0_10_Re500.dat');
-% v = dlmread('../results/v_128_15_250_1_0_10_Re500.dat');
-
-% U = 0.015 / sqrt(3);
-% H = 1.5;
-% Re = 500;
-% u = dlmread('../results/u_128x192_15_250_1_0_10_Re500.dat');
-% v = dlmread('../results/v_128x192_15_250_1_0_10_Re500.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -158,3 +157,6 @@ streamslice(X,Y, flipud(u),flipud(v));
 title(['Steady-State Streamlines at Re = ' num2str(Re)]);
 xlabel('x');
 ylabel('y');
+
+ee = reference_error(x,v,Re);
+disp(['error ' num2str(ee)]);
