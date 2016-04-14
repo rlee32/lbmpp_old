@@ -48,7 +48,7 @@ void Simulator::read_settings(string filename)
     }
     U = M / sqrt(3);
     nu = U * L / Re;
-    nuc = nucf*nu; // counteracting viscosity.
+    nuc = ( vc_model != 0 ) ? (nucf*nu) : 0; // counteracting viscosity.
     tau = 3 * (nu + nuc) + 0.5;
     omega = 1.0 / tau;
     grid.initialize( 

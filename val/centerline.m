@@ -1,4 +1,5 @@
-clear; close all; clc;
+clear; clc;
+% close all;
 
 % Change the dlmread entry according to the desired solution file.
 % The solution file nomencalture descriptions can be found in 
@@ -15,8 +16,8 @@ clear; close all; clc;
 % M = 0.2;
 % H = 1;
 % Re = 100;
-% u = dlmread('../results/u_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
+% u = dlmread('../results/u_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 
 % % SRT 100 Re
 % M = 0.1;
@@ -32,6 +33,13 @@ clear; close all; clc;
 % u = dlmread('../results/u_G100_M100_T50_RM1_VCM1_VCF1_Re100.dat');
 % v = dlmread('../results/v_G100_M100_T50_RM1_VCM1_VCF1_Re100.dat');
 
+% % SRT 1000 Re
+% M = 0.05;
+% H = 1;
+% Re = 1000;
+% u = dlmread('../results/u_G151_M50_T200_RM1_VCM0_VCF10_Re1000.dat');
+% v = dlmread('../results/v_G151_M50_T200_RM1_VCM0_VCF10_Re1000.dat');
+
 % % SRT 1000 Re + VC
 % M = 0.1;
 % H = 1;
@@ -39,12 +47,26 @@ clear; close all; clc;
 % u = dlmread('../results/u_G100_M100_T100_RM1_VCM1_VCF1_Re1000.dat');
 % v = dlmread('../results/v_G100_M100_T100_RM1_VCM1_VCF1_Re1000.dat');
 
-% MRT 1000 Re
-M = 0.05;
+% % MRT 1000 Re
+% M = 0.2;
+% H = 1;
+% Re = 1000;
+% u = dlmread('../results/u_G125_M200_T100_RM3_VCM0_VCF0_Re1000.dat');
+% v = dlmread('../results/v_G125_M200_T100_RM3_VCM0_VCF0_Re1000.dat');
+
+% % MRT 5000 Re
+% M = 0.2;
+% H = 1;
+% Re = 5000;
+% u = dlmread('../results/u_G101_M200_T500_RM3_VCM0_VCF0_Re5000.dat');
+% v = dlmread('../results/v_G101_M200_T500_RM3_VCM0_VCF0_Re5000.dat');
+
+% MRT 10000 Re
+M = 0.2;
 H = 1;
-Re = 1000;
-u = dlmread('../results/u_G151_M50_T250_RM3_VCM0_VCF1_Re1000.dat');
-v = dlmread('../results/v_G151_M50_T250_RM3_VCM0_VCF1_Re1000.dat');
+Re = 10000;
+u = dlmread('../results/u_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+v = dlmread('../results/v_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -83,7 +105,8 @@ if validation
 end
 U = M / sqrt(3);
 plot( y, (mean(u(:,cols),2)/U) );
-title(['Centerline y vs. u-velocity at Re = ' num2str(Re)]);
+title(['Centerline y vs. u-velocity at Re = ' num2str(Re) ...
+    ', M = ' num2str(M)]);
 xlabel('y');
 ylabel('u');
 if validation
@@ -96,7 +119,8 @@ if validation
     hold on;
 end
 plot( x, mean(v(rows,:),1)/U );
-title(['Centerline x vs. v-velocity at Re = ' num2str(Re)]);
+title(['Centerline x vs. v-velocity at Re = ' num2str(Re) ...
+    ', M = ' num2str(M)]);
 xlabel('x');
 ylabel('v');
 if validation
@@ -106,11 +130,12 @@ end
 figure;
 [X,Y] = meshgrid(x,y);
 axis equal tight;
-h = streamslice( X, Y, rot90(-u,2), rot90(-v,2) );
+h = streamslice( X, Y, rot90(-u,2), rot90(-v,2), 2 );
 rotate(h, [0,0,1], 180);
 % streamline( stream2(X,Y,u,v,x,y) );
 % streamline( X,Y,u,v,x,y );
-title(['Steady-State Streamlines at Re = ' num2str(Re)]);
+title(['Steady-State Streamlines at Re = ' num2str(Re) ...
+    ', M = ' num2str(M)]);
 xlabel('x');
 ylabel('y');
 

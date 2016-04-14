@@ -31,12 +31,16 @@ private:
     // For example, a corner with one side wall, and one side moving wall, 
     //  the moving wall should be applied last and be dominant.
     int rank = 0;
-    int type_rank( char type );
+    int type_rank( char type ) const;
     Face(char s, char t) : side(s), type(t) { rank = type_rank(type); }
     bool static compare(const Face& a, const Face& b) 
       { return a.rank < b.rank; }
   } Face;
   std::vector<Face> faces;
 
-  void cell_bc(Cell* c, char type, char side);
+  void cell_bc(Cell* c, char type, char side) const;
+  char next_side(char side) const;
+  char prev_side(char side) const;
+  char get_next_type(char side) const;
+  char get_prev_type(char side) const;
 };
