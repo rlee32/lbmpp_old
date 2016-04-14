@@ -16,13 +16,14 @@ public:
   void test_draw();
   void display();
   void draw_velocity_magnitude(Grid& grid);
-  void draw_status( int iteration, Simulator& sim, double elapsed_time );
+  void draw_status( 
+    int iteration, Simulator& sim, double elapsed_time );
   void save_image(std::string filename) { image.save( filename.c_str() ); }
   CImgDisplay window;
 private:
   static const uint TextHeight = 10;
   static const uint TextPadding = 3;
-  static const uint TextDisplayDim = 6*( TextHeight + TextPadding ) 
+  static const uint TextDisplayDim = 7*( TextHeight + TextPadding ) 
     + TextPadding;
   std::size_t pixels[2]; // The pixel dimension of the windows.
   std::size_t pixels_per_cell; // The number of pixels per coarsest cell.

@@ -24,9 +24,7 @@ Cell::Cell( double rho, double u, double v )
 Cell::Cell( Cell* parent )
 {
   tree.parent = parent;
-  // TODO: neighbour assignment.
   state = parent->state;
-  // tree.grid_levels = parent->tree.grid_levels;
 }
 
 // Currently just averages children.
@@ -67,7 +65,7 @@ void Cell::coalesce()
   }
 }
 
-// For cut cells, the distribution function needs to be paid close attention to for MME conservation.
+// For cut cells, the distribution of particles should ensure MME conservation.
 // For homogeneous explosion, no problem. 
 void Cell::explode()
 {
@@ -82,10 +80,7 @@ void Cell::explode()
       }
       else
       {
-        //Create cell
-        // Cell new_child(this);
-        // tree.grid_levels[tree.level+1].push_back(new_child);
-        // tree.children[c] = &tree.grid_levels[tree.level+1].back();
+        // Create cell
       }
     }
   }
@@ -577,11 +572,6 @@ void Cell::reconstruct_macro()
   for (int i = 0; i < 8; ++i) state.v += state.f[i]*CY[i];
   state.u /= state.rho;
   state.v /= state.rho;
-  // if ( state.u != 0 or state.v != 0 )
-  // {
-  //   double mag = state.u*state.u + state.v*state.v;
-  //   cout << "non-zero mag " << sqrt(mag) << endl;
-  // }
 }
 
 // Stationary wall boundary condition.
@@ -628,7 +618,6 @@ void Cell::moving_wall(char side, double U)
       incident = state.f[1] + state.f[2] + state.f[3];
       rho = state.fc + state.f[0] + state.f[4] + 2*incident;
       A = ( rho * U ) / 6.0;
-      // cout << A << ", " << state.u << ", " << state.v << endl;
       numerics.b[7] = state.f[3] + A;
       numerics.b[6] = state.f[2];
       numerics.b[5] = state.f[1] - A;

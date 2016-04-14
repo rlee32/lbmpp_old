@@ -22,9 +22,6 @@ void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
   stream_parallel();
   bufferize_parallel();
   
-  // bcs.apply_bc();
-  // reconstruct_macro();
-  // bcs.apply_bc();
 }
 
 void GridLevel::stream_parallel()
@@ -211,7 +208,6 @@ void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
   }
 }
 
-// Currently only works for coarsest level.
 double GridLevel::max_mag() const
 {
   double max = 0;
@@ -227,7 +223,6 @@ double GridLevel::max_mag() const
   return max;
 }
 
-// Currently only works for coarsest level.
 double GridLevel::min_mag() const
 {
   double min = 0;
@@ -237,6 +232,35 @@ double GridLevel::min_mag() const
     for(size_t i = 1; i < cells.size(); ++i)
     {
       double test = cells[i].get_mag();
+      if (test < min) min = test;
+    }
+  }
+  return min;
+}
+
+double GridLevel::max_rho() const
+{
+  double min = -1;
+  if (cells.size() > 0)
+  {
+    min = cells[0].rho();
+    for(size_t i = 1; i < cells.size(); ++i)
+    {
+      double test = cells[i].rho();
+      if (test > min) min = test;
+    }
+  }
+  return min;
+}
+double GridLevel::min_rho() const
+{
+  double min = -1;
+  if (cells.size() > 0)
+  {
+    min = cells[0].rho();
+    for(size_t i = 1; i < cells.size(); ++i)
+    {
+      double test = cells[i].rho();
       if (test < min) min = test;
     }
   }

@@ -45,6 +45,7 @@ public:
   void explode();
   // For post-processing.
   double get_mag() const;
+  double rho() const { return state.rho; }
   struct
   {
     double fc = 1; // center distribution.

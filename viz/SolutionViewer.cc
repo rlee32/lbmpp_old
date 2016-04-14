@@ -64,7 +64,7 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   }
 }
 
-void SolutionViewer::draw_status( int iteration, Simulator& sim, 
+void SolutionViewer::draw_status( int iteration, Simulator& sim,  
   double elapsed_time )
 {
   const float white[] = { 255, 255, 255 };
@@ -100,6 +100,9 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   text = "Reynolds number: " + to_string(sim.get_Re());
   draw_text_line( text, line++ );
   text = "Relaxation time: " + to_string(sim.get_tau());
+  draw_text_line( text, line++ );
+  text = "Min, max density: " + to_string(sim.grid.min_rho()) + ", "
+    + to_string(sim.grid.max_rho());
   draw_text_line( text, line++ );
   last_elapsed_time = elapsed_time;
   last_iteration = iteration;

@@ -64,6 +64,27 @@ double Grid::min_mag() const
   }
   return min;
 }
+double Grid::max_rho() const
+{
+  double max = levels[0].max_rho();
+  for(size_t i = 1; i < MAX_LEVELS; ++i)
+  {
+    double test = levels[i].max_rho();
+    if ( test > max and test > 0 ) max = test;
+  }
+  return max;
+}
+
+double Grid::min_rho() const
+{
+  double min = levels[0].min_rho();
+  for(size_t i = 1; i < MAX_LEVELS; ++i)
+  {
+    double test = levels[i].min_rho();
+    if ( test < min and test > 0 ) min = test;
+  }
+  return min;
+}
 
 double Grid::mag( size_t level, size_t cell_index) const
 {

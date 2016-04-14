@@ -19,11 +19,11 @@ clear; close all; clc;
 % v = dlmread('../results/v_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
 
 % SRT 100 Re
-M = 0.2;
+M = 0.1;
 H = 1;
 Re = 100;
-u = dlmread('../results/u_G200_M200_T20_RM3_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G200_M200_T20_RM3_VCM0_VCF0_Re100.dat');
+u = dlmread('../results/u_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
+v = dlmread('../results/v_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
 
 % % SRT 100 Re Low-res
 % M = 0.2;

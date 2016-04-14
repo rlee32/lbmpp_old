@@ -26,6 +26,8 @@ public:
   std::size_t get_active_cells() const { return active_cells; }
   double max_mag() const;
   double min_mag() const;
+  double max_rho() const;
+  double min_rho() const;
   double mag(std::size_t cell_index) const;
   const std::vector<Cell>& get_cells() const { return cells; }
 private:

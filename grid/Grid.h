@@ -22,6 +22,8 @@ public:
   // Post-processing functions.
   double max_mag() const;
   double min_mag() const;
+  double max_rho() const;
+  double min_rho() const;
   std::size_t active_cells() const;
   double mag( std::size_t level, std::size_t cell_index ) const;
   const std::vector<Cell>& get_cells(std::size_t index) const 
