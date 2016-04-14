@@ -2,24 +2,14 @@
 
 using namespace std;
 
-Cell::Cell(double rho, double u, double v, 
-  double tau, double omega, double nu, double nuc, 
-  vector<Cell>* grid_levels)
+Cell::Cell( double rho, double u, double v )
 {
   state.rho = rho;
-  // cout << state.rho << endl;
   state.u = u;
   state.v = v;
-  numerics.tau = tau;
-  numerics.omega = omega;
-  numerics.nu = nu;
-  numerics.nuc = nuc;
-  tree.grid_levels = grid_levels;
-  // Iniitalize f via equilibrium distribution function.
+  // Iniitalize f to equilibrium distribution function.
   double msq = state.u*state.u + state.v*state.v;
-  // cout << state.rho << endl;
-  state.fc = FEQ(4.0/9.0,state.rho,0,msq);
-  // cout << state.fc << endl;
+  state.fc = FEQ( 4.0/9.0, state.rho, 0, msq );
   for (int i = 0; i < 8; ++i) 
   {
     state.f[i] = FEQ(
@@ -27,19 +17,16 @@ Cell::Cell(double rho, double u, double v,
       state.rho,
       CX[i] * state.u + CY[i] * state.v,
       msq );
-    // cout << state.f[i] << endl;
   }
 }
 
 // Currently a homogeneous copy of state.
-Cell::Cell(Cell* parent)
+Cell::Cell( Cell* parent )
 {
   tree.parent = parent;
   // TODO: neighbour assignment.
   state = parent->state;
-  tree.grid_levels = parent->tree.grid_levels;
-  tree.level = parent->tree.level+1;
-  numerics.nu = parent->numerics.nu / 2.0;
+  // tree.grid_levels = parent->tree.grid_levels;
 }
 
 // Currently just averages children.
@@ -96,26 +83,27 @@ void Cell::explode()
       else
       {
         //Create cell
-        Cell new_child(this);
-        tree.grid_levels[tree.level+1].push_back(new_child);
-        tree.children[c] = &tree.grid_levels[tree.level+1].back();
+        // Cell new_child(this);
+        // tree.grid_levels[tree.level+1].push_back(new_child);
+        // tree.children[c] = &tree.grid_levels[tree.level+1].back();
       }
     }
   }
 }
 
-void Cell::collide(size_t relax_model, size_t vc_model)
+void Cell::collide( size_t relax_model, size_t vc_model, double omega, 
+  double scale_decrease, double scale_increase, double nuc )
 {
   if ( numerics.physical and not numerics.interface )
   {
     // Relaxation
-    switch(relax_model)
+    switch( relax_model )
     {
       case 1:
         {
         double msq = state.u*state.u + state.v*state.v;
-        state.fc = next_fc_srt(msq);
-        for (size_t i = 0; i < 8; ++i) state.f[i] = next_fi_srt(i, msq);
+        state.fc = next_fc_srt( msq, omega );
+        for (size_t i=0;i < 8;++i) state.f[i] = next_fi_srt( i, msq, omega );
         }
         break;
       case 2:
@@ -125,19 +113,20 @@ void Cell::collide(size_t relax_model, size_t vc_model)
         {
         double m[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         compute_moment( m );
-        next_f_mrt( m );
+        next_f_mrt( m, omega );
         }
         break;
       default:
         break;
     }
     // VC
-    switch(vc_model)
+    switch( vc_model )
     {
       case 0:
         break;
       case 1:
-        apply_steady_vc_body_force();
+        apply_steady_vc_body_force( 
+          omega, scale_decrease, scale_increase, nuc );
         break;
       case 2:
         break;
@@ -177,9 +166,10 @@ inline void Cell::compute_feq( double feq[9] ) const
 }
 // This computes the strain terms S11, S12, and S22, 
 // but without 2*rho (it cancels in the spatial differencing). 
-inline void Cell::compute_strain_terms( double& s11, double& s12, double& s22, const double feq[9] ) const
+inline void Cell::compute_strain_terms( double& s11, double& s12, double& s22, 
+  const double feq[9], double omega ) const
 {
-  double coeff = 3.0*numerics.omega;
+  double coeff = 3.0*omega;
   double df1 = state.f[1] - feq[2] + state.f[5] - feq[6];
   double df2 = state.f[3] - feq[4] + state.f[7] - feq[8];
   double df3 = df1 + df2;
@@ -187,17 +177,19 @@ inline void Cell::compute_strain_terms( double& s11, double& s12, double& s22, c
   s12 = coeff * ( df3 + state.f[0] - feq[1] + state.f[4] - feq[5] );
   s22 = coeff * ( df3 + state.f[2] - feq[3] + state.f[6] - feq[7] );
 }
-inline void Cell::fill_strain_terms()
+inline void Cell::fill_strain_terms( double omega )
 {
   double feq[9] = {0,0,0,0,0,0,0,0,0};
   compute_feq(feq);
-  compute_strain_terms(vc.s11, vc.s12, vc.s22, feq);
+  compute_strain_terms(vc.s11, vc.s12, vc.s22, feq, omega);
 }
 // differencing.
 // we assume for each x and y direction, 
 //  there can only be a one-way deficiency of neighbours (if any).
 // assumes at least 5 cells present in domain in each x and y direction.
-inline void Cell::compute_strain_differences( double& s11x, double& s12x, double& s12y, double& s22y ) const
+// dh_inv: inverse of grid spacing.
+inline void Cell::compute_strain_differences( 
+  double& s11x, double& s12x, double& s12y, double& s22y, double dh_inv ) const
 {
   switch ( tree.fully_interior_cell )
   {
@@ -207,17 +199,17 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
       const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
       const Cell* const& w1 = tree.neighbours[4];
       const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-      s11x = vc.scale * ( 
+      s11x = dh_inv * ( 
         -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-      s12x = vc.scale * ( 
+      s12x = dh_inv * ( 
         -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
       const Cell* const& n1 = tree.neighbours[2];
       const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
       const Cell* const& s1 = tree.neighbours[6];
       const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-      s12y = vc.scale * ( 
+      s12y = dh_inv * ( 
         -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-      s22y = vc.scale * ( 
+      s22y = dh_inv * ( 
         -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
       }
       break;
@@ -230,9 +222,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
           {
           const Cell* const& w1 = tree.neighbours[4];
           const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-          s11x = vc.scale * -( 
+          s11x = dh_inv * -( 
             -3.0*vc.s11 + 4.0*w1->vc.s11 - w2->vc.s11 ) / 2.0;
-          s12x = vc.scale * -( 
+          s12x = dh_inv * -( 
             -3.0*vc.s12 + 4.0*w1->vc.s12 - w2->vc.s12 ) / 2.0;
           }
           break;
@@ -243,10 +235,10 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
           const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
           const Cell* const& w3 = 
             tree.neighbours[4]->tree.neighbours[4]->tree.neighbours[4];
-          s11x = vc.scale * -( 
+          s11x = dh_inv * -( 
             - 3.0*e1->vc.s11 - 10.0*vc.s11 + 18.0*w1->vc.s11 
             - 6.0*w2->vc.s11 + w3->vc.s11 ) / 12.0;
-          s12x = vc.scale * -( 
+          s12x = dh_inv * -( 
             - 3.0*e1->vc.s12 - 10.0*vc.s12 + 18.0*w1->vc.s12 
             - 6.0*w2->vc.s12 + w3->vc.s12 ) / 12.0;
           }
@@ -258,9 +250,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               {
               const Cell* const& e1 = tree.neighbours[0];
               const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-              s11x = vc.scale * (
+              s11x = dh_inv * (
                 -3.0*vc.s11 + 4.0*e1->vc.s11 - e2->vc.s11 ) / 2.0;
-              s12x = vc.scale * ( 
+              s12x = dh_inv * ( 
                 -3.0*vc.s12 + 4.0*e1->vc.s12 - e2->vc.s12 ) / 2.0;
               }
               break;
@@ -271,10 +263,10 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
               const Cell* const& e3 = 
                 tree.neighbours[0]->tree.neighbours[0]->tree.neighbours[0];
-              s11x = vc.scale * ( 
+              s11x = dh_inv * ( 
                 - 3.0*w1->vc.s11 - 10.0*vc.s11 + 18.0*e1->vc.s11 
                 - 6.0*e2->vc.s11 + e3->vc.s11 ) / 12.0;
-              s12x = vc.scale * ( 
+              s12x = dh_inv * ( 
                 - 3.0*w1->vc.s12 - 10.0*vc.s12 + 18.0*e1->vc.s12 
                 - 6.0*e2->vc.s12 + e3->vc.s12 ) / 12.0;
               }
@@ -285,9 +277,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
               const Cell* const& w1 = tree.neighbours[4];
               const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-              s11x = vc.scale * ( 
+              s11x = dh_inv * ( 
                 -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-              s12x = vc.scale * ( 
+              s12x = dh_inv * ( 
                 -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
               }
               break;
@@ -301,9 +293,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
           {
           const Cell* const& s1 = tree.neighbours[6];
           const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-          s11x = vc.scale * -(
+          s11x = dh_inv * -(
             -3.0*vc.s11 + 4.0*s1->vc.s11 - s2->vc.s11 ) / 2.0;
-          s12x = vc.scale * -(
+          s12x = dh_inv * -(
             -3.0*vc.s12 + 4.0*s1->vc.s12 - s2->vc.s12 ) / 2.0;
           }
           break;
@@ -314,10 +306,10 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
           const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
           const Cell* const& s3 = 
             tree.neighbours[6]->tree.neighbours[6]->tree.neighbours[6];
-          s11x = vc.scale * -( 
+          s11x = dh_inv * -( 
             - 3.0*n1->vc.s11 - 10.0*vc.s11 + 18.0*s1->vc.s11 
             - 6.0*s2->vc.s11 + s3->vc.s11 ) / 12.0;
-          s12x = vc.scale * -( 
+          s12x = dh_inv * -( 
             - 3.0*n1->vc.s12 - 10.0*vc.s12 + 18.0*s1->vc.s12 
             - 6.0*s2->vc.s12 + s3->vc.s12 ) / 12.0;
           }
@@ -329,9 +321,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               {
               const Cell* const& n1 = tree.neighbours[2];
               const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-              s11x = vc.scale * (
+              s11x = dh_inv * (
                 -3.0*vc.s11 + 4.0*n1->vc.s11 - n2->vc.s11 ) / 2.0;
-              s12x = vc.scale * ( 
+              s12x = dh_inv * ( 
                 -3.0*vc.s12 + 4.0*n1->vc.s12 - n2->vc.s12 ) / 2.0;
               }
               break;
@@ -342,10 +334,10 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
               const Cell* const& n3 = 
                 tree.neighbours[2]->tree.neighbours[2]->tree.neighbours[2];
-              s11x = vc.scale * ( 
+              s11x = dh_inv * ( 
                 - 3.0*s1->vc.s11 - 10.0*vc.s11 + 18.0*n1->vc.s11 
                 - 6.0*n2->vc.s11 + n3->vc.s11 ) / 12.0;
-              s12x = vc.scale * ( 
+              s12x = dh_inv * ( 
                 - 3.0*s1->vc.s12 - 10.0*vc.s12 + 18.0*n1->vc.s12 
                 - 6.0*n2->vc.s12 + n3->vc.s12 ) / 12.0;
               }
@@ -356,9 +348,9 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
               const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
               const Cell* const& s1 = tree.neighbours[6];
               const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-              s12y = vc.scale * ( 
+              s12y = dh_inv * ( 
                 -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-              s22y = vc.scale * ( 
+              s22y = dh_inv * ( 
                 -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
               }
               break;
@@ -371,10 +363,10 @@ inline void Cell::compute_strain_differences( double& s11x, double& s12x, double
       break;
   }
 }
-inline void Cell::compute_vc_body_force( double g[9] ) const
+inline void Cell::compute_vc_body_force( double g[9], double nuc ) const
 {
-  double Fx = -numerics.nuc * ( vc.s11x + vc.s12x );
-  double Fy = -numerics.nuc * ( vc.s22y + vc.s12y );
+  double Fx = -nuc * ( vc.s11x + vc.s12x );
+  double Fy = -nuc * ( vc.s22y + vc.s12y );
   const double& u = state.u;
   const double& v = state.v;
   g[0] = 4.0 / 3.0 * ( Fx*(-u) + Fy*(-v) );
@@ -387,28 +379,29 @@ inline void Cell::compute_vc_body_force( double g[9] ) const
   g[7] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(-1+2*v) );
   g[8] = 1.0 / 12.0 * ( Fx*(1+2*u-3*v) + Fy*(-1-3*u+2*v) );
 }
-inline void Cell::apply_steady_vc_body_force()
+inline void Cell::apply_steady_vc_body_force( double omega, double dt, 
+  double dh_inv, double nuc )
 {
   double g[9] = {0,0,0,0,0,0,0,0,0};
-  fill_strain_terms();
-  compute_strain_differences(vc.s11x, vc.s12x, vc.s12y, vc.s22y);
-  compute_vc_body_force(g);
-  state.fc += vc.scale_inv*g[0];
-  for(size_t i = 0; i < 8; ++i) state.f[i] += vc.scale_inv*g[i+1];
+  fill_strain_terms( omega );
+  compute_strain_differences( vc.s11x, vc.s12x, vc.s12y, vc.s22y, dh_inv );
+  compute_vc_body_force( g, nuc );
+  state.fc += dt*g[0];
+  for(size_t i = 0; i < 8; ++i) state.f[i] += dt*g[i+1];
 }
 
 // Single-relaxation time advance of fc.
-inline double Cell::next_fc_srt(double msq) const
+inline double Cell::next_fc_srt( double msq, double omega ) const
 {
-  return ( numerics.omega * FEQ( 4.0/9.0, state.rho, 0, msq ) 
-    + ( 1 - numerics.omega ) * state.fc );
+  return ( omega * FEQ( 4.0/9.0, state.rho, 0, msq ) 
+    + ( 1 - omega ) * state.fc );
 }
 // Single-relaxation time advance of f[i].
-inline double Cell::next_fi_srt(size_t i, double msq) const
+inline double Cell::next_fi_srt( size_t i, double msq, double omega ) const
 {
-  return ( numerics.omega 
+  return ( omega 
     * FEQ(WEIGHT(i), state.rho, CX[i]*state.u + CY[i]*state.v, msq) 
-    + ( 1 - numerics.omega ) * state.f[i] );
+    + ( 1 - omega ) * state.f[i] );
 }
 
 // For MRT, computes M * x = b, for the ith entry of b.
@@ -477,7 +470,8 @@ inline void Cell::compute_moment( double m[9] ) const
   m[8] = premultiply_M(8) - state.rho * state.u * state.v;
 }
 // For MRT, computes ( (M^-1) * S ) * x = b, for the ith entry of b.
-inline double Cell::premultiply_MinvS( size_t i, const double m[9] ) const
+inline double Cell::premultiply_MinvS( size_t i, 
+  const double m[9], double omega ) const
 {
   switch( i )
   {
@@ -487,130 +481,88 @@ inline double Cell::premultiply_MinvS( size_t i, const double m[9] ) const
     case 1:
       return ( 
         ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] + 6.0*m[3] - 7.2*m[4] 
-          + 9*numerics.omega*m[7] ) 
+          + 9*omega*m[7] ) 
         / 36.0 );
       break;
     case 2:
       return ( 
         ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] + 6.0*m[5] - 7.2*m[6] 
-          - 9*numerics.omega*m[7] ) 
+          - 9*omega*m[7] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] + 2.4*m[1] + m[2] + 6.0*m[3] + 3.6*m[4] + 6.0*m[5] + 3.6*m[6] 
-      //     + 9*numerics.omega*m[8] ) 
-      //   / 36.0 );
       break;
     case 3:
       return ( 
         ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] - 6.0*m[3] + 7.2*m[4] 
-          + 9*numerics.omega*m[7] ) 
+          + 9*omega*m[7] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] + 6.0*m[5] - 7.2*m[6] 
-      //     - 9*numerics.omega*m[7] ) 
-      //   / 36.0 );
       break;
     case 4:
       return ( 
         ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] - 6.0*m[5] + 7.2*m[6] 
-          - 9*numerics.omega*m[7] ) 
+          - 9*omega*m[7] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] + 2.4*m[1] + m[2] - 6.0*m[3] - 3.6*m[4] + 6.0*m[5] + 3.6*m[6] 
-      //     - 9*numerics.omega*m[8] ) 
-      //   / 36.0 );
       break;
     case 5:
       return ( 
         ( 4.0*m[0] + 2.4*m[1] + 1.0*m[2] + 6.0*m[3] + 3.6*m[4] + 6.0*m[5] + 3.6*m[6] 
-          + 9*numerics.omega*m[8] ) 
+          + 9*omega*m[8] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] - 6.0*m[3] + 7.2*m[4] 
-      //     + 9*numerics.omega*m[7] ) 
-      //   / 36.0 );
       break;
     case 6:
       return ( 
         ( 4.0*m[0] + 2.4*m[1] + 1.0*m[2] - 6.0*m[3] - 3.6*m[4] + 6.0*m[5] + 3.6*m[6] 
-          - 9*numerics.omega*m[8] ) 
+          - 9*omega*m[8] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] + 2.4*m[1] + m[2] - 6.0*m[3] - 3.6*m[4] - 6.0*m[5] - 3.6*m[6] 
-      //     + 9*numerics.omega*m[8] ) 
-      //   / 36.0 );
       break;
     case 7:
       return ( 
         ( 4.0*m[0] + 2.4*m[1] + 1.0*m[2] - 6.0*m[3] - 3.6*m[4] - 6.0*m[5] - 3.6*m[6] 
-          + 9*numerics.omega*m[8] ) 
+          + 9*omega*m[8] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] - 1.2*m[1] - 2.0*m[2] - 6.0*m[5] + 7.2*m[7] 
-      //     - 9*numerics.omega*m[7] ) 
-      //   / 36.0 );
       break;
     case 8:
       return ( 
         ( 4.0*m[0] + 2.4*m[1] + 1.0*m[2] + 6.0*m[3] + 3.6*m[4] - 6.0*m[5] - 3.6*m[6] 
-          - 9*numerics.omega*m[8] ) 
+          - 9*omega*m[8] ) 
         / 36.0 );
-      // return ( 
-      //   ( 4.0*m[0] + 2.4*m[1] + m[2] + 6.0*m[3] + 3.6*m[4] - 6.0*m[5] - 3.6*m[6] 
-      //     - 9*numerics.omega*m[8] ) 
-      //   / 36.0 );
       break;
     default:
       return 0;
       break;
   }
 }
-// MRT advance of fc.
-inline double Cell::next_fc_mrt( const double m[9] ) const
-{
-  return state.fc - premultiply_MinvS(0, m);
-}
 // MRT advance of f[i].
-void Cell::next_f_mrt( const double m[9] )
+void Cell::next_f_mrt( const double m[9], double omega )
 {
-  state.fc -= premultiply_MinvS(0, m);
-  state.f[0] -= premultiply_MinvS(1, m);
-  state.f[2] -= premultiply_MinvS(2, m);
-  state.f[4] -= premultiply_MinvS(3, m);
-  state.f[6] -= premultiply_MinvS(4, m);
-  state.f[1] -= premultiply_MinvS(5, m);
-  state.f[3] -= premultiply_MinvS(6, m);
-  state.f[5] -= premultiply_MinvS(7, m);
-  state.f[7] -= premultiply_MinvS(8, m);
-}
-void Cell::test_mrt()
-{
-  double m[9] = {1,2,3,4,5,6,7,8,9};
-  cout << "Testing MinvS mult: " << endl;
-  for(int i = 0; i < 9; ++i) cout << premultiply_MinvS(i,m) << endl;
-  state.fc = 1;
-  for(int i = 0; i < 8; ++i) state.f[i] = i+2;
-  cout << "Testing M mult: " << endl;
-  for(int i = 0; i < 9; ++i) cout << premultiply_M(i) << endl;
+  state.fc -= premultiply_MinvS(0, m, omega );
+  state.f[0] -= premultiply_MinvS(1, m, omega );
+  state.f[2] -= premultiply_MinvS(2, m, omega );
+  state.f[4] -= premultiply_MinvS(3, m, omega );
+  state.f[6] -= premultiply_MinvS(4, m, omega );
+  state.f[1] -= premultiply_MinvS(5, m, omega );
+  state.f[3] -= premultiply_MinvS(6, m, omega );
+  state.f[5] -= premultiply_MinvS(7, m, omega );
+  state.f[7] -= premultiply_MinvS(8, m, omega );
 }
 
 void Cell::stream_parallel()
 {
   if( numerics.physical )
   {
-    for(int i = 0; i < 8; ++i)
+    for(size_t i = 0; i < 8; ++i)
     {
-      numerics.b[i] = (tree.neighbours[OPPOSITE(i)] != nullptr) ? tree.neighbours[OPPOSITE(i)]->state.f[i] : state.f[i];
+      numerics.b[i] = (tree.neighbours[OPPOSITE(i)] != nullptr) ? 
+        tree.neighbours[OPPOSITE(i)]->state.f[i] : numerics.b[i];
     }
   }
 }
 
 void Cell::bufferize_parallel()
 {
-  for(int i = 0; i < 8; ++i) state.f[i] = numerics.b[i];
+  for(size_t i = 0; i < 8; ++i) state.f[i] = numerics.b[i];
 }
 
-double Cell::get_velocity_magnitude() const
+double Cell::get_mag() const
 {
   return sqrt(state.u*state.u + state.v*state.v);
 }
@@ -625,17 +577,87 @@ void Cell::reconstruct_macro()
   for (int i = 0; i < 8; ++i) state.v += state.f[i]*CY[i];
   state.u /= state.rho;
   state.v /= state.rho;
-  // cout << state.rho << endl;
+  // if ( state.u != 0 or state.v != 0 )
+  // {
+  //   double mag = state.u*state.u + state.v*state.v;
+  //   cout << "non-zero mag " << sqrt(mag) << endl;
+  // }
 }
 
-
-void Cell::recompute_relaxation()
+// Stationary wall boundary condition.
+// Actually stores the bounced distribution in the buffer.
+void Cell::bounce_back(char side)
 {
-  // After a refine operation, the lattice viscosity is updated.
-  numerics.tau = 3*(numerics.nu + numerics.nuc) + 0.5;
-  numerics.omega = 1.0 / numerics.tau;
+  switch(side)
+  {
+    case 't': // top
+      numerics.b[7] = state.f[3];
+      numerics.b[6] = state.f[2];
+      numerics.b[5] = state.f[1];
+      break;
+    case 'l': // left
+      numerics.b[1] = state.f[5];
+      numerics.b[0] = state.f[4];
+      numerics.b[7] = state.f[3];
+      break;
+    case 'r': // right
+      numerics.b[3] = state.f[7];
+      numerics.b[4] = state.f[0];
+      numerics.b[5] = state.f[1];
+      break;
+    case 'b': // bottom
+      numerics.b[1] = state.f[5];
+      numerics.b[2] = state.f[6];
+      numerics.b[3] = state.f[7];
+      break;
+    default:
+      break;
+  }
 }
 
-
-
-
+// Moving wall bc.
+// Actually stores the bounced distribution in the buffer.
+void Cell::moving_wall(char side, double U)
+{
+  double incident = 0;
+  double rho = 0;
+  double A = 0;
+  switch(side)
+  {
+    case 't': // top
+      incident = state.f[1] + state.f[2] + state.f[3];
+      rho = state.fc + state.f[0] + state.f[4] + 2*incident;
+      A = ( rho * U ) / 6.0;
+      // cout << A << ", " << state.u << ", " << state.v << endl;
+      numerics.b[7] = state.f[3] + A;
+      numerics.b[6] = state.f[2];
+      numerics.b[5] = state.f[1] - A;
+      break;
+    case 'l': // left
+      incident = state.f[3] + state.f[4] + state.f[5];
+      rho = state.fc + state.f[2] + state.f[6] + 2*incident;
+      A = ( rho * U ) / 6.0;
+      numerics.b[1] = state.f[5] + A;
+      numerics.b[0] = state.f[4];
+      numerics.b[7] = state.f[3] - A;
+      break;
+    case 'r': // right
+      incident = state.f[1] + state.f[0] + state.f[7];
+      rho = state.fc + state.f[2] + state.f[6] + 2*incident;
+      A = ( rho * U ) / 6.0;
+      numerics.b[3] = state.f[7] + A;
+      numerics.b[4] = state.f[0];
+      numerics.b[5] = state.f[1] - A;
+      break;
+    case 'b': // bottom
+      incident = state.f[5] + state.f[6] + state.f[7];
+      rho = state.fc + state.f[0] + state.f[4] + 2*incident;
+      A = ( rho * U ) / 6.0;
+      numerics.b[1] = state.f[5] + A;
+      numerics.b[2] = state.f[6];
+      numerics.b[3] = state.f[7] - A;
+      break;
+    default:
+      break;
+  }
+}

@@ -1,22 +1,97 @@
-% clear; close all; clc;
+clear; close all; clc;
+
+% Change the dlmread entry according to the desired solution file.
+% The solution file nomencalture descriptions can be found in 
+%  the README.txt in the '../results/' folder. 
+
+% Tall cavity
+% M = 0.2;
+% H = 1.5;
+% Re = 100;
+% u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
+
+% % SRT 100 Re
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
+
+% SRT 100 Re
+M = 0.1;
+H = 1;
+Re = 100;
+u = dlmread('../results/u_G100_M100_T20_RM1_VCM0_VCF0_Re100.dat');
+v = dlmread('../results/v_G100_M100_T20_RM1_VCM0_VCF0_Re100.dat');
+
+% % SRT 100 Re Low-res
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G32_M200_T50_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G32_M200_T50_RM1_VCM0_VCF0_Re100.dat');
+
+% MRT 10,000 Re (unconverged)
+% M = 0.2;
+% H = 1;
+% Re = 10000;
+% u = dlmread('../results/u_G200_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+% v = dlmread('../results/v_G200_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+
+% M = 0.2;
+% H = 1.5;
+% Re = 500;
+% u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
+% v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
 
 % M = 0.2;
 % H = 1;
 % Re = 100;
 % u = dlmread('../results/u_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 % v = dlmread('../results/v_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% 
+
+% M = 0.2;
+% H = 1;
+% Re = 500;
+% u = dlmread('../results/u_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
+% v = dlmread('../results/v_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
+
+% M = 0.004;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
+
 % M = 0.2;
 % H = 1;
 % Re = 100;
 % u = dlmread('../results/u_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 % v = dlmread('../results/v_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 
-M = 0.2;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% 
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% 
+% M = 0.2;
+% H = 1;
+% Re = 100;
+% u = dlmread('../results/u_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
 
 % M = 0.1;
 % H = 1;
@@ -44,35 +119,6 @@ v = dlmread('../results/v_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
 
 
 
-% U = 0.006 / sqrt(3);
-% H = 1.5;
-% Re = 100;
-% u = dlmread('../results/u_128x192_6_250_1_0_1.dat');
-% v = dlmread('../results/v_128x192_6_250_1_0_1.dat');
-
-% U = 0.006 / sqrt(3);
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_128_6_250_3_1_10.dat');
-% % v = dlmread('../results/v_128_6_250_3_1_10.dat');
-
-% U = 0.03 / sqrt(3);
-% H = 1;
-% Re = 10000;
-% u = dlmread('../results/u_128_30_250_3_1_10_Re10000.dat');
-% v = dlmread('../results/v_128_30_250_3_1_10_Re10000.dat');
-
-% U = 0.015 / sqrt(3);
-% H = 1;
-% Re = 500;
-% u = dlmread('../results/u_128_15_250_1_0_10_Re500.dat');
-% v = dlmread('../results/v_128_15_250_1_0_10_Re500.dat');
-
-% U = 0.015 / sqrt(3);
-% H = 1.5;
-% Re = 500;
-% u = dlmread('../results/u_128x192_15_250_1_0_10_Re500.dat');
-% v = dlmread('../results/v_128x192_15_250_1_0_10_Re500.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -82,8 +128,8 @@ dx = 1 / cols;
 dy = 1 / rows;
 % x = ( linspace(0,1-dx,cols) ) / ( 1 - dx );
 % y = ( linspace(0,1-dy,rows) ) / ( 1 - dy );
-x = ( linspace(0,1,cols) );
-y = ( linspace(0,H,rows) );
+x = ( linspace(dx/2,1-dx/2,cols) );
+y = ( linspace(dy/2,H-dy/2,rows) );
 
 if rows_even
     rows = [rows/2, rows/2+1];
@@ -110,7 +156,7 @@ if validation
     hold on;
 end
 U = M / sqrt(3);
-plot( y, flipud(mean(u(:,cols),2)/U) );
+plot( y, (mean(u(:,cols),2)/U) );
 title(['Centerline y vs. u-velocity at Re = ' num2str(Re)]);
 xlabel('y');
 ylabel('u');
@@ -134,9 +180,12 @@ end
 figure;
 [X,Y] = meshgrid(x,y);
 axis equal tight;
-streamslice(X,Y, flipud(u),flipud(v));
+streamslice((rot90(X,2)),(rot90(Y,2)), (u),(v));
 % streamline( stream2(X,Y,u,v,x,y) );
 % streamline( X,Y,u,v,x,y );
 title(['Steady-State Streamlines at Re = ' num2str(Re)]);
 xlabel('x');
 ylabel('y');
+
+ee = reference_error(x(2:end-1),v(2:end-1),Re);
+disp(['error ' num2str(ee)]);

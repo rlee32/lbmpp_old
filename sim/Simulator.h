@@ -14,48 +14,48 @@ class Simulator
 { 
 public:
   Simulator(std::string filename);
-  void iterate(); // performs one time step advancement.
+  void iteration(); // performs one time step advancement.
   Grid grid;
-  const std::size_t get_cell_count_0() const { return cell_count[0]; }
-  const std::size_t get_cell_count_1() const { return cell_count[1]; }
-  const double get_Re() const { return Re; }
-  const double get_nu() const { return nu; }
-  const double get_tau() const { return tau; }
-  const double get_M() const { return M; }
-  const double get_U() const { return U; }
-  const double get_timesteps() const { return timesteps; }
-  const double get_relax_model() const { return relax_model; }
-  const double get_vc_model() const { return vc_model; }
-  const double get_nucf() const { return nuc / nu; }
-  void output_coarse_field(std::string output_file_name);
+  std::size_t get_cell_count_0() const { return cell_count[0]; }
+  std::size_t get_cell_count_1() const { return cell_count[1]; }
+  double get_Re() const { return Re; }
+  double get_nu() const { return nu; }
+  double get_tau() const { return tau; }
+  double get_M() const { return M; }
+  double get_U() const { return U; }
+  double get_timesteps() const { return timesteps; }
+  double get_relax_model() const { return relax_model; }
+  double get_vc_model() const { return vc_model; }
+  double get_nucf() const { return nuc / nu; }
+  void output_coarse_field( std::string output_file_name );
 private:
   // Run time control.
   bool refinement = false; // If true, enables solution-adaptive refinement.
-
-  // Non-dimensional parameters.
+  std::size_t timesteps = 0;
+  // Solver parameters.
+  std::size_t relax_model = 1;
+  std::size_t vc_model = 0;
+  // Physical parameters.
   double Re = 0; // Reynolds number.
-
-  // Discrete parameters (for the coarsest cells!).
   double M = 0; // Mach number for characteristic velocity.
   double U = 0; // characteristic velocity, used for velocity BC values.
   double nu = 0; // lattice viscosity of the coarsest cells.
-  double nuc = 0; // For the viscosity-counteracting approach. The buffer viscosity.
+  double L = 0;
   double tau = 0; // relaxation time of the coarsest cells.
   double omega = 0; // relaxation frequency of the coarsest cells.
-
-  // Grid temporary variables.
-  std::size_t cell_count[2] = { 0, 0 }; // coarse cells in the x and y direction.
   // Initial values.
-  // Initial distribution function values are set the equilibrium distribution values for the given macroscopic initial values.
-  double rho0 = 0, u0 = 0, v0 = 0; // initial density and velocity.
+  double rho0 = 1;
+  double u0 = 0;
+  double v0 = 0;
+  // For the viscosity-counteracting approach. The buffer viscosity.
+  double nuc = 0;
+  double nucf = 0;
   // Boundary conditions
   char bc[4] = { 'w', 'w', 'w', 'w' }; // bottom, right, top, left
-  // double bcv[4] = {  }; // values; bottom, right, top, left
-
-  std::size_t timesteps = 0;
-
-  std::size_t relax_model = 1;
-  std::size_t vc_model = 0;
+  std::string face_order[4] = { "bottom", "right", "top", "left" };
+  char face_order_char[4] = { 'b', 'r', 't', 'l' };
+  // coarse grid dimension
+  std::size_t cell_count[2] = { 0, 0 };
 
   void read_settings(std::string filename);
   void process_settings();

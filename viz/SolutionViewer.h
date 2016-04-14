@@ -12,7 +12,7 @@ using namespace cimg_library;
 class SolutionViewer
 {
 public:
-  SolutionViewer(Grid& grid, int max_pixel_dim);
+  SolutionViewer(Simulator& sim, int max_pixel_dim);
   void test_draw();
   void display();
   void draw_velocity_magnitude(Grid& grid);

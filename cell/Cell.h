@@ -19,27 +19,32 @@ const static double W[8] = {
   W_orth, W_diag, 
   W_orth, W_diag, 
   W_orth, W_diag
-}; 
+};
 
-// Indexing of distribution functions and neighbours correspond to the same direction. 
-// Index goes from 0 to 7 in this order (starting from E, go CCW): E, NE, N, NW, W,SW, S, SE.
-// Result is that even-numbered directions are othogonal to coordinate axes, and odd-numbered indices are diagonal.
+// Indexing of distribution functions and neighbours are the same. 
+// Index goes from 0 to 7 in this order (starting from E, go CCW): 
+//  E, NE, N, NW, W, SW, S, SE.
+// Result is that even-numbered directions are othogonal to coordinate axes, 
+//  and odd-numbered indices are diagonal.
 
 class Cell
 {
 public:
-  Cell(double u_, double v_, double rho_, 
-    double tau, double omega, double nu, double nuc, 
-    std::vector<Cell>* grid_levels); // Meant to make coarsest cells.
-  Cell(Cell* parent); // meant to be called in a (single-level) refine operation.
-  double get_velocity_magnitude() const;
-  void coalesce();
-  void reconstruct_macro();
-  void collide(size_t relax_model, size_t vc_model);
-  void explode();
+  Cell( double u_, double v_, double rho_ ); // Meant to make coarsest cells.
+  Cell( Cell* parent ); // meant to be called in a (single-level) refine operation.
+  void collide( std::size_t relax_model, std::size_t vc_model, 
+    double omega, double scale_decrease, double scale_increase, double nuc );
   void stream_parallel();
   void bufferize_parallel();
-  void test_mrt();
+  void reconstruct_macro();
+  // BCs
+  void bounce_back(char side);
+  void moving_wall(char side, double U);
+  // For dynamic mesh.
+  void coalesce();
+  void explode();
+  // For post-processing.
+  double get_mag() const;
   struct
   {
     double fc = 1; // center distribution.
@@ -61,14 +66,10 @@ public:
     double s12x = 0;
     double s12y = 0;
     double s22y = 0;
-    double scale = 1; // 2^(tree level)
-    double scale_inv = 1; // 1 / 2^(tree level)
   } vc;
   struct
   {
-    int level = 0; // tree level. 0: coarsest cell.
-    // double dim = 0; // dimension of this cell. used for adaptive-gridding.
-    std::vector<Cell>* grid_levels = nullptr;
+    // std::vector<Cell>* grid_levels = nullptr;
     Cell* parent = nullptr;
     Cell* children[4] = { nullptr };
     Cell* neighbours[8] = { nullptr }; // cell neighbours for every lattice direction (have same level)
@@ -85,29 +86,29 @@ public:
     bool physical = true; // flag whether this cell is participating in the flow solution.
     bool interface = false; // a flag for interface status. An interface cell will not collide, only advect. Being an interface and being a 'real' cell are not mutually exclusive. Real cells must ALWAYS have neighbours (whether real or interface), but interface cells do not need (to create new) neighbours.
     bool cut = false; // true if physical surface resides in this cell.
-    double tau = 0; // relaxation time.
-    double omega = 0; // relaxation frequency.
-    double nu = 0; // lattice viscosity.
-    double nuc = 0; // counteraction viscosity. 
-    double b[8] = {}; // buffers for advected distributions (for parallel advection).
+    // buffers for advected distributions (for parallel advection).
+    // also useful for bounced-back distributions!!!
+    double b[8] = {}; 
   } numerics;
 private:
-  void recompute_relaxation();
   // SRT
-  inline double next_fc_srt(double msq) const;
-  inline double next_fi_srt(std::size_t i, double msq) const;
+  inline double next_fc_srt( double msq, double omega ) const;
+  inline double next_fi_srt( std::size_t i, double msq, double omega ) const;
   // MRT
   inline double premultiply_M(size_t i) const;
-  inline double premultiply_MinvS( size_t i, const double m[9] ) const;
+  inline double premultiply_MinvS( 
+    size_t i, const double m[9], double omega ) const;
   inline void compute_moment( double m[9] ) const;
-  void next_f_mrt( const double m[9] );
-  inline double next_fc_mrt( const double m[9] ) const;
-  inline double next_fi_mrt( size_t i, const double m[9] ) const;
+  void next_f_mrt( const double m[9], double omega );
   // VC
   inline void compute_feq( double feq[9] ) const;
-  inline void compute_strain_terms( double& s11, double& s12, double& s22, const double feq[9] ) const;
-  inline void fill_strain_terms();
-  inline void compute_strain_differences( double& s11x, double& s12x, double& s12y, double& s22y ) const;
-  inline void compute_vc_body_force( double g[9] ) const;
-  inline void apply_steady_vc_body_force();
+  inline void compute_strain_terms( 
+    double& s11, double& s12, double& s22, 
+    const double feq[9], double omega ) const;
+  inline void fill_strain_terms( double omega );
+  inline void compute_strain_differences( 
+    double& s11x,double& s12x,double& s12y,double& s22y,double dh_inv ) const;
+  inline void compute_vc_body_force( double g[9], double nuc ) const;
+  inline void apply_steady_vc_body_force( 
+    double omega, double scale_increase, double scale_decrease, double nuc );
 };

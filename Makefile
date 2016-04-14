@@ -15,6 +15,8 @@ endif
 SRCS +=	sim/Simulator.cc
 SRCS +=	cell/Cell.cc
 SRCS +=	grid/Grid.cc
+SRCS +=	grid/GridLevel.cc
+SRCS +=	grid/BoundaryConditions.cc
 SRCS +=	viz/SolutionViewer.cc
 
 %.o: %.cc

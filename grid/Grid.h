@@ -8,39 +8,30 @@
 #include <omp.h>
 
 #include "../cell/Cell.h"
+#include "GridLevel.h"
 
 class Grid 
 {
 public:
-  const static std::size_t MAX_LEVELS = 32;
-  std::vector<Cell> grid_levels[MAX_LEVELS]; //Holds the cells associated with each level. 0: coarsest, MAX_LEVEL-1: finest.
-  double scale_factors[MAX_LEVELS] = { 0 };
-  std::size_t cell_count[2]; // The number of cells in x and y direction on the coarsest level.
-  // void initialize(int cell_count_x, int cell_count_y, 
-  //   double rho0, double u0, double v0, 
-  //   double tau, double omega, double nu, double nuc,
-  //   char bc_[4], double bcv_[4], double uc_);
-  // void iterate(size_t level);
-  void initialize(int cell_count_x, int cell_count_y, 
+  void iteration( std::size_t level );
+  void initialize( std::size_t cell_count_x, std::size_t cell_count_y, 
     double rho0, double u0, double v0, 
-    double tau, double omega, double nu, double nuc,
-    char bc_[4], double U_, std::size_t relax_model_, std::size_t vc_model_);
-  void iterate(std::size_t level);
-  double get_max_velocity_magnitude() const; // Mainly for post-processing purposes.
-  double get_min_velocity_magnitude() const; // Mainly for post-processing purposes.
+    double nu, double nuc,
+    char sides[4], char bc[4], double U,
+    double relax_model, double vc_model );
+  // Post-processing functions.
+  double max_mag() const;
+  double min_mag() const;
+  std::size_t active_cells() const;
+  double mag( std::size_t level, std::size_t cell_index ) const;
+  const std::vector<Cell>& get_cells(std::size_t index) const 
+    { return levels[index].get_cells(); }
+  std::size_t cell_count_x() { return cell_count[0]; }
+  std::size_t cell_count_y() { return cell_count[1]; }
 private:
-  double U = 0; // characteristic velocity.
-  char bc[4] = {'w', 'w', 'w', 'w'}; // Boundary conditions for bottom, right, top, left, respectively.
-  // double bcv[4] = {0, 0, 0, 0}; // Boundary condition values for bottom, right, top, left, respectively.
-  std::size_t relax_model = 1;
-  std::size_t vc_model = 0;
-  void assign_coarse_neighbours();
-  void enforce_bc_side(int side, char type, double value);
-  void enforce_macro_bc_side(int side, char type, double value);
-  void enforce_bc();
-  void enforce_macro_bc();
-  void reconstruct_macro(int level);
-  void bufferize_parallel(int level);
-  void stream_parallel(int level);
-  void calculate_scale_factors();
+  const static std::size_t MAX_LEVELS = 32;
+  GridLevel levels[MAX_LEVELS];
+  double relax_model = 1;
+  double vc_model = 0;
+  std::size_t cell_count[2] = { 0, 0 };// Coarsest level cell dimension.
 };

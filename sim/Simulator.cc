@@ -9,9 +9,6 @@ Simulator::Simulator(string filename)
 
 void Simulator::read_settings(string filename)
 {
-  double nucf = 0;
-  double L = 0;
-
   // Let's begin to read settings.
   ifstream settings_file( filename );
   string line;
@@ -43,25 +40,9 @@ void Simulator::read_settings(string filename)
         if ( not parameter.compare("rho0") ) iss >> rho0;
         if ( not parameter.compare("u0") ) iss >> u0;
         if ( not parameter.compare("v0") ) iss >> v0;
-        if ( not parameter.compare("bottom") ) 
+        for ( size_t i = 0; i < 4; ++i )
         {
-          iss >> bc[0];
-          // iss >> bcv[0];
-        }
-        if ( not parameter.compare("right") )
-        {
-          iss >> bc[1];
-          // iss >> bcv[1];
-        }
-        if ( not parameter.compare("top") )
-        {
-          iss >> bc[2];
-          // iss >> bcv[2];
-        }
-        if ( not parameter.compare("left") )
-        {
-          iss >> bc[3];
-          // iss >> bcv[3];
+          if ( not parameter.compare(face_order[i]) ) { iss >> bc[i]; }
         }
       }
     }
@@ -70,31 +51,34 @@ void Simulator::read_settings(string filename)
     nuc = nucf*nu; // counteracting viscosity.
     tau = 3 * (nu + nuc) + 0.5;
     omega = 1.0 / tau;
-    // grid.initialize(cell_count[0], cell_count[1], rho0, u0, v0, 
-    // tau, omega, nu, nuc, bc, bcv, uc );
-    grid.initialize( cell_count[0], cell_count[1], rho0, u0, v0, 
-    tau, omega, nu, nuc, bc, U, relax_model, vc_model );
+    grid.initialize( 
+      cell_count[0], cell_count[1], 
+      rho0, u0, v0, 
+      nu, nuc, 
+      face_order_char, bc, U,
+      relax_model, vc_model );
   }
 }
 
-void Simulator::iterate()
+void Simulator::iteration()
 {
-  grid.iterate(0);
+  grid.iteration(0);
 }
 
 void Simulator::output_coarse_field(string output_suffix)
 {
   ofstream u, v;
-  vector<Cell>& g = grid.grid_levels[0];
+  const vector<Cell>& g = grid.get_cells(0);
 
   u.open("u_"+output_suffix);
   v.open("v_"+output_suffix);
-  for (size_t j = 0; j < grid.cell_count[1]; ++j)
+  for (size_t j = 0; j < cell_count[1]; ++j)
   {
-    for (size_t i = 0; i < grid.cell_count[0]; ++i)
+    for (size_t i = 0; i < cell_count[0]; ++i)
     {
-      u << g[i+j*grid.cell_count[0]].state.u << "\t";
-      v << g[i+j*grid.cell_count[0]].state.v << "\t";
+      size_t ii = i + j * cell_count[0];
+      u << g[ii].state.u << "\t";
+      v << g[ii].state.v << "\t";
     }
     u << endl;
     v << endl;

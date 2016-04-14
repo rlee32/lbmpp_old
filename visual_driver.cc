@@ -19,7 +19,7 @@ int main(int argc, char ** argv)
 
   // Instantiate the solution viewer.
   int max_pixel_dim = (argc < 2) ? 800 : atoi(argv[1]);
-  SolutionViewer sv(sim.grid, max_pixel_dim);
+  SolutionViewer sv(sim, max_pixel_dim);
 
   // timer
   Timer timer;
@@ -28,7 +28,7 @@ int main(int argc, char ** argv)
   // cout << "Running " << sim.timesteps << " timesteps." << endl;
   // bool done = false;
   int k = 0;
-  int display_interval = 2000;
+  int display_interval = 1000;
   timer.start();
   while ( not sv.window.is_closed() and k <= sim.get_timesteps() )
   {
@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
         // if (sv.window.button() && sv.window.mouse_y()>=0)
         {
           // cout << "Performing iteration " << k << endl;
-          sim.iterate();
+          sim.iteration();
           if ( k % display_interval == 0 )
           {
             sv.draw_velocity_magnitude(sim.grid);
@@ -56,12 +56,15 @@ int main(int argc, char ** argv)
       }
       //done = true;
     }
+    // cin.ignore();
   }
   
-  string grid_string = "G"+to_string( sim.get_cell_count_0() );
-  if(sim.get_cell_count_0() != sim.get_cell_count_1())
+  std::size_t cx = sim.get_cell_count_0();
+  std::size_t cy = sim.get_cell_count_1();
+  string grid_string = "G"+to_string( cx );
+  if( cx != cy )
   {
-    grid_string += "x"+to_string( sim.get_cell_count_1() );
+    grid_string += "x"+to_string( cy );
   }
   string mach_string = "M"+to_string( (size_t)(sim.get_M()*1000.0) );
   string timesteps_string = "T"+to_string( (size_t)(sim.get_timesteps()/1000) );
