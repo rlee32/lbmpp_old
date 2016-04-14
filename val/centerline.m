@@ -18,107 +18,33 @@ clear; close all; clc;
 % u = dlmread('../results/u_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
 % v = dlmread('../results/v_G200_M200_T50_RM1_VCM0_VCF0_Re100.dat');
 
-% SRT 100 Re
-M = 0.1;
-H = 1;
-Re = 100;
-u = dlmread('../results/u_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/v_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
-
-% % SRT 100 Re Low-res
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G32_M200_T50_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G32_M200_T50_RM1_VCM0_VCF0_Re100.dat');
-
-% MRT 10,000 Re (unconverged)
-% M = 0.2;
-% H = 1;
-% Re = 10000;
-% u = dlmread('../results/u_G200_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
-% v = dlmread('../results/v_G200_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
-
-% M = 0.2;
-% H = 1.5;
-% Re = 500;
-% u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
-% v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re500.dat');
-
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
-% M = 0.2;
-% H = 1;
-% Re = 500;
-% u = dlmread('../results/u_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
-% v = dlmread('../results/v_G128_M200_T75_RM1_VCM0_VCF0_Re500.dat');
-
-% M = 0.004;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128_M4_T100_RM1_VCM0_VCF0_Re100.dat');
-
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G50_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G25_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G75_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% 
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G200_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% 
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G200_M200_T30_RM1_VCM0_VCF0_Re100.dat');
-
+% % SRT 100 Re
 % M = 0.1;
 % H = 1;
 % Re = 100;
-% u = dlmread('../results/u_G128_M100_T40_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128_M100_T40_RM1_VCM0_VCF0_Re100.dat');
+% u = dlmread('../results/u_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
 
-% M = 0.05;
+% % SRT 100 Re + VC
+% M = 0.1;
 % H = 1;
 % Re = 100;
-% u = dlmread('../results/u_G128_M50_T80_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128_M50_T80_RM1_VCM0_VCF0_Re100.dat');
+% u = dlmread('../results/u_G100_M100_T50_RM1_VCM1_VCF1_Re100.dat');
+% v = dlmread('../results/v_G100_M100_T50_RM1_VCM1_VCF1_Re100.dat');
 
-% M = 0.2;
+% % SRT 1000 Re + VC
+% M = 0.1;
 % H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G100_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G100_M200_T20_RM1_VCM0_VCF0_Re100.dat');
+% Re = 1000;
+% u = dlmread('../results/u_G100_M100_T100_RM1_VCM1_VCF1_Re1000.dat');
+% v = dlmread('../results/v_G100_M100_T100_RM1_VCM1_VCF1_Re1000.dat');
 
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G150_M200_T40_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G150_M200_T40_RM1_VCM0_VCF0_Re100.dat');
-
-
-
+% MRT 1000 Re
+M = 0.05;
+H = 1;
+Re = 1000;
+u = dlmread('../results/u_G151_M50_T250_RM3_VCM0_VCF1_Re1000.dat');
+v = dlmread('../results/v_G151_M50_T250_RM3_VCM0_VCF1_Re1000.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -142,7 +68,7 @@ else
     cols = ceil(cols/2);
 end
 
-validation = H == 1 && (Re==100 || Re==10000);
+validation = H == 1 && (Re==100 || Re==10000 || Re==1000);
 
 if validation
     [x_ref, v_ref] = validation_data_v_vs_x(Re);

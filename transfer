@@ -1,0 +1,2 @@
+mv *.dat results/
+mv *.png results/
