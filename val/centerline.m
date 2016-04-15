@@ -5,26 +5,19 @@ clear; clc;
 % The solution file nomencalture descriptions can be found in 
 %  the README.txt in the '../results/' folder. 
 
-% Tall cavity
-% M = 0.2;
-% H = 1.5;
-% Re = 100;
-% u = dlmread('../results/u_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128x192_M200_T100_RM1_VCM0_VCF0_Re100.dat');
-
-% % SRT 100 Re
-% M = 0.2;
-% H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G128_M200_T20_RM1_VCM0_VCF0_Re100.dat');
-
 % % SRT 100 Re
 % M = 0.1;
 % H = 1;
 % Re = 100;
-% u = dlmread('../results/u_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G100_M100_T50_RM1_VCM0_VCF0_Re100.dat');
+% u = dlmread('../results/u_G101_M100_T100_RM1_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/v_G101_M100_T100_RM1_VCM0_VCF0_Re100.dat');
+
+% SRT 1000 Re
+M = 0.1;
+H = 1;
+Re = 1000;
+u = dlmread('../results/u_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
+v = dlmread('../results/v_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
 
 % % SRT 100 Re + VC
 % M = 0.1;
@@ -48,11 +41,11 @@ clear; clc;
 % v = dlmread('../results/v_G100_M100_T100_RM1_VCM1_VCF1_Re1000.dat');
 
 % % MRT 1000 Re
-% M = 0.2;
+% M = 0.1;
 % H = 1;
 % Re = 1000;
-% u = dlmread('../results/u_G125_M200_T100_RM3_VCM0_VCF0_Re1000.dat');
-% v = dlmread('../results/v_G125_M200_T100_RM3_VCM0_VCF0_Re1000.dat');
+% u = dlmread('../results/u_G125_M100_T75_RM3_VCM0_VCF0_Re1000.dat');
+% v = dlmread('../results/v_G125_M100_T75_RM3_VCM0_VCF0_Re1000.dat');
 
 % % MRT 5000 Re
 % M = 0.2;
@@ -61,12 +54,19 @@ clear; clc;
 % u = dlmread('../results/u_G101_M200_T500_RM3_VCM0_VCF0_Re5000.dat');
 % v = dlmread('../results/v_G101_M200_T500_RM3_VCM0_VCF0_Re5000.dat');
 
-% MRT 10000 Re
-M = 0.2;
-H = 1;
-Re = 10000;
-u = dlmread('../results/u_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
-v = dlmread('../results/v_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+% % MRT 10000 Re
+% M = 0.2;
+% H = 1;
+% Re = 10000;
+% u = dlmread('../results/u_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+% v = dlmread('../results/v_G125_M200_T500_RM3_VCM0_VCF0_Re10000.dat');
+% 
+% % MRT 20000 Re
+% M = 0.1;
+% H = 1;
+% Re = 20000;
+% u = dlmread('../results/u_G125_M100_T500_RM3_VCM0_VCF0_Re20000.dat');
+% v = dlmread('../results/v_G125_M100_T500_RM3_VCM0_VCF0_Re20000.dat');
 
 [rows,cols] = size(u);
 rows_even = mod(rows, 2) == 0;
@@ -100,7 +100,7 @@ end
 
 figure;
 if validation
-    plot(y_ref,u_ref, 'x');
+    plot(y_ref,u_ref, 'o');
     hold on;
 end
 U = M / sqrt(3);
@@ -115,7 +115,7 @@ end
 
 figure;
 if validation
-    plot(x_ref,v_ref, 'x');
+    plot(x_ref,v_ref, 'o');
     hold on;
 end
 plot( x, mean(v(rows,:),1)/U );
