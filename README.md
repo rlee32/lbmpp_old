@@ -1,6 +1,7 @@
 A C++ LBM code.  
 
-Focus is on incompressible, isothermal high-Re flows. The goal is to simulate multi-element airfoils.
+Focus is on incompressible, isothermal high-Re flows. 
+The goal is to simulate multi-element airfoils.
 
 ## Assumptions
 
@@ -15,11 +16,59 @@ Focus is on incompressible, isothermal high-Re flows. The goal is to simulate mu
 
 ## Usage
 
-Run 'make' to compile with visualizer. Run 'make NOVIZ=1' to compile without visualizer (it will be faster). 
+Run 'make' to compile with visualizer. 
+Run 'make NOVIZ=1' to compile without visualizer (it will be slightly faster). 
 
 Modify 'settings' to your needs.  
 
-To run: './lbmpp'. For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
+To run: './lbmpp'. 
+For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
+
+
+## Validation Cases
+
+These validation cases are compared with data from papers found in the 
+'ref' folder.  
+
+### SRT
+
+1. Re = 100:  
+
+![SRT Re = 100]
+(results/srt_100_m.png)
+
+
+2. Re = 1000:  
+
+### MRT
+
+1. Re = 100:  
+
+2. Re = 1000:  
+
+3. Re = 10000:  
+
+4. Re = 21000:  
+
+### MRT + VC
+
+1. Re = 100:  
+
+2. Re = 1000:  
+
+3. Re = 10000:  
+
+4. Re = 21000:  
+
+### MRT + DG (Dynamic Grid)
+
+1. Re = 100:  
+
+2. Re = 1000:  
+
+3. Re = 10000:  
+
+4. Re = 21000:  
 
 ## Interesting Notes
 
