@@ -59,16 +59,26 @@ These validation cases are compared with data from papers found in the
 
 1. Re = 100, Grid 101x101    
 <p align="center">
-![SRT Re = 100]
+![MRT Re = 100]
 (val/mrt_100_u.bmp)
-![SRT Re = 100]
+![MRT Re = 100]
 (val/mrt_100_v.bmp)
-![SRT Re = 100]
+![MRT Re = 100]
 (val/mrt_100_s.bmp)
-![SRT Re = 100]
+![MRT Re = 100]
 (val/mrt_100_m.png)
 </p>
-2. Re = 1000:  
+2. Re = 1000, Grid 151x151:  
+<p align="center">
+![MRT Re = 1000]
+(val/mrt_1000_u.bmp)
+![MRT Re = 1000]
+(val/mrt_1000_v.bmp)
+![MRT Re = 1000]
+(val/mrt_1000_s.bmp)
+![MRT Re = 1000]
+(val/mrt_1000_m.png)
+</p>
 
 3. Re = 10000:  
 
