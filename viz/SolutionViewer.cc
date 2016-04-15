@@ -11,6 +11,7 @@ SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim)
   pixels_per_cell = (int) pixels_per_cell;
   pixels[0] = pixels_per_cell*sim.get_cell_count_0();
   pixels[1] = pixels_per_cell*sim.get_cell_count_1();
+  // cout << pixels[0] << ", " << pixels[1] << endl;
   CImg<unsigned char> image_(
     pixels[0], // x-resolution
     pixels[1]+TextDisplayDim, // y-resolution
@@ -20,6 +21,8 @@ SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim)
   image = image_;
   CImgDisplay window_(image, "Flow solution");
   window = window_;
+  // cout << "Pausing" << endl;
+  // cin.ignore();
 }
 
 void SolutionViewer::test_draw()
@@ -93,6 +96,8 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
     + to_string(elapsed_time_seconds) + " sec"
     + " ( Estimated " + to_string(remaining_minutes) + " minutes, " 
     + to_string(remaining_seconds) + " sec remaining )";
+  draw_text_line( text, line++ );
+  text = "Total cells: " + to_string(sim.grid.active_cells());
   draw_text_line( text, line++ );
   text = "Computation speed: " + to_string(speed) + " timesteps / second"
     + " ( average speed: " + to_string(avg_speed) + " timesteps / second )";

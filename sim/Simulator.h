@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "../grid/Grid.h"
 
@@ -27,6 +28,7 @@ public:
   double get_relax_model() const { return relax_model; }
   double get_vc_model() const { return vc_model; }
   double get_nucf() const { return nuc / nu; }
+  std::size_t get_display_interval() const { return display_interval; }
   void output_coarse_field( std::string output_file_name );
 private:
   // Run time control.
@@ -47,6 +49,11 @@ private:
   double rho0 = 1;
   double u0 = 0;
   double v0 = 0;
+  std::string u0file = "";
+  std::string v0file = "";
+  std::vector<double> u0field;
+  std::vector<double> v0field;
+  double M0 = 0;
   // For the viscosity-counteracting approach. The buffer viscosity.
   double nuc = 0;
   double nucf = 0;
@@ -56,7 +63,16 @@ private:
   char face_order_char[4] = { 'b', 'r', 't', 'l' };
   // coarse grid dimension
   std::size_t cell_count[2] = { 0, 0 };
+  //
+  std::size_t display_interval = 1; 
 
   void read_settings(std::string filename);
   void process_settings();
+  // coarse input solution.
+  std::size_t read_coarse_field(std::string filename, std::vector<double>& phi, 
+    double scale);
+  void interpolate_field( std::size_t source_x_cells, std::vector<double>& source, 
+    std::size_t target_x_cells, std::size_t target_y_cells, 
+    std::vector<double>& target );
+  void read_coarse_solution();
 };

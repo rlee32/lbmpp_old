@@ -23,7 +23,7 @@ public:
 private:
   static const uint TextHeight = 10;
   static const uint TextPadding = 3;
-  static const uint TextDisplayDim = 7*( TextHeight + TextPadding ) 
+  static const uint TextDisplayDim = 8*( TextHeight + TextPadding ) 
     + TextPadding;
   std::size_t pixels[2]; // The pixel dimension of the windows.
   std::size_t pixels_per_cell; // The number of pixels per coarsest cell.

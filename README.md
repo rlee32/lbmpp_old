@@ -93,7 +93,7 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 1000]
 (val/mrt_1000_m.png)
 </p>
-3. Re = 10000, Grid 225x225 (Results could be better by running longer.)  
+3. Re = 10000, Grid 257x257  
 <p align="center">
 ![MRT Re = 10000]
 (val/mrt_10000_u.bmp)

@@ -4,6 +4,20 @@ using namespace std;
 
 Cell::Cell( double rho, double u, double v )
 {
+  reconstruct_distribution( rho, u, v );
+}
+
+// Constructor for cells generated freom refinement.
+// Currently a homogeneous copy of state.
+Cell::Cell( Cell* parent )
+{
+  tree.parent = parent;
+  state = parent->state;
+  tree.need_to_link = true;
+}
+
+void Cell::reconstruct_distribution( double rho, double u, double v )
+{
   state.rho = rho;
   state.u = u;
   state.v = v;
@@ -20,18 +34,126 @@ Cell::Cell( double rho, double u, double v )
   }
 }
 
-// Currently a homogeneous copy of state.
-Cell::Cell( Cell* parent )
+void Cell::link_children()
 {
-  tree.parent = parent;
-  state = parent->state;
+  // Need to reciprocate linking for those cells who 
+  //  are not flagged to be linked in this iteration.
+
+  Cell* n = nullptr;
+  
+  // 0th position (bottom-left)
+  Cell& c0 = *(tree.children[0]);
+  // Siblings
+  c0.tree.neighbours[0] = tree.children[2];
+  c0.tree.neighbours[1] = tree.children[3];
+  c0.tree.neighbours[2] = tree.children[1];
+  // Cousins
+  n = tree.neighbours[4];
+  if ( n != nullptr )
+  {
+    c0.tree.neighbours[3] = n->tree.children[3];
+    c0.tree.neighbours[4] = n->tree.children[2];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[3]->tree.neighbours[7] = &c0;
+      n->tree.children[2]->tree.neighbours[0] = &c0;
+    }
+  }
+  // Cousins
+  n = tree.neighbours[5];
+  if ( n != nullptr )
+  {
+    c0.tree.neighbours[5] = n->tree.children[3];
+  }
+  // Cousins
+  n = tree.neighbours[6];
+  if ( n != nullptr )
+  {
+    c0.tree.neighbours[6] = n->tree.children[1];
+    c0.tree.neighbours[7] = n->tree.children[3];
+  }
+
+  // 1st position (top-left)
+  Cell& c1 = *(tree.children[1]);
+  c1.tree.neighbours[0] = tree.children[3];
+  n = tree.neighbours[2];
+  if ( n != nullptr )
+  {
+    c1.tree.neighbours[1] = n->tree.children[2];
+    c1.tree.neighbours[2] = n->tree.children[0];
+  }
+  n = tree.neighbours[3];
+  if ( n != nullptr )
+  {
+    c1.tree.neighbours[3] = n->tree.children[2];
+  }
+  n = tree.neighbours[4];
+  if ( n != nullptr )
+  {
+    c1.tree.neighbours[4] = n->tree.children[3];
+    c1.tree.neighbours[5] = n->tree.children[2];
+  }
+  c1.tree.neighbours[6] = tree.children[0];
+  c1.tree.neighbours[7] = tree.children[2];
+
+  // 2nd position (bottom-right)
+  Cell& c2 = *(tree.children[2]);
+  n = tree.neighbours[0];
+  if ( n != nullptr )
+  {
+    c2.tree.neighbours[0] = n->tree.children[0];
+    c2.tree.neighbours[1] = n->tree.children[1];
+  }
+  c2.tree.neighbours[2] = tree.children[3];
+  c2.tree.neighbours[3] = tree.children[1];
+  c2.tree.neighbours[4] = tree.children[0];
+  n = tree.neighbours[6];
+  if ( n != nullptr )
+  {
+    c2.tree.neighbours[5] = n->tree.children[1];
+    c2.tree.neighbours[6] = n->tree.children[3];
+  }
+  n = tree.neighbours[7];
+  if ( n != nullptr )
+  {
+    c2.tree.neighbours[7] = n->tree.children[1];
+  }
+  
+  // 3rd position (top-right)
+  Cell& c3 = *(tree.children[3]);
+  n = tree.neighbours[0];
+  if ( n != nullptr )
+  {
+    c3.tree.neighbours[0] = n->tree.children[1];
+  }
+  n = tree.neighbours[1];
+  if ( n != nullptr )
+  {
+    c3.tree.neighbours[1] = n->tree.children[0];
+  }
+  n = tree.neighbours[2];
+  if ( n != nullptr )
+  {
+    c3.tree.neighbours[2] = n->tree.children[2];
+    c3.tree.neighbours[3] = n->tree.children[0];
+  }
+  c3.tree.neighbours[4] = tree.children[1];
+  c3.tree.neighbours[5] = tree.children[0];
+  c3.tree.neighbours[6] = tree.children[2];
+  n = tree.neighbours[0];
+  if ( n != nullptr )
+  {
+    c3.tree.neighbours[7] = n->tree.children[0];
+  }
+
 }
 
 // Currently just averages children.
 // Need to account for cut cells, with different-volume cells.
 void Cell::coalesce()
 {
-  if ( numerics.interface )
+  if ( tree.interface )
   {
     double fcavg = 0;
     double favg[8] = {};
@@ -66,30 +188,56 @@ void Cell::coalesce()
 }
 
 // For cut cells, the distribution of particles should ensure MME conservation.
-// For homogeneous explosion, no problem. 
-void Cell::explode()
+// For homogeneous explosion, no problem.
+void Cell::explode_homogeneous()
 {
-  if ( numerics.physical and numerics.interface ) 
+  for ( size_t c = 0; c < 4; ++c )
   {
-    for (int c = 0; c < 4; ++c)
-    {
-      Cell* ch = tree.children[c];
-      if (ch != nullptr)
-      {
-        ch->state = state;
-      }
-      else
-      {
-        // Create cell
-      }
-    }
+    tree.children[c]->state = state;
   }
+}
+void Cell::activate_children()
+{
+  explode_homogeneous();
+  for ( size_t i = 0; i < 4; ++i )
+  {
+    tree.children[i]->tree.active = true;
+  }
+}
+
+// Creates activated children.
+void Cell::create_children(vector<Cell>& next_level_cells)
+{
+  // create the children.
+  for ( size_t i = 0; i < 4; ++i )
+  {
+    Cell child( this );
+    next_level_cells.push_back(child);
+    tree.children[i] = &next_level_cells.back();
+  }
+}
+
+// If children do not already exist, create them.
+// Then, activate children and deactivate current (parent) cell.
+void Cell::refine( vector<Cell>& next_level_cells )
+{
+  // We assume all children made or no children made.
+  bool no_children = tree.children[0] == nullptr;
+  if( no_children )
+  {
+    create_children( next_level_cells );
+  }
+  else
+  {
+    activate_children();
+  }
+  tree.active = false;
 }
 
 void Cell::collide( size_t relax_model, size_t vc_model, double omega, 
   double scale_decrease, double scale_increase, double nuc )
 {
-  if ( numerics.physical and not numerics.interface )
+  if ( tree.active and not tree.interface )
   {
     // Relaxation
     switch( relax_model )
@@ -542,7 +690,7 @@ void Cell::next_f_mrt( const double m[9], double omega )
 
 void Cell::stream_parallel()
 {
-  if( numerics.physical )
+  if( tree.active )
   {
     for(size_t i = 0; i < 8; ++i)
     {

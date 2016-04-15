@@ -32,6 +32,7 @@ class Cell
 public:
   Cell( double u_, double v_, double rho_ ); // Meant to make coarsest cells.
   Cell( Cell* parent ); // meant to be called in a (single-level) refine operation.
+  void reconstruct_distribution( double u_, double v_, double rho_ );
   void collide( std::size_t relax_model, std::size_t vc_model, 
     double omega, double scale_decrease, double scale_increase, double nuc );
   void stream_parallel();
@@ -42,19 +43,25 @@ public:
   void moving_wall(char side, double U);
   // For dynamic mesh.
   void coalesce();
-  void explode();
+  void explode_homogeneous();
+  void refine( std::vector<Cell>& next_level_cells );
+  // For initialization from file.
+  void set_uv( double u, double v ) { state.u = u; state.v = v; };
   // For post-processing.
   double get_mag() const;
   double rho() const { return state.rho; }
+  void link_children();
   struct
   {
     double fc = 1; // center distribution.
-    double f[8] = { 0 }; // advected distributions ( to index-correspond to the neighbours ).
+    // advected distributions ( to index-correspond to the neighbours ).
+    double f[8] = { 0 }; 
     double rho = 1;
     double u = 0;
     double v = 0;
   } state;
   // For viscosity-counteracting approach.
+  // These are merely buffers for differencing.
   struct
   {
     // Strain rate tensor values 
@@ -68,25 +75,49 @@ public:
     double s12y = 0;
     double s22y = 0;
   } vc;
+  // Parallel considerations:
+  // Create cells first. Set flags 
   struct
   {
-    // std::vector<Cell>* grid_levels = nullptr;
     Cell* parent = nullptr;
-    Cell* children[4] = { nullptr };
-    Cell* neighbours[8] = { nullptr }; // cell neighbours for every lattice direction (have same level)
+    // Children are ordered in N-order curve.
+    Cell* children[4] = { nullptr, nullptr, nullptr, nullptr };
+    // cell neighbours for every lattice direction (have same level)
     // the number of neighbours in each orthogonal direction (at least).
     // going ccw from {1,0}.
+    Cell* neighbours[8] = { nullptr }; 
+
+    // flag whether this cell is currently participating in the flow solution.
+    // Does not need to be set every iteration.
+    bool active = true;
+    // An interface cell will not collide, only advect. 
+    // A cell can be both an interface and active if adjacent to finer active 
+    //  cells.
+    // An interface cell is purely for placeholding coarse explosions for 
+    //  advections to finer levels. 
+    // Real cells must ALWAYS have neighbours (whether real or interface), 
+    //  but interface cells do not need (to create new) neighbours.
+    bool interface = false;
+    
+    // A flag to identify cells that need refinement after iteration.
+    // Needs to be explicitly set every iteration.
+    bool need_to_refine = false;
+    // Link newly-created children (not this cell itself).
+    // Needs to be explicitly set every iteration.
+    bool need_to_link = false;
+    
+    // Currently used for VC
     std::size_t nn[4] = {2,2,2,2};
     // following meaning there are at least 2 neighbours in every direction.
     bool fully_interior_cell = true;
-    uint64_t mk = (uint64_t)0; // Morton N-order key (interleave x and y, x first).
-    bool refined = false; // a flag for presence of active children.
+    // Morton N-order key (interleave x and y, x first).
+    // x-first gives you an N-order curve.
+    uint64_t mk = (uint64_t)0; 
   } tree;
   struct
   {
-    bool physical = true; // flag whether this cell is participating in the flow solution.
-    bool interface = false; // a flag for interface status. An interface cell will not collide, only advect. Being an interface and being a 'real' cell are not mutually exclusive. Real cells must ALWAYS have neighbours (whether real or interface), but interface cells do not need (to create new) neighbours.
-    bool cut = false; // true if physical surface resides in this cell.
+    // true if physical surface resides in this cell.
+    bool cut = false; 
     // buffers for advected distributions (for parallel advection).
     // also useful for bounced-back distributions!!!
     double b[8] = {}; 
@@ -112,4 +143,8 @@ private:
   inline void compute_vc_body_force( double g[9], double nuc ) const;
   inline void apply_steady_vc_body_force( 
     double omega, double scale_increase, double scale_decrease, double nuc );
+  // Dynamic grid
+  void link_new_children(size_t child);
+  void activate_children();
+  void create_children(std::vector<Cell>& next_level_cells);
 };

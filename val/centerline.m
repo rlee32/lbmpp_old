@@ -51,13 +51,20 @@ clear; clc;
 M = 0.2;
 H = 1;
 Re = 10000;
-u = dlmread('../results/u_G225_M200_T1000_RM3_VCM0_VCF0_Re10000.dat');
-v = dlmread('../results/v_G225_M200_T1000_RM3_VCM0_VCF0_Re10000.dat');
+u = dlmread('../results/u_G257_M200_T200_RM3_VCM0_VCF0_Re10000.dat');
+v = dlmread('../results/v_G257_M200_T200_RM3_VCM0_VCF0_Re10000.dat');
 
 % % MRT 20000 Re
 % M = 0.1;
 % H = 1;
 % Re = 20000;
+% u = dlmread('../results/u_G125_M200_T500_RM3_VCM0_VCF0_Re20000.dat');
+% v = dlmread('../results/v_G125_M200_T500_RM3_VCM0_VCF0_Re20000.dat');
+
+% % MRT 21000 Re
+% M = 0.1;
+% H = 1;
+% Re = 21000;
 % u = dlmread('../results/u_G125_M200_T500_RM3_VCM0_VCF0_Re20000.dat');
 % v = dlmread('../results/v_G125_M200_T500_RM3_VCM0_VCF0_Re20000.dat');
 
@@ -83,7 +90,7 @@ else
     cols = ceil(cols/2);
 end
 
-validation = H == 1 && (Re==100 || Re==10000 || Re==1000);
+validation = H == 1 && (Re==100 || Re==10000 || Re==1000 || Re==21000);
 
 if validation
     [x_ref, v_ref] = validation_data_v_vs_x(Re);
@@ -93,7 +100,7 @@ end
 
 figure;
 if validation
-    plot(y_ref,u_ref, 'o');
+    plot(y_ref,u_ref, 'x');
     hold on;
 end
 U = M / sqrt(3);
@@ -108,7 +115,7 @@ end
 
 figure;
 if validation
-    plot(x_ref,v_ref, 'o');
+    plot(x_ref,v_ref, 'x');
     hold on;
 end
 plot( x, mean(v(rows,:),1)/U );

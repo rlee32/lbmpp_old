@@ -13,7 +13,6 @@ void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
   {
     cells[i].collide(
       relax_model, vc_model, omega, scale_increase, scale_decrease, nuc);
-    cells[i].explode();
   }
   
   bcs.apply_bc();
@@ -53,7 +52,8 @@ void GridLevel::reconstruct_macro()
 
 void GridLevel::initialize( double scale_increase, 
   double nu0, double nuc0, 
-  char sides[4], char bc[4], double U )
+  char sides[4], char bc[4], double U,
+  GridLevel* next_grid_level_ )
 {
   bcs.initialize( sides, bc, U );
   // compute scale factors.
@@ -62,6 +62,7 @@ void GridLevel::initialize( double scale_increase,
   nuc = scale_decrease * nuc0;
   tau = 3 * (nu + nuc) + 0.5;
   omega = 1 / tau;
+  next_grid_level = next_grid_level_;
 }
 
 void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
@@ -207,6 +208,52 @@ void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
     bcs.add_cell( &cells[ii], 'r' );
   }
 }
+
+
+
+// Checks all cells to see if they have been marked for linking 
+//  and links them (with neighbours).
+void GridLevel::link_marked()
+{
+  // Can parallelize
+  for (size_t i = 0; i < cells.size(); ++i)
+  {
+    if ( cells[i].tree.need_to_link ) cells[i].link_children();
+  }
+}
+// Checks all cells to see if they have been marked for refinement 
+//  and refines them.
+void GridLevel::refine_marked()
+{
+  // Do not parallelize without using locks!!!
+  for (size_t i = 0; i < cells.size(); ++i)
+  {
+    if ( cells[i].tree.need_to_refine ) 
+    {
+      cells[i].refine( next_grid_level->get_cells() );
+    }
+  }
+}
+
+void GridLevel::refine_range(size_t start_index, size_t end_index)
+{
+  for(size_t i = start_index; i < end_index; ++i)
+  {
+    cells[i].refine( next_grid_level->get_cells() );
+  }
+  link_marked();
+}
+void GridLevel::refine_all()
+{
+  for(size_t i = 0; i < cells.size(); ++i)
+  {
+    cells[i].refine( next_grid_level->get_cells() );
+  }
+  link_marked();
+}
+
+
+
 
 double GridLevel::max_mag() const
 {

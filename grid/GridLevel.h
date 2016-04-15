@@ -18,9 +18,12 @@ public:
   void iteration( std::size_t relax_model, std::size_t vc_model );
   // Initialization
   void initialize( double scale_increase, double nu, double nuc, 
-    char sides[4], char bc[4], double U );
+    char sides[4], char bc[4], double U, GridLevel* next );
   void create_coarse_grid( 
     std::size_t cell_count_x, std::size_t cell_count_y, Cell& default_cell );
+  // Testing functions.
+  void refine_all();
+  void refine_range(std::size_t start_index, std::size_t end_index);
   // Mainly for post-processing purposes.
   const Cell* cell( std::size_t index ) const { return &cells[index]; }
   std::size_t get_active_cells() const { return active_cells; }
@@ -29,9 +32,10 @@ public:
   double max_rho() const;
   double min_rho() const;
   double mag(std::size_t cell_index) const;
-  const std::vector<Cell>& get_cells() const { return cells; }
+  std::vector<Cell>& get_cells() { return cells; }
 private:
   std::vector<Cell> cells;
+  GridLevel* next_grid_level = nullptr;
   // Quantities scaled for this grid level.
   double scale_decrease = 1; // 2^-(tree depth)
   double scale_increase = 1; // 2^(tree depth)
@@ -45,4 +49,6 @@ private:
   void reconstruct_macro();
   void bufferize_parallel();
   void stream_parallel();
+  void link_marked();
+  void refine_marked();
 };

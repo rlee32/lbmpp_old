@@ -31,7 +31,8 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   double scale_increase = 1;
   for (size_t i = 0; i < MAX_LEVELS; ++i)
   {
-    levels[i].initialize( scale_increase, nu0, nuc0, sides, bc, U );
+    GridLevel* next = ( i < MAX_LEVELS - 1 ) ? &levels[i+1] : nullptr;
+    levels[i].initialize( scale_increase, nu0, nuc0, sides, bc, U, next );
     scale_increase *= 2.0;
   }
   
@@ -39,6 +40,20 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   // Boundary conditions are also defined here.
   Cell default_cell( rho0, u0, v0 );
   levels[0].create_coarse_grid( cell_count_x, cell_count_y, default_cell );
+
+  // Testing refine operation.
+  // levels[0].refine_all();
+}
+
+void Grid::set_coarse_solution(
+  double rho0, vector<double>& u, vector<double>& v )
+{
+  vector<Cell>& c = levels[0].get_cells();
+  // cout << c.size() << endl;
+  for(size_t i = 0; i < c.size(); ++i)
+  {
+    c[i].reconstruct_distribution( rho0, u[i], v[i] );
+  }
 }
 
 double Grid::max_mag() const

@@ -1,0 +1,8 @@
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c visual_driver.cc -o visual_driver.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c sim/Simulator.cc -o sim/Simulator.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c cell/Cell.cc -o cell/Cell.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/Grid.cc -o grid/Grid.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/GridLevel.cc -o grid/GridLevel.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/BoundaryConditions.cc -o grid/BoundaryConditions.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c viz/SolutionViewer.cc -o viz/SolutionViewer.o  -L/usr/X11R6/lib -lm -lpthread -lX11
+c++ -std=c++11 -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow visual_driver.o sim/Simulator.o cell/Cell.o grid/Grid.o grid/GridLevel.o grid/BoundaryConditions.o viz/SolutionViewer.o -o lbmpp  -L/usr/X11R6/lib -lm -lpthread -lX11

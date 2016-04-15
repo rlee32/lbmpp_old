@@ -28,7 +28,6 @@ int main(int argc, char ** argv)
   // cout << "Running " << sim.timesteps << " timesteps." << endl;
   // bool done = false;
   int k = 0;
-  int display_interval = 1000;
   timer.start();
   while ( not sv.window.is_closed() and k <= sim.get_timesteps() )
   {
@@ -41,9 +40,9 @@ int main(int argc, char ** argv)
         {
           // cout << "Performing iteration " << k << endl;
           sim.iteration();
-          if ( k % display_interval == 0 )
+          if ( k % sim.get_display_interval() == 0 )
           {
-            sv.draw_velocity_magnitude(sim.grid);
+            sv.draw_velocity_magnitude( sim.grid );
             sv.draw_status( k, sim, timer.stop() );
             sv.display();
           }

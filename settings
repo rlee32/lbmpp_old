@@ -1,35 +1,32 @@
 # Use hashtag for comments.
 
 # Grid definition.
-coarse_cells 125 125 # cells in x, y direction.
+coarse_cells 257 257 # cells in x, y direction.
 
 # Physical parameters; these are used to compute the viscosity.
-M 0.2 # Characteristic Mach number. This value is also used for BC.
-L 125 # Characteristic Length. Must ensure consistency with cell count. 
 Re 10000 # Reynolds number
+M 0.1 # Characteristic Mach number. This value is also used for BC. 
+L 257 # Characteristic Length. Must ensure consistency with cell count. 
 
 # Numerical parameters.
-nucf 1.0 # multiple of viscosity to serve as a buffer viscosity.
-# Viscosity counteraction model
-# 0: no viscosity counteraction.
-# 1: steady body force assumption ( explicit ).
-# 2: include spatial term ( not implemented, explicit ).
-# 3: include spatial and temporal terms ( not implemented, implicit ).
-vc_model 0
 # Relaxation time model:
 # 1: Single-relaxation time.
 # 2: Two-relaxation time (not implemented).
 # 3: Multiple-relaxation time.
 relax_model 3
+# Viscosity counteraction model
+# This can reduce computation speed on the order of 10%, but ideally would 
+#   stabilize runs at lower grid resolutions. 
+# 0: no viscosity counteraction.
+# 1: steady body force assumption ( explicit ).
+# 2: include spatial term ( not implemented, explicit ).
+# 3: include spatial and temporal terms ( not implemented, implicit ).
+vc_model 0
+nucf 1.0 # multiple of viscosity to serve as a buffer viscosity.
 
 # Solution and run time control.
-timesteps 500000 # maximum number of timesteps to run.
+timesteps 200000 # maximum number of timesteps to run.
 refinement 0 # solution-adaptive refinement: 1 = true, 0 = false
-
-# Initial macro-scale variable values.
-rho0 1
-u0 0
-v0 0
 
 # boundary conditions
 # m: moving wall (value is M)
@@ -41,4 +38,15 @@ right w
 top m
 left w
 
+# Initial macro-scale variable values.
+rho0 1
+u0 0
+v0 0
 
+# Initial solution from file
+# Comment this out if no initial solution desired.
+M0 0.2
+u0file results/u_G257_M200_T200_RM3_VCM0_VCF0_Re10000.dat
+v0file results/v_G257_M200_T200_RM3_VCM0_VCF0_Re10000.dat
+
+display_interval 1000
