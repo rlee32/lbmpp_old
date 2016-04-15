@@ -122,6 +122,7 @@ maximum Reynolds number is severely reduced due to instability.
 ![Lattice Link Indices]
 (ref/lattice_indices.png)
 </p>
+
 ## Interesting Notes
 
 You cannot use OpenMP on STL iterator for-loops, 
