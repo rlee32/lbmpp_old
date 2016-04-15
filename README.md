@@ -32,16 +32,24 @@ These validation cases are compared with data from papers found in the
 
 ### Single-Relaxation Time (a.k.a. Standard LBM)
 
-1. Re = 100:  
+1. Re = 100, Grid = 101x101  
 ![SRT Re = 100]
-(results/srt_100_u.bmp)
+(val/srt_100_u.bmp)
 ![SRT Re = 100]
-(results/srt_100_v.bmp)
+(val/srt_100_v.bmp)
 ![SRT Re = 100]
-(results/srt_100_s.bmp)
+(val/srt_100_s.bmp)
 ![SRT Re = 100]
-(results/srt_100_m.png)
-2. Re = 1000:  
+(val/srt_100_m.png)
+2. Re = 1000, Grid = 151x151  
+![SRT Re = 1000]
+(val/srt_1000_u.bmp)
+![SRT Re = 1000]
+(val/srt_1000_v.bmp)
+![SRT Re = 1000]
+(val/srt_1000_s.bmp)
+![SRT Re = 1000]
+(val/srt_1000_m.png)
 
 ### Multiple-Relaxation Time
 
@@ -72,6 +80,10 @@ These validation cases are compared with data from papers found in the
 3. Re = 10000:  
 
 4. Re = 21000:  
+
+## Implementation Details
+
+
 
 ## Interesting Notes
 
