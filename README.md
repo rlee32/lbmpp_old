@@ -7,6 +7,7 @@ The goal is to simulate multi-element airfoils.
 
 1. Incompressible and isothermal fluid.  
 2. Coarsest grid and time steps are equal to 1.  
+3. D2Q9 lattice sites.  
 
 ## Development Notes / TODO
 
@@ -112,8 +113,15 @@ These validation cases are compared with data from papers found in the
 
 ## Implementation Details
 
-
-
+1. The top corner lattice cells apply stationary walls to 
+both of their boundaries, as opposed to one stationary wall 
+and one moving wall. If one side is a moving wall, then the 
+maximum Reynolds number is severely reduced due to instability.  
+2. The lattice links are indexed as follows:  
+<p align="center">
+![Lattice Link Indices]
+(ref/lattice_indices.png)
+</p>
 ## Interesting Notes
 
 You cannot use OpenMP on STL iterator for-loops, 
