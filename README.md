@@ -1,7 +1,7 @@
 A C++ LBM code.  
 
 Focus is on incompressible, isothermal high-Re flows. 
-The goal is to simulate multi-element airfoils.
+The ultimate goal is to simulate multi-element airfoils.
 
 ## Assumptions
 
@@ -24,8 +24,8 @@ The goal is to simulate multi-element airfoils.
 
 ## Development Notes / TODO
 
-1. Make tables for each grid level for quantities that are the same within a grid level.  
-
+1. Dynamic Grid (DG) (solution-adaptive grid method)  
+2. Viscosity counteraction with spatial variation terms.  
 
 
 ## Usage
@@ -93,8 +93,17 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 1000]
 (val/mrt_1000_m.png)
 </p>
-3. Re = 10000:  
-
+3. Re = 10000, Grid 225x225 (Results could be better by running longer.)  
+<p align="center">
+![MRT Re = 10000]
+(val/mrt_10000_u.bmp)
+![MRT Re = 10000]
+(val/mrt_10000_v.bmp)
+![MRT Re = 10000]
+(val/mrt_10000_s.bmp)
+![MRT Re = 10000]
+(val/mrt_10000_m.png)
+</p>
 4. Re = 21000:  
 
 ### MRT + Viscosity Counteraction (VC)
