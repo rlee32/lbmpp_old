@@ -30,17 +30,25 @@ For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
 These validation cases are compared with data from papers found in the 
 'ref' folder.  
 
-### SRT
+### Single-Relaxation Time (a.k.a. Standard LBM)
 
 1. Re = 100:  
 
 ![SRT Re = 100]
 (results/srt_100_m.png)
 
+![SRT Re = 100]
+(results/srt_100_u.png)
+
+![SRT Re = 100]
+(results/srt_100_v.png)
+
+![SRT Re = 100]
+(results/srt_100_s.png)
 
 2. Re = 1000:  
 
-### MRT
+### Multiple-Relaxation Time
 
 1. Re = 100:  
 
