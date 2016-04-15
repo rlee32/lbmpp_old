@@ -79,7 +79,6 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 1000]
 (val/mrt_1000_m.png)
 </p>
-
 3. Re = 10000:  
 
 4. Re = 21000:  
