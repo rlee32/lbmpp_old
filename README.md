@@ -30,7 +30,7 @@ For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
 These validation cases are compared with data from papers found in the 
 'ref' folder.  
 
-### Single-Relaxation Time (a.k.a. Standard LBM)
+### Single-Relaxation Time (SRT) (a.k.a. Standard LBM)
 
 1. Re = 100, Grid = 101x101  
 ![SRT Re = 100]
@@ -51,7 +51,7 @@ These validation cases are compared with data from papers found in the
 ![SRT Re = 1000]
 (val/srt_1000_m.png)
 
-### Multiple-Relaxation Time
+### Multiple-Relaxation Time (MRT)
 
 1. Re = 100:  
 
@@ -61,7 +61,7 @@ These validation cases are compared with data from papers found in the
 
 4. Re = 21000:  
 
-### MRT + VC
+### MRT + Viscosity Counteraction (VC)
 
 1. Re = 100:  
 
@@ -71,7 +71,7 @@ These validation cases are compared with data from papers found in the
 
 4. Re = 21000:  
 
-### MRT + DG (Dynamic Grid)
+### MRT + Dynamic Grid (DG)
 
 1. Re = 100:  
 
@@ -80,6 +80,13 @@ These validation cases are compared with data from papers found in the
 3. Re = 10000:  
 
 4. Re = 21000:  
+
+
+## Stability Limits
+
+### SRT
+
+1. Re = 4000, Grid = 151x151, Unstable.  
 
 ## Implementation Details
 
@@ -87,7 +94,8 @@ These validation cases are compared with data from papers found in the
 
 ## Interesting Notes
 
-You cannot use OpenMP on STL iterator for-loops, due to the presence of '!= v.end()'. 
+You cannot use OpenMP on STL iterator for-loops, 
+  due to the presence of '!= v.end()'. 
 
 
 
