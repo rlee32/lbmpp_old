@@ -33,19 +33,14 @@ These validation cases are compared with data from papers found in the
 ### Single-Relaxation Time (a.k.a. Standard LBM)
 
 1. Re = 100:  
-
 ![SRT Re = 100]
 (results/srt_100_u.bmp)
-
 ![SRT Re = 100]
 (results/srt_100_v.bmp)
-
 ![SRT Re = 100]
 (results/srt_100_s.bmp)
-
 ![SRT Re = 100]
 (results/srt_100_m.png)
-
 2. Re = 1000:  
 
 ### Multiple-Relaxation Time
