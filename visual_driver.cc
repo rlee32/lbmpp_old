@@ -55,7 +55,7 @@ int main(int argc, char ** argv)
       }
       //done = true;
     }
-    // cin.ignore();
+    cin.ignore();
   }
   
   std::size_t cx = sim.get_cell_count_0();

@@ -14,13 +14,36 @@ void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
     cells[i].collide(
       relax_model, vc_model, omega, scale_increase, scale_decrease, nuc);
   }
-  
+
+  // cout << "BC" << endl;
   bcs.apply_bc();
-  
+
+  // cout << "Stream" << endl;
   // Stream
   stream_parallel();
   bufferize_parallel();
   
+  // cout << "Finish stream" << endl;
+  refresh_active_cells();
+  cout << active_cells << endl;
+}
+
+void GridLevel::refresh_active_cells()
+{
+  active_cells = compute_active_cells();
+}
+
+
+size_t GridLevel::compute_active_cells() const
+{
+  size_t active = 0;
+  // #pragma omp parallel for reduction(+:active)
+  for(size_t i = 0; i < cells.size(); ++i)
+  {
+    cout << cells[i].tree.active << endl;
+    active += cells[i].tree.active;
+  }
+  return active;
 }
 
 void GridLevel::stream_parallel()
@@ -55,7 +78,7 @@ void GridLevel::initialize( double scale_increase,
   char sides[4], char bc[4], double U,
   GridLevel* next_grid_level_ )
 {
-  bcs.initialize( sides, bc, U );
+  bcs.initialize( sides, bc, U, next_grid_level_->get_bcs() );
   // compute scale factors.
   scale_decrease = 1.0 / scale_increase;
   nu = scale_decrease * nu0;
@@ -207,9 +230,8 @@ void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
     ii += cell_count_x - 1;
     bcs.add_cell( &cells[ii], 'r' );
   }
+  refresh_active_cells();
 }
-
-
 
 // Checks all cells to see if they have been marked for linking 
 //  and links them (with neighbours).
@@ -234,22 +256,18 @@ void GridLevel::refine_marked()
     }
   }
 }
-
-void GridLevel::refine_range(size_t start_index, size_t end_index)
-{
-  for(size_t i = start_index; i < end_index; ++i)
-  {
-    cells[i].refine( next_grid_level->get_cells() );
-  }
-  link_marked();
-}
+// This is a test function to be called during initialization.
 void GridLevel::refine_all()
 {
   for(size_t i = 0; i < cells.size(); ++i)
   {
-    cells[i].refine( next_grid_level->get_cells() );
+    cells[i].tree.need_to_refine = true;
   }
+  refine_marked();
   link_marked();
+  refined_cell_bc();
+  active_cells = compute_active_cells();
+  next_grid_level->refresh_active_cells();
 }
 
 

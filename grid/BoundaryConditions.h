@@ -8,9 +8,11 @@
 class BoundaryConditions
 {
 public:
-  void initialize( char sides[4], char bc[4], double U_ );
+  void initialize( char sides[4], char bc[4], double U_, 
+    BoundaryConditions* next_level_bcs_ );
   void add_cell( Cell* c, char side );
   void apply_bc();
+  void refined_cell_bc();
 private:
   double U = 0; // value for velocity boundary conditions.
   // Auxiliary data structure.
@@ -37,10 +39,12 @@ private:
       { return a.rank < b.rank; }
   } Face;
   std::vector<Face> faces;
+  BoundaryConditions* next_level_bcs = nullptr;
 
   void cell_bc(Cell* c, char type, char side) const;
   char next_side(char side) const;
   char prev_side(char side) const;
   char get_next_type(char side) const;
   char get_prev_type(char side) const;
+  void facilitate_split( Cell* c, char side );
 };

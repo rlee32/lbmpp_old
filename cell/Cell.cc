@@ -65,6 +65,11 @@ void Cell::link_children()
   if ( n != nullptr )
   {
     c0.tree.neighbours[5] = n->tree.children[3];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[3]->tree.neighbours[1] = &c0;
+    }
   }
   // Cousins
   n = tree.neighbours[6];
@@ -72,6 +77,12 @@ void Cell::link_children()
   {
     c0.tree.neighbours[6] = n->tree.children[1];
     c0.tree.neighbours[7] = n->tree.children[3];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[1]->tree.neighbours[2] = &c0;
+      n->tree.children[3]->tree.neighbours[3] = &c0;
+    }
   }
 
   // 1st position (top-left)
@@ -82,17 +93,34 @@ void Cell::link_children()
   {
     c1.tree.neighbours[1] = n->tree.children[2];
     c1.tree.neighbours[2] = n->tree.children[0];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[2]->tree.neighbours[5] = &c1;
+      n->tree.children[0]->tree.neighbours[6] = &c1;
+    }
   }
   n = tree.neighbours[3];
   if ( n != nullptr )
   {
     c1.tree.neighbours[3] = n->tree.children[2];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[2]->tree.neighbours[7] = &c1;
+    }
   }
   n = tree.neighbours[4];
   if ( n != nullptr )
   {
     c1.tree.neighbours[4] = n->tree.children[3];
     c1.tree.neighbours[5] = n->tree.children[2];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[3]->tree.neighbours[0] = &c1;
+      n->tree.children[2]->tree.neighbours[1] = &c1;
+    }
   }
   c1.tree.neighbours[6] = tree.children[0];
   c1.tree.neighbours[7] = tree.children[2];
@@ -104,6 +132,12 @@ void Cell::link_children()
   {
     c2.tree.neighbours[0] = n->tree.children[0];
     c2.tree.neighbours[1] = n->tree.children[1];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[0]->tree.neighbours[4] = &c2;
+      n->tree.children[1]->tree.neighbours[5] = &c2;
+    }
   }
   c2.tree.neighbours[2] = tree.children[3];
   c2.tree.neighbours[3] = tree.children[1];
@@ -113,11 +147,22 @@ void Cell::link_children()
   {
     c2.tree.neighbours[5] = n->tree.children[1];
     c2.tree.neighbours[6] = n->tree.children[3];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[1]->tree.neighbours[1] = &c2;
+      n->tree.children[3]->tree.neighbours[2] = &c2;
+    }
   }
   n = tree.neighbours[7];
   if ( n != nullptr )
   {
     c2.tree.neighbours[7] = n->tree.children[1];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[1]->tree.neighbours[3] = &c2;
+    }
   }
   
   // 3rd position (top-right)
@@ -126,17 +171,33 @@ void Cell::link_children()
   if ( n != nullptr )
   {
     c3.tree.neighbours[0] = n->tree.children[1];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[1]->tree.neighbours[4] = &c3;
+    }
   }
   n = tree.neighbours[1];
   if ( n != nullptr )
   {
     c3.tree.neighbours[1] = n->tree.children[0];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[0]->tree.neighbours[5] = &c3;
+    }
   }
   n = tree.neighbours[2];
   if ( n != nullptr )
   {
     c3.tree.neighbours[2] = n->tree.children[2];
     c3.tree.neighbours[3] = n->tree.children[0];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[2]->tree.neighbours[6] = &c3;
+      n->tree.children[0]->tree.neighbours[7] = &c3;
+    }
   }
   c3.tree.neighbours[4] = tree.children[1];
   c3.tree.neighbours[5] = tree.children[0];
@@ -145,8 +206,12 @@ void Cell::link_children()
   if ( n != nullptr )
   {
     c3.tree.neighbours[7] = n->tree.children[0];
+    // reciprocate
+    if ( not n->tree.need_to_link )
+    {
+      n->tree.children[0]->tree.neighbours[3] = &c3;
+    }
   }
-
 }
 
 // Currently just averages children.
@@ -221,6 +286,7 @@ void Cell::create_children(vector<Cell>& next_level_cells)
 // Then, activate children and deactivate current (parent) cell.
 void Cell::refine( vector<Cell>& next_level_cells )
 {
+  cout << "NOT SUPPOSED TO BE USED YET! Cell::refine " << endl;
   // We assume all children made or no children made.
   bool no_children = tree.children[0] == nullptr;
   if( no_children )
@@ -250,7 +316,6 @@ void Cell::collide( size_t relax_model, size_t vc_model, double omega,
         }
         break;
       case 2:
-
         break;
       case 3:
         {

@@ -79,6 +79,20 @@ public:
   // Create cells first. Set flags 
   struct
   {
+    // Since Cells at each level are stored in vectors, we cannot use pointers 
+    //  because vectors may resize (which invalidates pointers). So, we know 
+    //  that parents are on the immediate level above and children on the 
+    //  immediate level below. Therefore, we can simply store vector indices!
+    std::size_t parent = 0;
+    // Children are ordered in N-order curve.
+    std::size_t children[4] = { 0, 0, 0, 0 };
+    // cell neighbours for every lattice direction (have same level)
+    // the number of neighbours in each orthogonal direction (at least).
+    // going ccw from {1,0}.
+    std::size_t neighbours[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  } local;
+  struct
+  {
     Cell* parent = nullptr;
     // Children are ordered in N-order curve.
     Cell* children[4] = { nullptr, nullptr, nullptr, nullptr };
@@ -86,7 +100,6 @@ public:
     // the number of neighbours in each orthogonal direction (at least).
     // going ccw from {1,0}.
     Cell* neighbours[8] = { nullptr }; 
-
     // flag whether this cell is currently participating in the flow solution.
     // Does not need to be set every iteration.
     bool active = true;

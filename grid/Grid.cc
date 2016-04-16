@@ -8,10 +8,13 @@ void Grid::iteration( size_t level )
   {
     if ( levels[level+1].get_active_cells() > 0 )
     {
+      // cout << "Calling iteration from level " << level << endl; 
       iteration( level+1 );
+      // cout << "Calling iteration from level " << level << endl; 
       iteration( level+1 );
     }
   }
+  // cout << "Iterating Level "<< level << endl;
   levels[level].iteration( relax_model, vc_model );
 }
 
