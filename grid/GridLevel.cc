@@ -244,7 +244,7 @@ void GridLevel::link_marked()
   {
     if ( cells[i].action.link_children )
     {
-      cout << "Linking dawg" << endl;
+      // cout << "Linking dawg" << endl;
       cells[i].link_children( cells, next_grid_level->get_cells() );
     }
   }

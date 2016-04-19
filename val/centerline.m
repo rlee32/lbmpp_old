@@ -26,21 +26,21 @@ clear; clc;
 % u = dlmread('../results/u_G151_M100_T125_RM1_VCM0_VCF0_Re2500.dat');
 % v = dlmread('../results/v_G151_M100_T125_RM1_VCM0_VCF0_Re2500.dat');
 
-% % MRT 100 Re
+% MRT 100 Re
+M = 0.2;
+H = 1;
+Re = 100;
+u = dlmread('../results/u_G50_M200_T100_RM3_VCM0_VCF0_Re100.dat');
+v = dlmread('../results/v_G50_M200_T100_RM3_VCM0_VCF0_Re100.dat');
+
+% % MRT 1000 Re
 % M = 0.1;
 % H = 1;
-% Re = 100;
-% u = dlmread('../results/u_G101_M100_T50_RM3_VCM0_VCF0_Re100.dat');
-% v = dlmread('../results/v_G101_M100_T50_RM3_VCM0_VCF0_Re100.dat');
-
-% MRT 1000 Re
-M = 0.1;
-H = 1;
-Re = 1000;
-% u = dlmread('../results/u_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
-% v = dlmread('../results/v_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
-u = dlmread('../results/u_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
-v = dlmread('../results/v_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+% Re = 1000;
+% % u = dlmread('../results/u_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
+% % v = dlmread('../results/v_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
+% u = dlmread('../results/u_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+% v = dlmread('../results/v_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
 
 % % MRT 5000 Re
 % M = 0.2;

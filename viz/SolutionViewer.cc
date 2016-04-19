@@ -11,7 +11,6 @@ SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim)
   pixels_per_cell = (int) pixels_per_cell;
   pixels[0] = pixels_per_cell*sim.get_cell_count_0();
   pixels[1] = pixels_per_cell*sim.get_cell_count_1();
-  // cout << pixels[0] << ", " << pixels[1] << endl;
   CImg<unsigned char> image_(
     pixels[0], // x-resolution
     pixels[1]+TextDisplayDim, // y-resolution
@@ -21,8 +20,6 @@ SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim)
   image = image_;
   CImgDisplay window_(image, "Flow solution");
   window = window_;
-  // cout << "Pausing" << endl;
-  // cin.ignore();
 }
 
 void SolutionViewer::test_draw()
@@ -41,7 +38,6 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
   size_t cell_count_y = grid.cell_count_y();
   temp.min = grid.min_mag();
   temp.max = grid.max_mag();
-  cout << temp.min << ", " << temp.max << endl;
   for (size_t i = 0; i < cell_count_x; ++i)
   {
     for (size_t j = 0; j < cell_count_y; ++j)
@@ -50,18 +46,6 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
       size_t jp = cell_count_y - 1 - j;
       draw_mag_tree( &(grid.get_level(1)), (grid.get_cells(0))[ii],
         i*pixels_per_cell, jp*pixels_per_cell, pixels_per_cell );
-      // // Get color
-      // float rgb[3];
-      // // cout << min << ", " << max << endl;
-      // scalar2rgb( min, max, grid.mag(0, ii), rgb );
-      // // Draw
-      // image.draw_rectangle(
-      //   i*pixels_per_cell, // upper left corner
-      //   jp*pixels_per_cell,
-      //   (i+1)*pixels_per_cell, // lower right corner
-      //   (jp+1)*pixels_per_cell,
-      //   rgb,
-      //   3 );
     }
   }
   if (pixels_per_cell > 2)
@@ -107,40 +91,6 @@ void SolutionViewer::draw_mag_tree( GridLevel* cg,
   }
 }
 
-// // The tree version.
-// void SolutionViewer::draw_velocity_magnitude_tree(Grid& grid)
-// {
-//   size_t cell_count_x = grid.cell_count_x();
-//   size_t cell_count_y = grid.cell_count_y();
-//   const float black[] = {0,0,0};
-//   temp.min = grid.min_mag();
-//   temp.max = grid.max_mag();
-//   for (size_t i = 0; i < cell_count_x; ++i)
-//   {
-//     for (size_t j = 0; j < cell_count_y; ++j)
-//     {
-//       // Get color
-//       float rgb[3];
-//       size_t ii = i + j * cell_count_x;
-//       // cout << min << ", " << max << endl;
-//       scalar2rgb( temp.min, temp.max, grid.mag(1, ii), rgb );
-//       // Draw
-//       size_t jp = cell_count_y - 1 - j;
-//       image.draw_rectangle(
-//         i*pixels_per_cell, // upper left corner
-//         jp*pixels_per_cell,
-//         (i+1)*pixels_per_cell, // lower right corner
-//         (jp+1)*pixels_per_cell,
-//         rgb,
-//         1 );
-//     }
-//   }
-//   if (pixels_per_cell > 2)
-//   {
-//     // image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
-//   }
-// }
-
 void SolutionViewer::draw_status( int iteration, Simulator& sim,  
   double elapsed_time )
 {
@@ -182,6 +132,10 @@ void SolutionViewer::draw_status( int iteration, Simulator& sim,
   draw_text_line( text, line++ );
   text = "Min, max density: " + to_string(sim.grid.min_rho()) + ", "
     + to_string(sim.grid.max_rho());
+  draw_text_line( text, line++ );
+  text = "Min, max velocity magnitude (BC: " + to_string( sim.get_U() ) 
+    + "): " + to_string( temp.min ) + ", "
+    + to_string( temp.max );
   draw_text_line( text, line++ );
   last_elapsed_time = elapsed_time;
   last_iteration = iteration;

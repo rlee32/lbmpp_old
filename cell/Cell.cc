@@ -259,7 +259,7 @@ void Cell::explode_homogeneous( vector<Cell>& cg )
 {
   for ( size_t c = 0; c < 4; ++c )
   {
-    cout << local.children[c] << endl;
+    // cout << local.children[c] << endl;
     cg[ local.children[c] ].state = state;
   }
 }
@@ -305,13 +305,14 @@ void Cell::collide( size_t relax_model, size_t vc_model, double omega,
 {
   if ( state.active and not state.interface )
   {
-    if ( local.me == 0 )
-    {
-      cout << scale_increase << " ";
-      for (int i = 0; i < 8; ++i) cout << local.neighbours[i] << " ";
-      cout << endl;
-      cin.ignore();
-    }
+    // if ( local.me == 0 )
+    // {
+    //   cout << scale_increase << " ";
+    //   for (int i = 0; i < 8; ++i) cout << local.neighbours[i] << " ";
+    //   cout << endl;
+    //   cin.ignore();
+    // }
+    
     // Relaxation
     switch( relax_model )
     {
