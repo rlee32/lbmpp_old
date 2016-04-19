@@ -36,6 +36,7 @@ public:
   double min_rho() const;
   double mag(std::size_t cell_index) const;
   std::vector<Cell>& get_cells() { return cells; }
+  GridLevel* get_next_grid_level() { return next_grid_level; }
 private:
   std::vector<Cell> cells;
   GridLevel* next_grid_level = nullptr;

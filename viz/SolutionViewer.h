@@ -32,4 +32,12 @@ private:
   void draw_text_line( std::string text, int line );
   double last_elapsed_time = 0;
   double last_iteration = 0;
+  // Temp values used during drawing field solution.
+  struct
+  {
+    double min = 0;
+    double max = 0;
+  } temp;
+  void draw_mag_tree( GridLevel* cg, 
+    Cell& cell, std::size_t i, std::size_t j, std::size_t p );
 };

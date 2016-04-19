@@ -17,6 +17,8 @@ public:
   std::size_t active_cells() const;
   std::vector<Cell>& get_cells(std::size_t index) 
     { return levels[index].get_cells(); }
+  GridLevel& get_level(std::size_t index) 
+    { return levels[index]; }
   //
   void initialize( std::size_t cell_count_x, std::size_t cell_count_y, 
     double rho0, double u0, double v0, 

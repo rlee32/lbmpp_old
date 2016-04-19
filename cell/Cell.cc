@@ -7,13 +7,13 @@ Cell::Cell( double rho, double u, double v )
   reconstruct_distribution( rho, u, v );
 }
 
-// Constructor for cells generated freom refinement.
+// Constructor for cells generated from refinement.
 // Currently a homogeneous copy of state.
 Cell::Cell( Cell* parent )
 {
-  tree.parent = parent;
+  local.parent = parent->local.me;
   state = parent->state;
-  tree.need_to_link = true;
+  parent->action.link_children = true;
 }
 
 void Cell::reconstruct_distribution( double rho, double u, double v )
@@ -34,182 +34,182 @@ void Cell::reconstruct_distribution( double rho, double u, double v )
   }
 }
 
-void Cell::link_children()
+// Links newly created children and reciprocates linking for those cells who 
+//  are not flagged to be linked in this iteration (older cells).
+// pg: parent grid, next-level / finer grid that the children reside on.
+// cg: child grid, next-level / finer grid that the children reside on.
+void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
 {
-  // Need to reciprocate linking for those cells who 
-  //  are not flagged to be linked in this iteration.
+  // A reference to the this (parent) cell's immediate children and neighbours.
+  int (&plc)[4] = local.children;
+  int (&pln)[8] = local.neighbours;
 
-  Cell* n = nullptr;
-  
   // 0th position (bottom-left)
-  Cell& c0 = *(tree.children[0]);
-  // Siblings
-  c0.tree.neighbours[0] = tree.children[2];
-  c0.tree.neighbours[1] = tree.children[3];
-  c0.tree.neighbours[2] = tree.children[1];
-  // Cousins
-  n = tree.neighbours[4];
-  if ( n != nullptr )
   {
-    c0.tree.neighbours[3] = n->tree.children[3];
-    c0.tree.neighbours[4] = n->tree.children[2];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    int (&cln)[8] = cg[ plc[0] ].local.neighbours; // this child's neighbours.
+    int cme = plc[0]; // this child's id.
+    cln[0] = plc[2]; // Sibling
+    cln[1] = plc[3]; // Sibling
+    cln[2] = plc[1]; // Sibling
+    int pn = pln[4]; // parent neighbour
+    if ( pn >= 0 )
     {
-      n->tree.children[3]->tree.neighbours[7] = &c0;
-      n->tree.children[2]->tree.neighbours[0] = &c0;
+      cln[3] = pg[ pn ].local.children[3]; // Cousin
+      cln[4] = pg[ pn ].local.children[2]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[3] >= 0 ) cg[ cln[3] ].local.neighbours[7] = cme;
+        if ( cln[4] >= 0 ) cg[ cln[4] ].local.neighbours[0] = cme;
+      }
     }
-  }
-  // Cousins
-  n = tree.neighbours[5];
-  if ( n != nullptr )
-  {
-    c0.tree.neighbours[5] = n->tree.children[3];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    // Cousins
+    pn = pln[5];
+    if ( pn >= 0 )
     {
-      n->tree.children[3]->tree.neighbours[1] = &c0;
+      cln[5] = pg[ pn ].local.children[3]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[5] >= 0 ) cg[ cln[5] ].local.neighbours[1] = cme;
+      }
     }
-  }
-  // Cousins
-  n = tree.neighbours[6];
-  if ( n != nullptr )
-  {
-    c0.tree.neighbours[6] = n->tree.children[1];
-    c0.tree.neighbours[7] = n->tree.children[3];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    // Cousins
+    pn = pln[6];
+    if ( pn >= 0 )
     {
-      n->tree.children[1]->tree.neighbours[2] = &c0;
-      n->tree.children[3]->tree.neighbours[3] = &c0;
+      cln[6] = pg[ pn ].local.children[1]; // Cousin
+      cln[7] = pg[ pn ].local.children[3]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[6] >= 0 ) cg[ cln[6] ].local.neighbours[2] = cme;
+        if ( cln[7] >= 0 ) cg[ cln[7] ].local.neighbours[3] = cme;
+      }
     }
   }
 
   // 1st position (top-left)
-  Cell& c1 = *(tree.children[1]);
-  c1.tree.neighbours[0] = tree.children[3];
-  n = tree.neighbours[2];
-  if ( n != nullptr )
   {
-    c1.tree.neighbours[1] = n->tree.children[2];
-    c1.tree.neighbours[2] = n->tree.children[0];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    int (&cln)[8] = cg[ plc[1] ].local.neighbours; // this child's neighbours.
+    int cme = plc[1]; // this child's id.
+    cln[0] = plc[3]; // sibling
+    int pn = pln[2]; // parent neighbour
+    if ( pn >= 0 )
     {
-      n->tree.children[2]->tree.neighbours[5] = &c1;
-      n->tree.children[0]->tree.neighbours[6] = &c1;
+      cln[1] = pg[ pn ].local.children[2]; // Cousin
+      cln[2] = pg[ pn ].local.children[0]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[1] >= 0 ) cg[ cln[1] ].local.neighbours[5] = cme;
+        if ( cln[2] >= 0 ) cg[ cln[2] ].local.neighbours[6] = cme;
+      }
     }
-  }
-  n = tree.neighbours[3];
-  if ( n != nullptr )
-  {
-    c1.tree.neighbours[3] = n->tree.children[2];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    pn = pln[3];
+    if ( pn >= 0 )
     {
-      n->tree.children[2]->tree.neighbours[7] = &c1;
+      cln[3] = pg[ pn ].local.children[2]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[3] >= 0 ) cg[ cln[3] ].local.neighbours[7] = cme;
+      }
     }
-  }
-  n = tree.neighbours[4];
-  if ( n != nullptr )
-  {
-    c1.tree.neighbours[4] = n->tree.children[3];
-    c1.tree.neighbours[5] = n->tree.children[2];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    pn = pln[4];
+    if ( pn >= 0 )
     {
-      n->tree.children[3]->tree.neighbours[0] = &c1;
-      n->tree.children[2]->tree.neighbours[1] = &c1;
+      cln[4] = pg[ pn ].local.children[3]; // Cousin
+      cln[5] = pg[ pn ].local.children[2]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[4] >= 0 ) cg[ cln[4] ].local.neighbours[0] = cme;
+        if ( cln[5] >= 0 ) cg[ cln[5] ].local.neighbours[1] = cme;
+      }
     }
+    cln[6] = plc[0]; // sibling
+    cln[7] = plc[2]; // sibling
   }
-  c1.tree.neighbours[6] = tree.children[0];
-  c1.tree.neighbours[7] = tree.children[2];
 
   // 2nd position (bottom-right)
-  Cell& c2 = *(tree.children[2]);
-  n = tree.neighbours[0];
-  if ( n != nullptr )
   {
-    c2.tree.neighbours[0] = n->tree.children[0];
-    c2.tree.neighbours[1] = n->tree.children[1];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    int (&cln)[8] = cg[ plc[2] ].local.neighbours; // this child's neighbours.
+    int cme = plc[2]; // this child's id.
+    int pn = pln[0];
+    if ( pn >= 0 )
     {
-      n->tree.children[0]->tree.neighbours[4] = &c2;
-      n->tree.children[1]->tree.neighbours[5] = &c2;
+      cln[0] = pg[ pn ].local.children[0]; // Cousin
+      cln[1] = pg[ pn ].local.children[1]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[0] >= 0 ) cg[ cln[0] ].local.neighbours[4] = cme;
+        if ( cln[1] >= 0 ) cg[ cln[1] ].local.neighbours[5] = cme;
+      }
+    }
+    cln[2] = plc[3]; // sibling
+    cln[3] = plc[1]; // sibling
+    cln[4] = plc[0]; // sibling
+    pn = pln[6];
+    if ( pn >= 0 )
+    {
+      cln[5] = pg[ pn ].local.children[1]; // Cousin
+      cln[6] = pg[ pn ].local.children[3]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[5] >= 0 ) cg[ cln[5] ].local.neighbours[1] = cme;
+        if ( cln[6] >= 0 ) cg[ cln[6] ].local.neighbours[2] = cme;
+      }
+    }
+    pn = pln[7];
+    if ( pn >= 0 )
+    {
+      cln[7] = pg[ pn ].local.children[1]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[7] >= 0 ) cg[ cln[7] ].local.neighbours[3] = cme;
+      }
     }
   }
-  c2.tree.neighbours[2] = tree.children[3];
-  c2.tree.neighbours[3] = tree.children[1];
-  c2.tree.neighbours[4] = tree.children[0];
-  n = tree.neighbours[6];
-  if ( n != nullptr )
-  {
-    c2.tree.neighbours[5] = n->tree.children[1];
-    c2.tree.neighbours[6] = n->tree.children[3];
-    // reciprocate
-    if ( not n->tree.need_to_link )
-    {
-      n->tree.children[1]->tree.neighbours[1] = &c2;
-      n->tree.children[3]->tree.neighbours[2] = &c2;
-    }
-  }
-  n = tree.neighbours[7];
-  if ( n != nullptr )
-  {
-    c2.tree.neighbours[7] = n->tree.children[1];
-    // reciprocate
-    if ( not n->tree.need_to_link )
-    {
-      n->tree.children[1]->tree.neighbours[3] = &c2;
-    }
-  }
-  
+    
   // 3rd position (top-right)
-  Cell& c3 = *(tree.children[3]);
-  n = tree.neighbours[0];
-  if ( n != nullptr )
   {
-    c3.tree.neighbours[0] = n->tree.children[1];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    int (&cln)[8] = cg[ plc[3] ].local.neighbours; // this child's neighbours.
+    int cme = plc[3]; // this child's id.
+    int pn = pln[0];
+    if ( pn >= 0 )
     {
-      n->tree.children[1]->tree.neighbours[4] = &c3;
+      cln[0] = pg[ pn ].local.children[1]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[0] >= 0 ) cg[ cln[0] ].local.neighbours[4] = cme;
+      }
     }
-  }
-  n = tree.neighbours[1];
-  if ( n != nullptr )
-  {
-    c3.tree.neighbours[1] = n->tree.children[0];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    pn = pln[1];
+    if ( pn >= 0 )
     {
-      n->tree.children[0]->tree.neighbours[5] = &c3;
+      cln[1] = pg[ pn ].local.children[0]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[1] >= 0 ) cg[ cln[1] ].local.neighbours[5] = cme;
+      }
     }
-  }
-  n = tree.neighbours[2];
-  if ( n != nullptr )
-  {
-    c3.tree.neighbours[2] = n->tree.children[2];
-    c3.tree.neighbours[3] = n->tree.children[0];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    pn = pln[2];
+    if ( pn >= 0 )
     {
-      n->tree.children[2]->tree.neighbours[6] = &c3;
-      n->tree.children[0]->tree.neighbours[7] = &c3;
+      cln[2] = pg[ pn ].local.children[2]; // Cousin
+      cln[3] = pg[ pn ].local.children[0]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[2] >= 0 ) cg[ cln[2] ].local.neighbours[6] = cme;
+        if ( cln[3] >= 0 ) cg[ cln[3] ].local.neighbours[7] = cme;
+      }
     }
-  }
-  c3.tree.neighbours[4] = tree.children[1];
-  c3.tree.neighbours[5] = tree.children[0];
-  c3.tree.neighbours[6] = tree.children[2];
-  n = tree.neighbours[0];
-  if ( n != nullptr )
-  {
-    c3.tree.neighbours[7] = n->tree.children[0];
-    // reciprocate
-    if ( not n->tree.need_to_link )
+    cln[4] = plc[1]; // sibling
+    cln[5] = plc[0]; // sibling
+    cln[6] = plc[2]; // sibling
+    pn = pln[0];
+    if ( pn >= 0 )
     {
-      n->tree.children[0]->tree.neighbours[3] = &c3;
+      cln[7] = pg[ pn ].local.children[0]; // Cousin
+      if ( not pg[ pn ].action.link_children ) // reciprocate
+      {
+        if ( cln[7] >= 0 ) cg[ cln[7] ].local.neighbours[3] = cme;
+      }
     }
   }
 }
@@ -218,67 +218,67 @@ void Cell::link_children()
 // Need to account for cut cells, with different-volume cells.
 void Cell::coalesce()
 {
-  if ( tree.interface )
-  {
-    double fcavg = 0;
-    double favg[8] = {};
-    double uavg = 0;
-    double vavg = 0;
-    double rhoavg = 0;
-    int nc = 0;
-    // Sum over children.
-    for(int i = 0; i < 4; ++i)
-    {
-      Cell* c = tree.children[i];
-      if (c != nullptr)
-      {
-        uavg += c->state.u;
-        vavg += c->state.v;
-        rhoavg += c->state.rho;
-        fcavg += c->state.fc;
-        for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
-        ++nc;
-      }
-    }
-    // Average.
-    if (nc > 0)
-    {
-      state.u = uavg / nc;
-      state.v = vavg / nc;
-      state.rho = rhoavg / nc;
-      state.fc = fcavg / nc;
-      for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
-    }
-  }
+  // if ( state.interface )
+  // {
+  //   double fcavg = 0;
+  //   double favg[8] = {};
+  //   double uavg = 0;
+  //   double vavg = 0;
+  //   double rhoavg = 0;
+  //   int nc = 0;
+  //   // Sum over children.
+  //   for(int i = 0; i < 4; ++i)
+  //   {
+  //     Cell* c = tree.children[i];
+  //     if (c != nullptr)
+  //     {
+  //       uavg += c->state.u;
+  //       vavg += c->state.v;
+  //       rhoavg += c->state.rho;
+  //       fcavg += c->state.fc;
+  //       for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
+  //       ++nc;
+  //     }
+  //   }
+  //   // Average.
+  //   if (nc > 0)
+  //   {
+  //     state.u = uavg / nc;
+  //     state.v = vavg / nc;
+  //     state.rho = rhoavg / nc;
+  //     state.fc = fcavg / nc;
+  //     for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+  //   }
+  // }
 }
 
 // For cut cells, the distribution of particles should ensure MME conservation.
 // For homogeneous explosion, no problem.
-void Cell::explode_homogeneous()
+// cg: child grid
+void Cell::explode_homogeneous( vector<Cell>& cg )
 {
   for ( size_t c = 0; c < 4; ++c )
   {
-    tree.children[c]->state = state;
+    cout << local.children[c] << endl;
+    cg[ local.children[c] ].state = state;
   }
 }
-void Cell::activate_children()
+void Cell::activate_children( vector<Cell>& cg )
 {
-  explode_homogeneous();
-  for ( size_t i = 0; i < 4; ++i )
-  {
-    tree.children[i]->tree.active = true;
-  }
+  explode_homogeneous( cg );
+  for ( size_t i = 0; i < 4; ++i ) cg[ local.children[i] ].state.active = true;
 }
 
 // Creates activated children.
-void Cell::create_children(vector<Cell>& next_level_cells)
+void Cell::create_children( vector<Cell>& next_level_cells )
 {
   // create the children.
   for ( size_t i = 0; i < 4; ++i )
   {
     Cell child( this );
+    child.local.me = next_level_cells.size();
+    local.children[i] = next_level_cells.size();
     next_level_cells.push_back(child);
-    tree.children[i] = &next_level_cells.back();
   }
 }
 
@@ -286,25 +286,32 @@ void Cell::create_children(vector<Cell>& next_level_cells)
 // Then, activate children and deactivate current (parent) cell.
 void Cell::refine( vector<Cell>& next_level_cells )
 {
-  cout << "NOT SUPPOSED TO BE USED YET! Cell::refine " << endl;
   // We assume all children made or no children made.
-  bool no_children = tree.children[0] == nullptr;
+  bool no_children = local.children[0] < 0;
   if( no_children )
   {
     create_children( next_level_cells );
   }
   else
   {
-    activate_children();
+    // cout << "ACTIVATION" << endl;
+    activate_children( next_level_cells );
   }
-  tree.active = false;
+  state.active = false;
 }
 
 void Cell::collide( size_t relax_model, size_t vc_model, double omega, 
   double scale_decrease, double scale_increase, double nuc )
 {
-  if ( tree.active and not tree.interface )
+  if ( state.active and not state.interface )
   {
+    if ( local.me == 0 )
+    {
+      cout << scale_increase << " ";
+      for (int i = 0; i < 8; ++i) cout << local.neighbours[i] << " ";
+      cout << endl;
+      cin.ignore();
+    }
     // Relaxation
     switch( relax_model )
     {
@@ -399,177 +406,177 @@ inline void Cell::fill_strain_terms( double omega )
 inline void Cell::compute_strain_differences( 
   double& s11x, double& s12x, double& s12y, double& s22y, double dh_inv ) const
 {
-  switch ( tree.fully_interior_cell )
-  {
-    case true: // 4th order, 4-point stencil
-      {
-      const Cell* const& e1 = tree.neighbours[0];
-      const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-      const Cell* const& w1 = tree.neighbours[4];
-      const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-      s11x = dh_inv * ( 
-        -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-      s12x = dh_inv * ( 
-        -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
-      const Cell* const& n1 = tree.neighbours[2];
-      const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-      const Cell* const& s1 = tree.neighbours[6];
-      const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-      s12y = dh_inv * ( 
-        -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-      s22y = dh_inv * ( 
-        -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
-      }
-      break;
-    case false:
-      {
-      // x-direction
-      switch( tree.nn[0] )
-      {
-        case 0: // backward 2nd order, 3-point stencil
-          {
-          const Cell* const& w1 = tree.neighbours[4];
-          const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-          s11x = dh_inv * -( 
-            -3.0*vc.s11 + 4.0*w1->vc.s11 - w2->vc.s11 ) / 2.0;
-          s12x = dh_inv * -( 
-            -3.0*vc.s12 + 4.0*w1->vc.s12 - w2->vc.s12 ) / 2.0;
-          }
-          break;
-        case 1: // backward 4th order, 5-point stencil
-          {
-          const Cell* const& e1 = tree.neighbours[0];
-          const Cell* const& w1 = tree.neighbours[4];
-          const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-          const Cell* const& w3 = 
-            tree.neighbours[4]->tree.neighbours[4]->tree.neighbours[4];
-          s11x = dh_inv * -( 
-            - 3.0*e1->vc.s11 - 10.0*vc.s11 + 18.0*w1->vc.s11 
-            - 6.0*w2->vc.s11 + w3->vc.s11 ) / 12.0;
-          s12x = dh_inv * -( 
-            - 3.0*e1->vc.s12 - 10.0*vc.s12 + 18.0*w1->vc.s12 
-            - 6.0*w2->vc.s12 + w3->vc.s12 ) / 12.0;
-          }
-          break;
-        default: // now check other direction. 
-          switch( tree.nn[2] )
-          {
-            case 0: // forward 2nd order, 3-point stencil
-              {
-              const Cell* const& e1 = tree.neighbours[0];
-              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-              s11x = dh_inv * (
-                -3.0*vc.s11 + 4.0*e1->vc.s11 - e2->vc.s11 ) / 2.0;
-              s12x = dh_inv * ( 
-                -3.0*vc.s12 + 4.0*e1->vc.s12 - e2->vc.s12 ) / 2.0;
-              }
-              break;
-            case 1: // forward 4th order, 5-point stencil
-              {
-              const Cell* const& w1 = tree.neighbours[4];
-              const Cell* const& e1 = tree.neighbours[0];
-              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-              const Cell* const& e3 = 
-                tree.neighbours[0]->tree.neighbours[0]->tree.neighbours[0];
-              s11x = dh_inv * ( 
-                - 3.0*w1->vc.s11 - 10.0*vc.s11 + 18.0*e1->vc.s11 
-                - 6.0*e2->vc.s11 + e3->vc.s11 ) / 12.0;
-              s12x = dh_inv * ( 
-                - 3.0*w1->vc.s12 - 10.0*vc.s12 + 18.0*e1->vc.s12 
-                - 6.0*e2->vc.s12 + e3->vc.s12 ) / 12.0;
-              }
-              break;
-            default: // centered 4th order, 4-point stencil
-              {
-              const Cell* const& e1 = tree.neighbours[0];
-              const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-              const Cell* const& w1 = tree.neighbours[4];
-              const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-              s11x = dh_inv * ( 
-                -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-              s12x = dh_inv * ( 
-                -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
-              }
-              break;
-          }
-        break;
-      }
-      // y-direction
-      switch( tree.nn[1] )
-      {
-        case 0: // backward 2nd order, 3-point stencil
-          {
-          const Cell* const& s1 = tree.neighbours[6];
-          const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-          s11x = dh_inv * -(
-            -3.0*vc.s11 + 4.0*s1->vc.s11 - s2->vc.s11 ) / 2.0;
-          s12x = dh_inv * -(
-            -3.0*vc.s12 + 4.0*s1->vc.s12 - s2->vc.s12 ) / 2.0;
-          }
-          break;
-        case 1: // backward 4th order, 5-point stencil
-          {
-          const Cell* const& n1 = tree.neighbours[2];
-          const Cell* const& s1 = tree.neighbours[6];
-          const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-          const Cell* const& s3 = 
-            tree.neighbours[6]->tree.neighbours[6]->tree.neighbours[6];
-          s11x = dh_inv * -( 
-            - 3.0*n1->vc.s11 - 10.0*vc.s11 + 18.0*s1->vc.s11 
-            - 6.0*s2->vc.s11 + s3->vc.s11 ) / 12.0;
-          s12x = dh_inv * -( 
-            - 3.0*n1->vc.s12 - 10.0*vc.s12 + 18.0*s1->vc.s12 
-            - 6.0*s2->vc.s12 + s3->vc.s12 ) / 12.0;
-          }
-          break;
-        default: // now check other direction. 
-          switch( tree.nn[3] )
-          {
-            case 0: // forward 2nd order, 3-point stencil
-              {
-              const Cell* const& n1 = tree.neighbours[2];
-              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-              s11x = dh_inv * (
-                -3.0*vc.s11 + 4.0*n1->vc.s11 - n2->vc.s11 ) / 2.0;
-              s12x = dh_inv * ( 
-                -3.0*vc.s12 + 4.0*n1->vc.s12 - n2->vc.s12 ) / 2.0;
-              }
-              break;
-            case 1: // forward 4th order, 5-point stencil
-              {
-              const Cell* const& s1 = tree.neighbours[6];
-              const Cell* const& n1 = tree.neighbours[2];
-              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-              const Cell* const& n3 = 
-                tree.neighbours[2]->tree.neighbours[2]->tree.neighbours[2];
-              s11x = dh_inv * ( 
-                - 3.0*s1->vc.s11 - 10.0*vc.s11 + 18.0*n1->vc.s11 
-                - 6.0*n2->vc.s11 + n3->vc.s11 ) / 12.0;
-              s12x = dh_inv * ( 
-                - 3.0*s1->vc.s12 - 10.0*vc.s12 + 18.0*n1->vc.s12 
-                - 6.0*n2->vc.s12 + n3->vc.s12 ) / 12.0;
-              }
-              break;
-            default: // centered 4th order, 4-point stencil
-              {
-              const Cell* const& n1 = tree.neighbours[2];
-              const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-              const Cell* const& s1 = tree.neighbours[6];
-              const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-              s12y = dh_inv * ( 
-                -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-              s22y = dh_inv * ( 
-                -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
-              }
-              break;
-          }
-        break;
-      }
-      }
-      break;
-    default:
-      break;
-  }
+  // switch ( tree.fully_interior_cell )
+  // {
+  //   case true: // 4th order, 4-point stencil
+  //     {
+  //     const Cell* const& e1 = tree.neighbours[0];
+  //     const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+  //     const Cell* const& w1 = tree.neighbours[4];
+  //     const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+  //     s11x = dh_inv * ( 
+  //       -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
+  //     s12x = dh_inv * ( 
+  //       -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
+  //     const Cell* const& n1 = tree.neighbours[2];
+  //     const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+  //     const Cell* const& s1 = tree.neighbours[6];
+  //     const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+  //     s12y = dh_inv * ( 
+  //       -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
+  //     s22y = dh_inv * ( 
+  //       -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
+  //     }
+  //     break;
+  //   case false:
+  //     {
+  //     // x-direction
+  //     switch( tree.nn[0] )
+  //     {
+  //       case 0: // backward 2nd order, 3-point stencil
+  //         {
+  //         const Cell* const& w1 = tree.neighbours[4];
+  //         const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+  //         s11x = dh_inv * -( 
+  //           -3.0*vc.s11 + 4.0*w1->vc.s11 - w2->vc.s11 ) / 2.0;
+  //         s12x = dh_inv * -( 
+  //           -3.0*vc.s12 + 4.0*w1->vc.s12 - w2->vc.s12 ) / 2.0;
+  //         }
+  //         break;
+  //       case 1: // backward 4th order, 5-point stencil
+  //         {
+  //         const Cell* const& e1 = tree.neighbours[0];
+  //         const Cell* const& w1 = tree.neighbours[4];
+  //         const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+  //         const Cell* const& w3 = 
+  //           tree.neighbours[4]->tree.neighbours[4]->tree.neighbours[4];
+  //         s11x = dh_inv * -( 
+  //           - 3.0*e1->vc.s11 - 10.0*vc.s11 + 18.0*w1->vc.s11 
+  //           - 6.0*w2->vc.s11 + w3->vc.s11 ) / 12.0;
+  //         s12x = dh_inv * -( 
+  //           - 3.0*e1->vc.s12 - 10.0*vc.s12 + 18.0*w1->vc.s12 
+  //           - 6.0*w2->vc.s12 + w3->vc.s12 ) / 12.0;
+  //         }
+  //         break;
+  //       default: // now check other direction. 
+  //         switch( tree.nn[2] )
+  //         {
+  //           case 0: // forward 2nd order, 3-point stencil
+  //             {
+  //             const Cell* const& e1 = tree.neighbours[0];
+  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+  //             s11x = dh_inv * (
+  //               -3.0*vc.s11 + 4.0*e1->vc.s11 - e2->vc.s11 ) / 2.0;
+  //             s12x = dh_inv * ( 
+  //               -3.0*vc.s12 + 4.0*e1->vc.s12 - e2->vc.s12 ) / 2.0;
+  //             }
+  //             break;
+  //           case 1: // forward 4th order, 5-point stencil
+  //             {
+  //             const Cell* const& w1 = tree.neighbours[4];
+  //             const Cell* const& e1 = tree.neighbours[0];
+  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+  //             const Cell* const& e3 = 
+  //               tree.neighbours[0]->tree.neighbours[0]->tree.neighbours[0];
+  //             s11x = dh_inv * ( 
+  //               - 3.0*w1->vc.s11 - 10.0*vc.s11 + 18.0*e1->vc.s11 
+  //               - 6.0*e2->vc.s11 + e3->vc.s11 ) / 12.0;
+  //             s12x = dh_inv * ( 
+  //               - 3.0*w1->vc.s12 - 10.0*vc.s12 + 18.0*e1->vc.s12 
+  //               - 6.0*e2->vc.s12 + e3->vc.s12 ) / 12.0;
+  //             }
+  //             break;
+  //           default: // centered 4th order, 4-point stencil
+  //             {
+  //             const Cell* const& e1 = tree.neighbours[0];
+  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+  //             const Cell* const& w1 = tree.neighbours[4];
+  //             const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+  //             s11x = dh_inv * ( 
+  //               -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
+  //             s12x = dh_inv * ( 
+  //               -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
+  //             }
+  //             break;
+  //         }
+  //       break;
+  //     }
+  //     // y-direction
+  //     switch( tree.nn[1] )
+  //     {
+  //       case 0: // backward 2nd order, 3-point stencil
+  //         {
+  //         const Cell* const& s1 = tree.neighbours[6];
+  //         const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+  //         s11x = dh_inv * -(
+  //           -3.0*vc.s11 + 4.0*s1->vc.s11 - s2->vc.s11 ) / 2.0;
+  //         s12x = dh_inv * -(
+  //           -3.0*vc.s12 + 4.0*s1->vc.s12 - s2->vc.s12 ) / 2.0;
+  //         }
+  //         break;
+  //       case 1: // backward 4th order, 5-point stencil
+  //         {
+  //         const Cell* const& n1 = tree.neighbours[2];
+  //         const Cell* const& s1 = tree.neighbours[6];
+  //         const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+  //         const Cell* const& s3 = 
+  //           tree.neighbours[6]->tree.neighbours[6]->tree.neighbours[6];
+  //         s11x = dh_inv * -( 
+  //           - 3.0*n1->vc.s11 - 10.0*vc.s11 + 18.0*s1->vc.s11 
+  //           - 6.0*s2->vc.s11 + s3->vc.s11 ) / 12.0;
+  //         s12x = dh_inv * -( 
+  //           - 3.0*n1->vc.s12 - 10.0*vc.s12 + 18.0*s1->vc.s12 
+  //           - 6.0*s2->vc.s12 + s3->vc.s12 ) / 12.0;
+  //         }
+  //         break;
+  //       default: // now check other direction. 
+  //         switch( tree.nn[3] )
+  //         {
+  //           case 0: // forward 2nd order, 3-point stencil
+  //             {
+  //             const Cell* const& n1 = tree.neighbours[2];
+  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+  //             s11x = dh_inv * (
+  //               -3.0*vc.s11 + 4.0*n1->vc.s11 - n2->vc.s11 ) / 2.0;
+  //             s12x = dh_inv * ( 
+  //               -3.0*vc.s12 + 4.0*n1->vc.s12 - n2->vc.s12 ) / 2.0;
+  //             }
+  //             break;
+  //           case 1: // forward 4th order, 5-point stencil
+  //             {
+  //             const Cell* const& s1 = tree.neighbours[6];
+  //             const Cell* const& n1 = tree.neighbours[2];
+  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+  //             const Cell* const& n3 = 
+  //               tree.neighbours[2]->tree.neighbours[2]->tree.neighbours[2];
+  //             s11x = dh_inv * ( 
+  //               - 3.0*s1->vc.s11 - 10.0*vc.s11 + 18.0*n1->vc.s11 
+  //               - 6.0*n2->vc.s11 + n3->vc.s11 ) / 12.0;
+  //             s12x = dh_inv * ( 
+  //               - 3.0*s1->vc.s12 - 10.0*vc.s12 + 18.0*n1->vc.s12 
+  //               - 6.0*n2->vc.s12 + n3->vc.s12 ) / 12.0;
+  //             }
+  //             break;
+  //           default: // centered 4th order, 4-point stencil
+  //             {
+  //             const Cell* const& n1 = tree.neighbours[2];
+  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+  //             const Cell* const& s1 = tree.neighbours[6];
+  //             const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
+  //             s12y = dh_inv * ( 
+  //               -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
+  //             s22y = dh_inv * ( 
+  //               -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
+  //             }
+  //             break;
+  //         }
+  //       break;
+  //     }
+  //     }
+  //     break;
+  //   default:
+  //     break;
+  // }
 }
 inline void Cell::compute_vc_body_force( double g[9], double nuc ) const
 {
@@ -753,21 +760,22 @@ void Cell::next_f_mrt( const double m[9], double omega )
   state.f[7] -= premultiply_MinvS(8, m, omega );
 }
 
-void Cell::stream_parallel()
+// g: grid level of this cell
+void Cell::stream_parallel( vector<Cell>& g )
 {
-  if( tree.active )
+  if( state.active )
   {
     for(size_t i = 0; i < 8; ++i)
     {
-      numerics.b[i] = (tree.neighbours[OPPOSITE(i)] != nullptr) ? 
-        tree.neighbours[OPPOSITE(i)]->state.f[i] : numerics.b[i];
+      state.b[i] = ( local.neighbours[OPPOSITE(i)] > -1 ) ? 
+        g[ local.neighbours[OPPOSITE(i)] ].state.f[i] : state.b[i];
     }
   }
 }
 
 void Cell::bufferize_parallel()
 {
-  for(size_t i = 0; i < 8; ++i) state.f[i] = numerics.b[i];
+  for(size_t i = 0; i < 8; ++i) state.f[i] = state.b[i];
 }
 
 double Cell::get_mag() const
@@ -777,41 +785,45 @@ double Cell::get_mag() const
 
 void Cell::reconstruct_macro()
 {
-  state.rho = state.fc;
-  for (int i = 0; i < 8; ++i) state.rho += state.f[i];
-  state.u = 0;
-  state.v = 0;
-  for (int i = 0; i < 8; ++i) state.u += state.f[i]*CX[i];
-  for (int i = 0; i < 8; ++i) state.v += state.f[i]*CY[i];
-  state.u /= state.rho;
-  state.v /= state.rho;
+  if ( state.active )
+  {
+    state.rho = state.fc;
+    for (int i = 0; i < 8; ++i) state.rho += state.f[i];
+    state.u = 0;
+    state.v = 0;
+    for (int i = 0; i < 8; ++i) state.u += state.f[i]*CX[i];
+    for (int i = 0; i < 8; ++i) state.v += state.f[i]*CY[i];
+    state.u /= state.rho;
+    state.v /= state.rho;
+  }
 }
 
 // Stationary wall boundary condition.
 // Actually stores the bounced distribution in the buffer.
 void Cell::bounce_back(char side)
 {
+  // cout << "applying bounce back" << endl;
   switch(side)
   {
     case 't': // top
-      numerics.b[7] = state.f[3];
-      numerics.b[6] = state.f[2];
-      numerics.b[5] = state.f[1];
+      state.b[7] = state.f[3];
+      state.b[6] = state.f[2];
+      state.b[5] = state.f[1];
       break;
     case 'l': // left
-      numerics.b[1] = state.f[5];
-      numerics.b[0] = state.f[4];
-      numerics.b[7] = state.f[3];
+      state.b[1] = state.f[5];
+      state.b[0] = state.f[4];
+      state.b[7] = state.f[3];
       break;
     case 'r': // right
-      numerics.b[3] = state.f[7];
-      numerics.b[4] = state.f[0];
-      numerics.b[5] = state.f[1];
+      state.b[3] = state.f[7];
+      state.b[4] = state.f[0];
+      state.b[5] = state.f[1];
       break;
     case 'b': // bottom
-      numerics.b[1] = state.f[5];
-      numerics.b[2] = state.f[6];
-      numerics.b[3] = state.f[7];
+      state.b[1] = state.f[5];
+      state.b[2] = state.f[6];
+      state.b[3] = state.f[7];
       break;
     default:
       break;
@@ -825,39 +837,40 @@ void Cell::moving_wall(char side, double U)
   double incident = 0;
   double rho = 0;
   double A = 0;
+  // cout << "applying " << U << " moving wall to " << side << endl;
   switch(side)
   {
     case 't': // top
       incident = state.f[1] + state.f[2] + state.f[3];
       rho = state.fc + state.f[0] + state.f[4] + 2*incident;
       A = ( rho * U ) / 6.0;
-      numerics.b[7] = state.f[3] + A;
-      numerics.b[6] = state.f[2];
-      numerics.b[5] = state.f[1] - A;
+      state.b[7] = state.f[3] + A;
+      state.b[6] = state.f[2];
+      state.b[5] = state.f[1] - A;
       break;
     case 'l': // left
       incident = state.f[3] + state.f[4] + state.f[5];
       rho = state.fc + state.f[2] + state.f[6] + 2*incident;
       A = ( rho * U ) / 6.0;
-      numerics.b[1] = state.f[5] + A;
-      numerics.b[0] = state.f[4];
-      numerics.b[7] = state.f[3] - A;
+      state.b[1] = state.f[5] + A;
+      state.b[0] = state.f[4];
+      state.b[7] = state.f[3] - A;
       break;
     case 'r': // right
       incident = state.f[1] + state.f[0] + state.f[7];
       rho = state.fc + state.f[2] + state.f[6] + 2*incident;
       A = ( rho * U ) / 6.0;
-      numerics.b[3] = state.f[7] + A;
-      numerics.b[4] = state.f[0];
-      numerics.b[5] = state.f[1] - A;
+      state.b[3] = state.f[7] + A;
+      state.b[4] = state.f[0];
+      state.b[5] = state.f[1] - A;
       break;
     case 'b': // bottom
       incident = state.f[5] + state.f[6] + state.f[7];
       rho = state.fc + state.f[0] + state.f[4] + 2*incident;
       A = ( rho * U ) / 6.0;
-      numerics.b[1] = state.f[5] + A;
-      numerics.b[2] = state.f[6];
-      numerics.b[3] = state.f[7] - A;
+      state.b[1] = state.f[5] + A;
+      state.b[2] = state.f[6];
+      state.b[3] = state.f[7] - A;
       break;
     default:
       break;

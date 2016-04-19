@@ -35,7 +35,7 @@ public:
   void reconstruct_distribution( double u_, double v_, double rho_ );
   void collide( std::size_t relax_model, std::size_t vc_model, 
     double omega, double scale_decrease, double scale_increase, double nuc );
-  void stream_parallel();
+  void stream_parallel( std::vector<Cell>& g );
   void bufferize_parallel();
   void reconstruct_macro();
   // BCs
@@ -43,23 +43,66 @@ public:
   void moving_wall(char side, double U);
   // For dynamic mesh.
   void coalesce();
-  void explode_homogeneous();
+  void explode_homogeneous( std::vector<Cell>& cg );
   void refine( std::vector<Cell>& next_level_cells );
   // For initialization from file.
   void set_uv( double u, double v ) { state.u = u; state.v = v; };
   // For post-processing.
   double get_mag() const;
   double rho() const { return state.rho; }
-  void link_children();
+  void link_children( std::vector<Cell>& pg, std::vector<Cell>& cg );
   struct
   {
     double fc = 1; // center distribution.
     // advected distributions ( to index-correspond to the neighbours ).
-    double f[8] = { 0 }; 
+    double f[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; 
     double rho = 1;
     double u = 0;
     double v = 0;
+    // buffers for advected distributions (for parallel advection).
+    // also useful for holding bounced-back distributions!
+    double b[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    // 
+    bool active = true;
+    // An interface cell will not collide, only advect. 
+    // A cell can be both an interface and active if it is on the coarser 
+    //  layer of an interface.
+    // Non-boundary real cells must ALWAYS have neighbours 
+    //  (whether real or interface) but interface cells do not need neighbours.
+    bool interface = false;
   } state;
+  struct
+  {
+    // < 0 indices indicate invalid values.
+    // The vector index for this cell in its grid level.
+    int me = -1;
+    // Since Cells at each level are stored in vectors, we cannot use pointers 
+    //  because vectors may resize (which invalidates pointers). So, we know 
+    //  that parents are on the immediate level above and children on the 
+    //  immediate level below. Therefore, we can simply store vector indices!
+    int parent = -1;
+    // Children are ordered in N-order curve.
+    int children[4] = { -1, -1, -1, -1 };
+    // cell neighbours for every lattice direction (have same level)
+    // the number of neighbours in each orthogonal direction (at least).
+    // going ccw from {1,0}.
+    int neighbours[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    // Currently used for VC
+    std::size_t nn[4] = {2,2,2,2};
+    // following meaning there are at least 2 neighbours in every direction.
+    bool fully_interior_cell = true;
+  } local;
+  // These variables only last during one entire-grid iteration 
+  //  (persists through sub-grid iterations).
+  // These need to be explicitly set during every whole-grid iteration.
+  struct
+  {
+    // A flag to identify cells that need refinement at the end of the current 
+    //  whole-grid iteration.
+    bool refine = false;
+    // Link newly-created children (not this cell itself).
+    bool link_children = false;
+  } action;
   // For viscosity-counteracting approach.
   // These are merely buffers for differencing.
   struct
@@ -75,66 +118,6 @@ public:
     double s12y = 0;
     double s22y = 0;
   } vc;
-  // Parallel considerations:
-  // Create cells first. Set flags 
-  struct
-  {
-    // Since Cells at each level are stored in vectors, we cannot use pointers 
-    //  because vectors may resize (which invalidates pointers). So, we know 
-    //  that parents are on the immediate level above and children on the 
-    //  immediate level below. Therefore, we can simply store vector indices!
-    std::size_t parent = 0;
-    // Children are ordered in N-order curve.
-    std::size_t children[4] = { 0, 0, 0, 0 };
-    // cell neighbours for every lattice direction (have same level)
-    // the number of neighbours in each orthogonal direction (at least).
-    // going ccw from {1,0}.
-    std::size_t neighbours[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-  } local;
-  struct
-  {
-    Cell* parent = nullptr;
-    // Children are ordered in N-order curve.
-    Cell* children[4] = { nullptr, nullptr, nullptr, nullptr };
-    // cell neighbours for every lattice direction (have same level)
-    // the number of neighbours in each orthogonal direction (at least).
-    // going ccw from {1,0}.
-    Cell* neighbours[8] = { nullptr }; 
-    // flag whether this cell is currently participating in the flow solution.
-    // Does not need to be set every iteration.
-    bool active = true;
-    // An interface cell will not collide, only advect. 
-    // A cell can be both an interface and active if adjacent to finer active 
-    //  cells.
-    // An interface cell is purely for placeholding coarse explosions for 
-    //  advections to finer levels. 
-    // Real cells must ALWAYS have neighbours (whether real or interface), 
-    //  but interface cells do not need (to create new) neighbours.
-    bool interface = false;
-    
-    // A flag to identify cells that need refinement after iteration.
-    // Needs to be explicitly set every iteration.
-    bool need_to_refine = false;
-    // Link newly-created children (not this cell itself).
-    // Needs to be explicitly set every iteration.
-    bool need_to_link = false;
-    
-    // Currently used for VC
-    std::size_t nn[4] = {2,2,2,2};
-    // following meaning there are at least 2 neighbours in every direction.
-    bool fully_interior_cell = true;
-    // Morton N-order key (interleave x and y, x first).
-    // x-first gives you an N-order curve.
-    uint64_t mk = (uint64_t)0; 
-  } tree;
-  struct
-  {
-    // true if physical surface resides in this cell.
-    bool cut = false; 
-    // buffers for advected distributions (for parallel advection).
-    // also useful for bounced-back distributions!!!
-    double b[8] = {}; 
-  } numerics;
 private:
   // SRT
   inline double next_fc_srt( double msq, double omega ) const;
@@ -158,6 +141,6 @@ private:
     double omega, double scale_increase, double scale_decrease, double nuc );
   // Dynamic grid
   void link_new_children(size_t child);
-  void activate_children();
-  void create_children(std::vector<Cell>& next_level_cells);
+  void activate_children( std::vector<Cell>& cg );
+  void create_children( std::vector<Cell>& next_level_cells );
 };

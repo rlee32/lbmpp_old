@@ -39,33 +39,107 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
 {
   size_t cell_count_x = grid.cell_count_x();
   size_t cell_count_y = grid.cell_count_y();
-  const float black[] = {0,0,0};
-  double min = grid.min_mag();
-  double max = grid.max_mag();
+  temp.min = grid.min_mag();
+  temp.max = grid.max_mag();
+  cout << temp.min << ", " << temp.max << endl;
   for (size_t i = 0; i < cell_count_x; ++i)
   {
     for (size_t j = 0; j < cell_count_y; ++j)
     {
-      // Get color
-      float rgb[3];
       size_t ii = i + j * cell_count_x;
-      // cout << min << ", " << max << endl;
-      scalar2rgb(min, max, grid.mag(0, ii), rgb);
-      // Draw
       size_t jp = cell_count_y - 1 - j;
-      image.draw_rectangle(
-        i*pixels_per_cell, // upper left corner
-        jp*pixels_per_cell,
-        (i+1)*pixels_per_cell, // lower right corner
-        (jp+1)*pixels_per_cell,
-        rgb );
+      draw_mag_tree( &(grid.get_level(1)), (grid.get_cells(0))[ii],
+        i*pixels_per_cell, jp*pixels_per_cell, pixels_per_cell );
+      // // Get color
+      // float rgb[3];
+      // // cout << min << ", " << max << endl;
+      // scalar2rgb( min, max, grid.mag(0, ii), rgb );
+      // // Draw
+      // image.draw_rectangle(
+      //   i*pixels_per_cell, // upper left corner
+      //   jp*pixels_per_cell,
+      //   (i+1)*pixels_per_cell, // lower right corner
+      //   (jp+1)*pixels_per_cell,
+      //   rgb,
+      //   3 );
     }
   }
   if (pixels_per_cell > 2)
   {
+    const float black[] = {0,0,0};
     image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
   }
 }
+
+// cg: grid level of the children of this cell.
+// cell: current cell whose children will be drawn if not active.
+// i: the upper-left corner horizontal position in pixels.
+// j: the upper-left corner vertical position in pixels.
+// p: pixel dimension of this cell.
+void SolutionViewer::draw_mag_tree( GridLevel* cg, 
+  Cell& cell, size_t i, size_t j, size_t p )
+{
+  if (not cell.state.active and p > 2 and cg != nullptr )
+  {
+    // draw children
+    size_t cdim = p / 2;
+    vector<Cell>& g = cg->get_cells();
+    draw_mag_tree( cg->get_next_grid_level(), 
+      g[ cell.local.children[0] ], i, j+cdim, cdim );
+    draw_mag_tree( cg->get_next_grid_level(), 
+       g[ cell.local.children[1] ], i, j, cdim );
+    draw_mag_tree( cg->get_next_grid_level(), 
+       g[ cell.local.children[2] ], i+cdim, j+cdim, cdim );
+    draw_mag_tree( cg->get_next_grid_level(), 
+       g[ cell.local.children[3] ], i+cdim, j, cdim );
+  }
+  else
+  {
+    // Draw this cell
+    float rgb[3];
+    scalar2rgb( temp.min, temp.max, cell.get_mag(), rgb );
+    image.draw_rectangle(
+      i, // upper left corner
+      j,
+      i+p, // lower right corner
+      j+p,
+      rgb );
+  }
+}
+
+// // The tree version.
+// void SolutionViewer::draw_velocity_magnitude_tree(Grid& grid)
+// {
+//   size_t cell_count_x = grid.cell_count_x();
+//   size_t cell_count_y = grid.cell_count_y();
+//   const float black[] = {0,0,0};
+//   temp.min = grid.min_mag();
+//   temp.max = grid.max_mag();
+//   for (size_t i = 0; i < cell_count_x; ++i)
+//   {
+//     for (size_t j = 0; j < cell_count_y; ++j)
+//     {
+//       // Get color
+//       float rgb[3];
+//       size_t ii = i + j * cell_count_x;
+//       // cout << min << ", " << max << endl;
+//       scalar2rgb( temp.min, temp.max, grid.mag(1, ii), rgb );
+//       // Draw
+//       size_t jp = cell_count_y - 1 - j;
+//       image.draw_rectangle(
+//         i*pixels_per_cell, // upper left corner
+//         jp*pixels_per_cell,
+//         (i+1)*pixels_per_cell, // lower right corner
+//         (jp+1)*pixels_per_cell,
+//         rgb,
+//         1 );
+//     }
+//   }
+//   if (pixels_per_cell > 2)
+//   {
+//     // image.draw_grid(pixels_per_cell,pixels_per_cell,0,0,false,false,black);
+//   }
+// }
 
 void SolutionViewer::draw_status( int iteration, Simulator& sim,  
   double elapsed_time )

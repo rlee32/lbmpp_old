@@ -9,8 +9,8 @@ class BoundaryConditions
 {
 public:
   void initialize( char sides[4], char bc[4], double U_, 
-    BoundaryConditions* next_level_bcs_ );
-  void add_cell( Cell* c, char side );
+    BoundaryConditions* next_level_bcs_, std::vector<Cell>* g_ );
+  void add_cell( int c, char side );
   void apply_bc();
   void refined_cell_bc();
 private:
@@ -18,7 +18,7 @@ private:
   // Auxiliary data structure.
   typedef struct Face
   {
-    std::vector<Cell*> cells;
+    std::vector<int> cells; // indices of cells.
     // 't': top
     // 'b': bottom
     // 'r': right
@@ -40,11 +40,12 @@ private:
   } Face;
   std::vector<Face> faces;
   BoundaryConditions* next_level_bcs = nullptr;
+  std::vector<Cell>* g = nullptr;
 
-  void cell_bc(Cell* c, char type, char side) const;
+  void cell_bc( int c, char type, char side ) const;
   char next_side(char side) const;
   char prev_side(char side) const;
   char get_next_type(char side) const;
   char get_prev_type(char side) const;
-  void facilitate_split( Cell* c, char side );
+  void facilitate_split( int c, char side );
 };

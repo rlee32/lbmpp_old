@@ -40,6 +40,7 @@ void BoundaryConditions::refined_cell_bc()
     // cout << "Adding " << f.cells.size() << "to " << f.side << endl;
     for( size_t i = 0; i < f.cells.size(); ++i )
     {
+      // cout << "split side: " << f.side << endl;
       facilitate_split( f.cells[i], f.side );
     }
   }
@@ -47,27 +48,28 @@ void BoundaryConditions::refined_cell_bc()
 
 // After a cell has been split, add the appropriate children to the 
 //  boundary condition level.
-void BoundaryConditions::facilitate_split( Cell* c, char side )
+void BoundaryConditions::facilitate_split( int ci, char side )
 {
-  if ( c->tree.need_to_refine )
+  Cell& c = (*g)[ ci ];
+  if ( c.action.refine )
   {
     switch( side )
     {
       case 'l':
-        next_level_bcs->add_cell( c->tree.children[0], side );
-        next_level_bcs->add_cell( c->tree.children[1], side );
+        next_level_bcs->add_cell( c.local.children[0], side );
+        next_level_bcs->add_cell( c.local.children[1], side );
         break;
       case 'r':
-        next_level_bcs->add_cell( c->tree.children[2], side );
-        next_level_bcs->add_cell( c->tree.children[3], side );
+        next_level_bcs->add_cell( c.local.children[2], side );
+        next_level_bcs->add_cell( c.local.children[3], side );
         break;
       case 'b':
-        next_level_bcs->add_cell( c->tree.children[0], side );
-        next_level_bcs->add_cell( c->tree.children[2], side );
+        next_level_bcs->add_cell( c.local.children[0], side );
+        next_level_bcs->add_cell( c.local.children[2], side );
         break;
       case 't':
-        next_level_bcs->add_cell( c->tree.children[1], side );
-        next_level_bcs->add_cell( c->tree.children[3], side );
+        next_level_bcs->add_cell( c.local.children[1], side );
+        next_level_bcs->add_cell( c.local.children[3], side );
         break;
       default:
         cout << "Error! Unknown side added." << endl;
@@ -77,17 +79,18 @@ void BoundaryConditions::facilitate_split( Cell* c, char side )
 }
 
 // 
-void BoundaryConditions::cell_bc(Cell* c, char type, char side) const
+void BoundaryConditions::cell_bc( int ci, char type, char side ) const
 {
-  if ( c->tree.active or c->tree.interface )
+  Cell& c = (*g)[ ci ];
+  if ( c.state.active or c.state.interface )
   {
     switch( type )
     {
       case 'm':
-        c->moving_wall(side, U);
+        c.moving_wall(side, U);
         break;
       case 'w':
-        c->bounce_back(side);
+        c.bounce_back(side);
         break;
       default:
         break;
@@ -96,7 +99,7 @@ void BoundaryConditions::cell_bc(Cell* c, char type, char side) const
 }
 
 void BoundaryConditions::initialize( char sides[4], char bc[4], double U_, 
-  BoundaryConditions* next_level_bcs_ )
+  BoundaryConditions* next_level_bcs_, vector<Cell>* g_ )
 {
   U = U_;
   for( size_t i = 0; i < 4; ++i )
@@ -106,11 +109,12 @@ void BoundaryConditions::initialize( char sides[4], char bc[4], double U_,
   }
   sort( faces.begin(), faces.end(), Face::compare );
   next_level_bcs = next_level_bcs_;
+  g = g_;
 }
 
 // Slightly inefficient search and add procedure, but this should only be used
 //  when initializing the coarse cells.
-void BoundaryConditions::add_cell(Cell* c, char side)
+void BoundaryConditions::add_cell( int c, char side)
 {
   for( size_t i = 0; i < 4; ++i )
   {

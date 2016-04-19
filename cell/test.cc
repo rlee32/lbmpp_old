@@ -6,12 +6,12 @@ using namespace std;
 
 int main()
 {
-  vector<Cell>* g = nullptr;
+  // vector<Cell>* g = nullptr;
 
-  Cell c(1, 1, 1, 
-  4, 0.25, 1e-3, 0, g);
+  // Cell c(1, 1, 1, 
+  // 4, 0.25, 1e-3, 0, g);
 
-  c.test_mrt();
+  // c.test_mrt();
 
   return 0;
 }
