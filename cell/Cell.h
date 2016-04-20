@@ -30,27 +30,42 @@ const static double W[8] = {
 class Cell
 {
 public:
+  // Constructors
   Cell( double u_, double v_, double rho_ ); // Meant to make coarsest cells.
   Cell( Cell* parent ); // meant to be called in a (single-level) refine operation.
-  void reconstruct_distribution( double u_, double v_, double rho_ );
+  
+  // Iteration
   void collide( std::size_t relax_model, std::size_t vc_model, 
     double omega, double scale_decrease, double scale_increase, double nuc );
   void stream_parallel( std::vector<Cell>& g );
   void bufferize_parallel();
   void reconstruct_macro();
+
+  // Local connectivity
+  bool has_neighbour(std::size_t i) const { return local.neighbours[i] > -1; }
+  bool has_children() const { return local.children[0] > -1; }
+  bool has_interface_children( std::vector<Cell>& next_level_cells ) const 
+    { return next_level_cells[ local.children[0] ].state.interface; }
+
   // BCs
   void bounce_back(char side);
   void moving_wall(char side, double U);
+  
   // For dynamic mesh.
-  void coalesce();
+  void coalesce( std::vector<Cell>& cg );
   void explode_homogeneous( std::vector<Cell>& cg );
   void refine( std::vector<Cell>& next_level_cells );
+  void create_interface_children( std::vector<Cell>& next_level_cells );
+  
   // For initialization from file.
   void set_uv( double u, double v ) { state.u = u; state.v = v; };
+  void reconstruct_distribution( double u_, double v_, double rho_ );
+  
   // For post-processing.
   double get_mag() const;
   double rho() const { return state.rho; }
   void link_children( std::vector<Cell>& pg, std::vector<Cell>& cg );
+  
   struct
   {
     double fc = 1; // center distribution.
@@ -122,12 +137,14 @@ private:
   // SRT
   inline double next_fc_srt( double msq, double omega ) const;
   inline double next_fi_srt( std::size_t i, double msq, double omega ) const;
+  
   // MRT
   inline double premultiply_M(size_t i) const;
   inline double premultiply_MinvS( 
     size_t i, const double m[9], double omega ) const;
   inline void compute_moment( double m[9] ) const;
   void next_f_mrt( const double m[9], double omega );
+  
   // VC
   inline void compute_feq( double feq[9] ) const;
   inline void compute_strain_terms( 
@@ -139,6 +156,7 @@ private:
   inline void compute_vc_body_force( double g[9], double nuc ) const;
   inline void apply_steady_vc_body_force( 
     double omega, double scale_increase, double scale_decrease, double nuc );
+  
   // Dynamic grid
   void link_new_children(size_t child);
   void activate_children( std::vector<Cell>& cg );

@@ -274,6 +274,49 @@ void GridLevel::refine_all()
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
 
+// Call AFTER refinement (via action.refine), and BEFORE linking children.
+// Goes through all cells and identifies newly-created cells that 
+//  have parent neighbours but no corresponding same-level neighbours, 
+//  and creates the neighbours.
+void GridLevel::identify_interfaces()
+{
+  for( size_t i = 0; i < cells.size(); ++i )
+  {
+    if( cells[i].action.refine )
+    {
+      for ( size_t n = 0; n < 8; ++n )
+      {
+        if ( cells[i].has_neighbour(n) )
+        {
+          Cell& nc = get_neighbour(i,n);
+          if ( not nc.action.refine )
+          {
+            if ( nc.has_children() )
+            {
+              if (not nc.has_interface_children(next_grid_level->get_cells()))
+              {
+                // Set children as interface.
+                next_grid_level->set_interface(nc.local.children[0]);
+                next_grid_level->set_interface(nc.local.children[1]);
+                next_grid_level->set_interface(nc.local.children[2]);
+                next_grid_level->set_interface(nc.local.children[3]);
+              }
+            }
+            else
+            {
+              // Create children as interface.
+              nc.create_interface_children( next_grid_level->get_cells() );
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+
 
 
 

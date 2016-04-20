@@ -34,6 +34,23 @@ void Cell::reconstruct_distribution( double rho, double u, double v )
   }
 }
 
+
+// Called during linking stage if a parent neighbour is discovered to have 
+//  no children.
+void Cell::create_interface_children( vector<Cell>& next_level_cells )
+{
+  // create the children.
+  for ( size_t i = 0; i < 4; ++i )
+  {
+    Cell child( this );
+    child.local.me = next_level_cells.size();
+    local.children[i] = next_level_cells.size();
+    child.state.interface = true;
+    child.state.active = false;
+    next_level_cells.push_back(child);
+  }
+}
+
 // Links newly created children and reciprocates linking for those cells who 
 //  are not flagged to be linked in this iteration (older cells).
 // pg: parent grid, next-level / finer grid that the children reside on.
@@ -52,8 +69,12 @@ void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
     cln[1] = plc[3]; // Sibling
     cln[2] = plc[1]; // Sibling
     int pn = pln[4]; // parent neighbour
-    if ( pn >= 0 )
+    if ( pn > -1 ) // parent neighbour existence check
     {
+      if ( pg[ pn ].local.children[0] < 0 ) // create children if none
+      {
+
+      }
       cln[3] = pg[ pn ].local.children[3]; // Cousin
       cln[4] = pg[ pn ].local.children[2]; // Cousin
       if ( not pg[ pn ].action.link_children ) // reciprocate
@@ -64,7 +85,7 @@ void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
     }
     // Cousins
     pn = pln[5];
-    if ( pn >= 0 )
+    if ( pn > -1 ) // parent neighbour existence check
     {
       cln[5] = pg[ pn ].local.children[3]; // Cousin
       if ( not pg[ pn ].action.link_children ) // reciprocate
@@ -74,7 +95,7 @@ void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
     }
     // Cousins
     pn = pln[6];
-    if ( pn >= 0 )
+    if ( pn > -1 ) // parent neighbour existence check
     {
       cln[6] = pg[ pn ].local.children[1]; // Cousin
       cln[7] = pg[ pn ].local.children[3]; // Cousin
@@ -216,40 +237,43 @@ void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
 
 // Currently just averages children.
 // Need to account for cut cells, with different-volume cells.
-void Cell::coalesce()
+// cg: child grid ( grid level one below the current cell's )
+void Cell::coalesce( vector<Cell>& cg )
 {
-  // if ( state.interface )
-  // {
-  //   double fcavg = 0;
-  //   double favg[8] = {};
-  //   double uavg = 0;
-  //   double vavg = 0;
-  //   double rhoavg = 0;
-  //   int nc = 0;
-  //   // Sum over children.
-  //   for(int i = 0; i < 4; ++i)
-  //   {
-  //     Cell* c = tree.children[i];
-  //     if (c != nullptr)
-  //     {
-  //       uavg += c->state.u;
-  //       vavg += c->state.v;
-  //       rhoavg += c->state.rho;
-  //       fcavg += c->state.fc;
-  //       for(int j = 0; j < 8; ++j) favg[j] += c->state.f[j];
-  //       ++nc;
-  //     }
-  //   }
-  //   // Average.
-  //   if (nc > 0)
-  //   {
-  //     state.u = uavg / nc;
-  //     state.v = vavg / nc;
-  //     state.rho = rhoavg / nc;
-  //     state.fc = fcavg / nc;
-  //     for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
-  //   }
-  // }
+  // Only interfaces will coalesce.
+  if ( state.interface )
+  {
+    double fcavg = 0;
+    double favg[8] = {};
+    double uavg = 0;
+    double vavg = 0;
+    double rhoavg = 0;
+    int nc = 0;
+    // Sum over children.
+    for(int i = 0; i < 4; ++i)
+    {
+      int ci = local.children[i];
+      if ( ci > -1 )
+      {
+        Cell& c = cg[ ci ];
+        uavg += c.state.u;
+        vavg += c.state.v;
+        rhoavg += c.state.rho;
+        fcavg += c.state.fc;
+        for(int j = 0; j < 8; ++j) favg[j] += c.state.f[j];
+        ++nc;
+      }
+    }
+    // Average.
+    if (nc > 0)
+    {
+      state.u = uavg / nc;
+      state.v = vavg / nc;
+      state.rho = rhoavg / nc;
+      state.fc = fcavg / nc;
+      for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+    }
+  }
 }
 
 // For cut cells, the distribution of particles should ensure MME conservation.
