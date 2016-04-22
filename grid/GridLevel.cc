@@ -273,6 +273,25 @@ void GridLevel::refine_all()
   next_grid_level->refresh_active_cells();
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
+// This is a test function to be called during initialization.
+void GridLevel::refine_half( size_t i_cells, size_t j_cells )
+{
+  for(size_t j = 0; j < j_cells; ++j)
+  {
+    for(size_t i = 0; i < i_cells/2; ++i)
+    {
+      size_t ii = i + j*i_cells;
+      cells[ii].action.refine = true;
+    }
+  }
+  // These are end-of-whole-grid-iteration operations.
+  refine_marked();
+  link_marked();
+  refined_cell_bc();
+  active_cells = compute_active_cells();
+  next_grid_level->refresh_active_cells();
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
+}
 
 // Call AFTER refinement (via action.refine), and BEFORE linking children.
 // Goes through all cells and identifies newly-created cells that 
