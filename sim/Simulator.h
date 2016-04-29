@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "../grid/Grid.h"
+#include "../grid/GridLevel.h"
 
 class Simulator
 { 

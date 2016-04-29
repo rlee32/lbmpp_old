@@ -229,3 +229,30 @@ void Simulator::read_coarse_solution()
   grid.set_coarse_solution( rho0, u0field, v0field );
   output_coarse_field("test.tsv");
 }
+
+// Traverses children to get the data points closest to the top side of 
+//  the surface of this cell. 
+// x: x-distance from the leftmost side of the root cell.
+// y: y-distance from the bottommost side of the root cell.
+// u: u-velocity
+// v: v-velocity
+// vector<> get_topmost_data(double& x, double& y, double& u, double &v,)
+// {
+//   if ()
+//   {
+
+//   }
+// }
+
+
+// // Usable on our tree dynamic grid.
+// vector<double> centerline_x()
+// {
+//   vector<double> values;
+//   size_t max_level = 0;
+//   for( size_t i = 0; i < cell_count[0]; ++i )
+//   {
+//     size_t ii = i + 
+//     size_t test_level = 
+//   }
+// }

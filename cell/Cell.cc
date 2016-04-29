@@ -901,3 +901,24 @@ void Cell::moving_wall(char side, double U)
       break;
   }
 }
+
+// // Not sure if this is working.
+// size_t Cell::max_active_level(vector<Cell>& next_level_cells)
+// {
+//   size_t max_child_level = 0;
+//   if(local.children[0] > -1 and state.active == false)
+//   {
+//     for(size_t i = 0; i < 4; ++i)
+//     {
+//       size_t test_level = max_active_level( next_level_cells );
+//       max_child_level = ( test_level > max_child_level ) ? 
+//         test_level: max_child_level;
+//     }
+//   }
+//   return max_child_level + 1;
+// }
+
+
+
+
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+c++ -std=c++11 -c -g -Wall -pedantic -Wno-strict-overflow \
+	Simulator.cc > log 2>&1
+nano log
+rm *.o
+rm log

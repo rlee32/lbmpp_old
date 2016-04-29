@@ -56,6 +56,8 @@ public:
   void explode_homogeneous( std::vector<Cell>& cg );
   void refine( std::vector<Cell>& next_level_cells );
   void create_interface_children( std::vector<Cell>& next_level_cells );
+  Cell& get_neighbour(size_t direction);
+  Cell& get_child(size_t index);
   
   // For initialization from file.
   void set_uv( double u, double v ) { state.u = u; state.v = v; };
@@ -65,7 +67,8 @@ public:
   double get_mag() const;
   double rho() const { return state.rho; }
   void link_children( std::vector<Cell>& pg, std::vector<Cell>& cg );
-  
+  // std::size_t max_active_level(std::vector<Cell>& next_level_cells);
+
   struct
   {
     double fc = 1; // center distribution.

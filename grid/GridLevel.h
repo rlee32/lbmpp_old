@@ -36,6 +36,7 @@ public:
   // Testing functions.
   void refine_all();
   // void refine_range(std::size_t start_index, std::size_t end_index);
+  void refine_half( std::size_t i_cells, std::size_t j_cells );
   
   // Mainly for post-processing purposes.
   const Cell* cell( std::size_t index ) const { return &cells[index]; }
@@ -48,6 +49,9 @@ public:
   double mag(std::size_t cell_index) const;
   std::vector<Cell>& get_cells() { return cells; }
   GridLevel* get_next_grid_level() { return next_grid_level; }
+
+  // Operators
+  Cell& operator[](std::size_t i){ return cells[i]; }
 private:
   // Member variables.
   // Basic
