@@ -2,9 +2,17 @@
 
 using namespace std;
 
+// Intended for coarsest cells.
 Cell::Cell( double rho, double u, double v )
 {
   reconstruct_distribution( rho, u, v );
+}
+// Intended for coarsest cells.
+Cell::Cell( double rho, double u, double v, vector<Cell>* g, vector<Cell>* cg )
+{
+  reconstruct_distribution( rho, u, v );
+  local.g = g;
+  local.cg = cg;
 }
 
 // Constructor for cells generated from refinement.
@@ -12,6 +20,19 @@ Cell::Cell( double rho, double u, double v )
 Cell::Cell( Cell* parent )
 {
   local.parent = parent->local.me;
+  state = parent->state;
+  parent->action.link_children = true;
+}
+
+// Constructor for cells generated from refinement.
+// Currently a homogeneous copy of state.
+// cg: child grid for new child (grandchild grid of parent).
+Cell::Cell( Cell* parent, vector<Cell>* cg )
+{
+  local.parent = parent->local.me;
+  local.cg = cg;
+  local.g = parent->local.cg;
+  local.pg = parent->local.g;
   state = parent->state;
   parent->action.link_children = true;
 }

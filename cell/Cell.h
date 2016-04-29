@@ -30,22 +30,24 @@ const static double W[8] = {
 class Cell
 {
 public:
-  // Constructors
-  Cell( double u_, double v_, double rho_ ); // Meant to make coarsest cells.
-  Cell( Cell* parent ); // meant to be called in a (single-level) refine operation.
+  // Constructors 
+  Cell( double u_, double v_, double rho_ );// Meant for coarsest cells.
+  Cell( double u_, double v_, double rho_, 
+    std::vector<Cell>* g, std::vector<Cell>* cg );// Meant for coarsest cells.
+  Cell( Cell* parent ); // meant for (single-level) refine operation.
+  Cell( Cell* parent, 
+    std::vector<Cell>* cg ); // meant for (single-level) refine operation.
   
+  // state
+  const double u() const { return state.u; }
+  const double v() const { return state.v; }
+
   // Iteration
   void collide( std::size_t relax_model, std::size_t vc_model, 
     double omega, double scale_decrease, double scale_increase, double nuc );
   void stream_parallel( std::vector<Cell>& g );
   void bufferize_parallel();
   void reconstruct_macro();
-
-  // Local connectivity
-  bool has_neighbour(std::size_t i) const { return local.neighbours[i] > -1; }
-  bool has_children() const { return local.children[0] > -1; }
-  bool has_interface_children( std::vector<Cell>& next_level_cells ) const 
-    { return next_level_cells[ local.children[0] ].state.interface; }
 
   // BCs
   void bounce_back(char side);
@@ -56,8 +58,12 @@ public:
   void explode_homogeneous( std::vector<Cell>& cg );
   void refine( std::vector<Cell>& next_level_cells );
   void create_interface_children( std::vector<Cell>& next_level_cells );
-  Cell& get_neighbour(size_t direction);
-  Cell& get_child(size_t index);
+  // Local connectivity.
+  bool has_neighbour(std::size_t i) const { return local.neighbours[i] > -1; }
+  bool has_children() const { return local.children[0] > -1; }
+  bool has_interface_children( std::vector<Cell>& next_level_cells ) const 
+    { return next_level_cells[ local.children[0] ].state.interface; }
+  Cell& parent() { return (*(local.pg))[local.parent]; }
   
   // For initialization from file.
   void set_uv( double u, double v ) { state.u = u; state.v = v; };
@@ -67,7 +73,14 @@ public:
   double get_mag() const;
   double rho() const { return state.rho; }
   void link_children( std::vector<Cell>& pg, std::vector<Cell>& cg );
-  // std::size_t max_active_level(std::vector<Cell>& next_level_cells);
+  // std::size_t max_active_level(std::vector<Cell>& next_level_cells)
+
+  // Operators
+  // Neighbour accessor
+  Cell& operator[](std::size_t i){ return (*(local.g))[local.neighbours[i]]; }
+  // Child accessor
+  Cell& operator()(std::size_t i){ return (*(local.cg))[local.children[i]]; }
+
 
   struct
   {
@@ -105,6 +118,10 @@ public:
     // the number of neighbours in each orthogonal direction (at least).
     // going ccw from {1,0}.
     int neighbours[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    // grid levels
+    std::vector<Cell>* pg = nullptr; // parent grid.
+    std::vector<Cell>* g = nullptr; // the current grid level.
+    std::vector<Cell>* cg = nullptr; // child grid level.
     // Currently used for VC
     std::size_t nn[4] = {2,2,2,2};
     // following meaning there are at least 2 neighbours in every direction.

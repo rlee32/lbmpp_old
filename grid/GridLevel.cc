@@ -86,7 +86,7 @@ void GridLevel::initialize( double scale_increase,
   tau = 3 * (nu + nuc) + 0.5;
   omega = 1 / tau;
   // cout << nu << " " << nuc << " " << tau << " " << omega << endl;
-  next_grid_level = next_grid_level_;
+  child_grid = next_grid_level_;
 }
 
 void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
@@ -245,7 +245,7 @@ void GridLevel::link_marked()
     if ( cells[i].action.link_children )
     {
       // cout << "Linking dawg" << endl;
-      cells[i].link_children( cells, next_grid_level->get_cells() );
+      cells[i].link_children( cells, child_grid->get_cells() );
     }
   }
 }
@@ -258,7 +258,7 @@ void GridLevel::refine_marked()
   {
     if ( cells[i].action.refine ) 
     {
-      cells[i].refine( next_grid_level->get_cells() );
+      cells[i].refine( child_grid->get_cells() );
     }
   }
 }
@@ -270,7 +270,7 @@ void GridLevel::refine_all()
   link_marked();
   refined_cell_bc();
   active_cells = compute_active_cells();
-  next_grid_level->refresh_active_cells();
+  child_grid->refresh_active_cells();
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
 // This is a test function to be called during initialization.
@@ -289,7 +289,7 @@ void GridLevel::refine_half( size_t i_cells, size_t j_cells )
   link_marked();
   refined_cell_bc();
   active_cells = compute_active_cells();
-  next_grid_level->refresh_active_cells();
+  child_grid->refresh_active_cells();
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
 
@@ -312,19 +312,19 @@ void GridLevel::identify_interfaces()
           {
             if ( nc.has_children() )
             {
-              if (not nc.has_interface_children(next_grid_level->get_cells()))
+              if (not nc.has_interface_children(child_grid->get_cells()))
               {
                 // Set children as interface.
-                next_grid_level->set_interface(nc.local.children[0]);
-                next_grid_level->set_interface(nc.local.children[1]);
-                next_grid_level->set_interface(nc.local.children[2]);
-                next_grid_level->set_interface(nc.local.children[3]);
+                child_grid->set_interface(nc.local.children[0]);
+                child_grid->set_interface(nc.local.children[1]);
+                child_grid->set_interface(nc.local.children[2]);
+                child_grid->set_interface(nc.local.children[3]);
               }
             }
             else
             {
               // Create children as interface.
-              nc.create_interface_children( next_grid_level->get_cells() );
+              nc.create_interface_children( child_grid->get_cells() );
             }
           }
         }

@@ -12,6 +12,13 @@
 #include "../grid/Grid.h"
 #include "../grid/GridLevel.h"
 
+// For post-processing purposes.
+typedef struct CellData
+{
+  double u=0,v=0;
+  double x=0,y=0;
+} CellData;
+
 class Simulator
 { 
 public:
@@ -31,6 +38,8 @@ public:
   double get_nucf() const { return nuc / nu; }
   std::size_t get_display_interval() const { return display_interval; }
   void output_coarse_field( std::string output_file_name );
+  void centerline_x();
+
 private:
   // Run time control.
   bool refinement = false; // If true, enables solution-adaptive refinement.
@@ -76,4 +85,7 @@ private:
     std::size_t target_x_cells, std::size_t target_y_cells, 
     std::vector<double>& target );
   void read_coarse_solution();
+  void get_topmost_data(std::vector<CellData>& data, Cell& cell, 
+    double start[2], double dim );
 };
+ 

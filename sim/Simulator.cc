@@ -230,29 +230,38 @@ void Simulator::read_coarse_solution()
   output_coarse_field("test.tsv");
 }
 
+
 // Traverses children to get the data points closest to the top side of 
 //  the surface of this cell. 
-// x: x-distance from the leftmost side of the root cell.
-// y: y-distance from the bottommost side of the root cell.
-// u: u-velocity
-// v: v-velocity
-// vector<> get_topmost_data(double& x, double& y, double& u, double &v,)
-// {
-//   if ()
-//   {
+// cell: cell under current investigation.
+// start: the x,y coordinates of the lower left corner of this cell.  
+// dim: dimension of current cell.
+void Simulator::get_topmost_data(vector<CellData>& data, Cell& cell, 
+  double start[2], double dim )
+{
+  if (not cell.has_children())
+  {
+    CellData cd;
+    cd.u = cell.u();
+    cd.v = cell.v();
+    cd.x = start[0] + 0.5*dim;
+    cd.y = start[1] + 0.5*dim;
+    data.push_back( cd );
+  }
+  else
+  {
 
-//   }
-// }
+  }
+}
 
-
-// // Usable on our tree dynamic grid.
-// vector<double> centerline_x()
-// {
-//   vector<double> values;
-//   size_t max_level = 0;
-//   for( size_t i = 0; i < cell_count[0]; ++i )
-//   {
-//     size_t ii = i + 
-//     size_t test_level = 
-//   }
-// }
+// Usable on our tree dynamic grid.
+void Simulator::centerline_x()
+{
+  // vector<double> values;
+  // size_t max_level = 0;
+  for( size_t i = 0; i < cell_count[0]; ++i )
+  {
+    // size_t ii = i + 
+    // size_t test_level = 
+  }
+}
