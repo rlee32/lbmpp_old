@@ -35,13 +35,17 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   for (size_t i = 0; i < MAX_LEVELS; ++i)
   {
     GridLevel* next = ( i < MAX_LEVELS - 1 ) ? &levels[i+1] : nullptr;
-    levels[i].initialize( scale_increase, nu0, nuc0, sides, bc, U, next );
+    GridLevel* parent = ( i > 0 ) ? &levels[i-1] : nullptr;
+    levels[i].initialize( scale_increase, nu0, nuc0, 
+      sides, bc, U, 
+      next, parent );
     scale_increase *= 2.0;
   }
   
   // Create and initialize coarse cells.
   // Boundary conditions are also defined here.
-  Cell default_cell( rho0, u0, v0 );
+  Cell default_cell( rho0, u0, v0, 
+    &levels[0].get_cells(), &levels[1].get_cells() );
   levels[0].create_coarse_grid( cell_count_x, cell_count_y, default_cell );
 
   // Testing refine operation.

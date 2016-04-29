@@ -39,6 +39,7 @@ public:
   std::size_t get_display_interval() const { return display_interval; }
   void output_coarse_field( std::string output_file_name );
   void centerline_x();
+  void centerline_y();
 
 private:
   // Run time control.
@@ -76,6 +77,7 @@ private:
   //
   std::size_t display_interval = 1; 
 
+  // Preprocessing 
   void read_settings(std::string filename);
   void process_settings();
   // coarse input solution.
@@ -85,7 +87,16 @@ private:
     std::size_t target_x_cells, std::size_t target_y_cells, 
     std::vector<double>& target );
   void read_coarse_solution();
-  void get_topmost_data(std::vector<CellData>& data, Cell& cell, 
-    double start[2], double dim );
+
+  // Postprocessing
+  void get_data( Cell& cell, 
+    std::vector<CellData>& data, char side, 
+    double xstart, double ystart, double dim );
+  void produce_centerline_y( std::vector<CellData>& side1, 
+    std::vector<CellData>& side2, std::vector<CellData>& center);
+  void print_centerline_y( std::vector<CellData>& center );
+
+  // Initialization
+
 };
  

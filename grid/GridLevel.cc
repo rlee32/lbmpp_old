@@ -76,7 +76,8 @@ void GridLevel::reconstruct_macro()
 void GridLevel::initialize( double scale_increase, 
   double nu0, double nuc0, 
   char sides[4], char bc[4], double U,
-  GridLevel* next_grid_level_ )
+  GridLevel* next_grid_level_,
+  GridLevel* parent_grid_level_ )
 {
   bcs.initialize( sides, bc, U, next_grid_level_->get_bcs(), &cells );
   // compute scale factors.
@@ -87,6 +88,7 @@ void GridLevel::initialize( double scale_increase,
   omega = 1 / tau;
   // cout << nu << " " << nuc << " " << tau << " " << omega << endl;
   child_grid = next_grid_level_;
+  parent_grid = parent_grid_level_; 
 }
 
 void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
@@ -258,7 +260,8 @@ void GridLevel::refine_marked()
   {
     if ( cells[i].action.refine ) 
     {
-      cells[i].refine( child_grid->get_cells() );
+      cells[i].refine( child_grid->get_cells(), 
+        child_grid->get_next_grid_level()->get_cells() );
     }
   }
 }
@@ -324,7 +327,8 @@ void GridLevel::identify_interfaces()
             else
             {
               // Create children as interface.
-              nc.create_interface_children( child_grid->get_cells() );
+              nc.create_interface_children( child_grid->get_cells(),
+                child_grid->get_next_grid_level()->get_cells() );
             }
           }
         }

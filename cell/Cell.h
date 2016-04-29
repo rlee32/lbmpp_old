@@ -31,16 +31,17 @@ class Cell
 {
 public:
   // Constructors 
-  Cell( double u_, double v_, double rho_ );// Meant for coarsest cells.
+  // Cell( double u_, double v_, double rho_ );// Meant for coarsest cells.
   Cell( double u_, double v_, double rho_, 
     std::vector<Cell>* g, std::vector<Cell>* cg );// Meant for coarsest cells.
-  Cell( Cell* parent ); // meant for (single-level) refine operation.
+  // Cell( Cell* parent ); // meant for (single-level) refine operation.
   Cell( Cell* parent, 
     std::vector<Cell>* cg ); // meant for (single-level) refine operation.
   
   // state
   const double u() const { return state.u; }
   const double v() const { return state.v; }
+  const bool active() const { return state.active; }
 
   // Iteration
   void collide( std::size_t relax_model, std::size_t vc_model, 
@@ -56,8 +57,10 @@ public:
   // For dynamic mesh.
   void coalesce( std::vector<Cell>& cg );
   void explode_homogeneous( std::vector<Cell>& cg );
-  void refine( std::vector<Cell>& next_level_cells );
-  void create_interface_children( std::vector<Cell>& next_level_cells );
+  void refine( std::vector<Cell>& next_level_cells, 
+    std::vector<Cell>& grandchild_cells );
+  void create_interface_children( std::vector<Cell>& next_level_cells, 
+    std::vector<Cell>& grandchild_cells );
   // Local connectivity.
   bool has_neighbour(std::size_t i) const { return local.neighbours[i] > -1; }
   bool has_children() const { return local.children[0] > -1; }
@@ -180,5 +183,6 @@ private:
   // Dynamic grid
   void link_new_children(size_t child);
   void activate_children( std::vector<Cell>& cg );
-  void create_children( std::vector<Cell>& next_level_cells );
+  void create_children( std::vector<Cell>& next_level_cells, 
+    std::vector<Cell>& grandchild_cells );
 };

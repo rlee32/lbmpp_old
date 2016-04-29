@@ -36,6 +36,9 @@ public:
   double max_rho() const;
   double min_rho() const;
   double mag( std::size_t level, std::size_t cell_index ) const;
+
+  // Operators
+  GridLevel& operator[](std::size_t i) { return levels[i]; }
 private:
   const static std::size_t MAX_LEVELS = 32;
   GridLevel levels[MAX_LEVELS];

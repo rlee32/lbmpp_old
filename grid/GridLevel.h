@@ -25,7 +25,7 @@ public:
 
   // Initialization
   void initialize( double scale_increase, double nu, double nuc, 
-    char sides[4], char bc[4], double U, GridLevel* next );
+    char sides[4], char bc[4], double U, GridLevel* next, GridLevel* parent );
   void create_coarse_grid( 
     std::size_t cell_count_x, std::size_t cell_count_y, Cell& default_cell );
 

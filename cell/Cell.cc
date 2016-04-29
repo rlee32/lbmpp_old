@@ -2,11 +2,11 @@
 
 using namespace std;
 
-// Intended for coarsest cells.
-Cell::Cell( double rho, double u, double v )
-{
-  reconstruct_distribution( rho, u, v );
-}
+// // Intended for coarsest cells.
+// Cell::Cell( double rho, double u, double v )
+// {
+//   reconstruct_distribution( rho, u, v );
+// }
 // Intended for coarsest cells.
 Cell::Cell( double rho, double u, double v, vector<Cell>* g, vector<Cell>* cg )
 {
@@ -15,14 +15,14 @@ Cell::Cell( double rho, double u, double v, vector<Cell>* g, vector<Cell>* cg )
   local.cg = cg;
 }
 
-// Constructor for cells generated from refinement.
-// Currently a homogeneous copy of state.
-Cell::Cell( Cell* parent )
-{
-  local.parent = parent->local.me;
-  state = parent->state;
-  parent->action.link_children = true;
-}
+// // Constructor for cells generated from refinement.
+// // Currently a homogeneous copy of state.
+// Cell::Cell( Cell* parent )
+// {
+//   local.parent = parent->local.me;
+//   state = parent->state;
+//   parent->action.link_children = true;
+// }
 
 // Constructor for cells generated from refinement.
 // Currently a homogeneous copy of state.
@@ -58,17 +58,18 @@ void Cell::reconstruct_distribution( double rho, double u, double v )
 
 // Called during linking stage if a parent neighbour is discovered to have 
 //  no children.
-void Cell::create_interface_children( vector<Cell>& next_level_cells )
+void Cell::create_interface_children( vector<Cell>& child_cells, 
+  vector<Cell>& grandchild_cells )
 {
   // create the children.
   for ( size_t i = 0; i < 4; ++i )
   {
-    Cell child( this );
-    child.local.me = next_level_cells.size();
-    local.children[i] = next_level_cells.size();
+    Cell child( this, &grandchild_cells );
+    child.local.me = child_cells.size();
+    local.children[i] = child_cells.size();
     child.state.interface = true;
     child.state.active = false;
-    next_level_cells.push_back(child);
+    child_cells.push_back(child);
   }
 }
 
@@ -315,12 +316,13 @@ void Cell::activate_children( vector<Cell>& cg )
 }
 
 // Creates activated children.
-void Cell::create_children( vector<Cell>& next_level_cells )
+void Cell::create_children( vector<Cell>& next_level_cells, 
+  vector<Cell>& grandchild_cells )
 {
   // create the children.
   for ( size_t i = 0; i < 4; ++i )
   {
-    Cell child( this );
+    Cell child( this, &grandchild_cells );
     child.local.me = next_level_cells.size();
     local.children[i] = next_level_cells.size();
     next_level_cells.push_back(child);
@@ -329,13 +331,14 @@ void Cell::create_children( vector<Cell>& next_level_cells )
 
 // If children do not already exist, create them.
 // Then, activate children and deactivate current (parent) cell.
-void Cell::refine( vector<Cell>& next_level_cells )
+void Cell::refine( vector<Cell>& next_level_cells, 
+    vector<Cell>& grandchild_cells )
 {
   // We assume all children made or no children made.
   bool no_children = local.children[0] < 0;
   if( no_children )
   {
-    create_children( next_level_cells );
+    create_children( next_level_cells, grandchild_cells );
   }
   else
   {
