@@ -231,6 +231,23 @@ void Simulator::read_coarse_solution()
 }
 
 
+// the public method
+void Simulator::output_centerlines()
+{
+  vector<CellData> top;
+  vector<CellData> bottom;
+  vector<CellData> right;
+  vector<CellData> left;
+  centerline_x( left, right );
+  centerline_y( top, bottom );
+  vector<CellData> centerx;
+  vector<CellData> centery;
+  produce_centerline_y( top, bottom, centery );
+  produce_centerline_x( left, right, centerx );
+
+}
+
+
 // Inherently sequential.
 // Traverses children to get the data points closest to a particular edge of 
 //  this cell. 
@@ -290,10 +307,9 @@ void Simulator::get_data( Cell& cell,
 // Usable on our tree dynamic grid.
 // Assumes lid-driven cavity, with top surface as moving lid.
 // Assumes square domain with square cells.
-void Simulator::centerline_y()
+void Simulator::centerline_y(
+  vector<CellData>& top_values, vector<CellData>& bottom_values)
 {
-  vector<CellData> top_values;
-  vector<CellData> bottom_values;
   CellData left_wall;
   left_wall.u = 0;
   left_wall.v = 0;
@@ -316,7 +332,7 @@ void Simulator::centerline_y()
         CellData cd;
         cd.u = cell.u();
         cd.v = cell.v();
-        cd.x = 0.5;
+        cd.x = (i+0.5)*dim;
         cd.y = 0.5;
         top_values.push_back(cd);
         bottom_values.push_back(cd);
@@ -325,17 +341,17 @@ void Simulator::centerline_y()
       {
         // below centerline
         get_data( cell(0), bottom_values, 't', i*dim, 0.5-0.5*dim, 0.5*dim );
-        get_data( cell(2), bottom_values, 't', i*dim, 0.5-0.5*dim, 0.5*dim );
+        get_data( cell(2), bottom_values, 't', (i+0.5)*dim, 0.5-0.5*dim, 0.5*dim );
         // above centerline
         get_data( cell(1), top_values, 'b', i*dim, 0.5, 0.5*dim );
-        get_data( cell(3), top_values, 'b', i*dim, 0.5, 0.5*dim );
+        get_data( cell(3), top_values, 'b', (i+0.5)*dim, 0.5, 0.5*dim );
       }
     }
   }
   // even
   else
   {
-    size_t top_j = cell_count[1] / 2;
+    size_t top_j = cell_count[1] >> 1;
     size_t bottom_j = top_j - 1;
     // below centerline
     for( size_t i = 0; i < cell_count[0]; ++i )
@@ -361,6 +377,80 @@ void Simulator::centerline_y()
   right_wall.y = 0.5;
   top_values.push_back(right_wall);
   bottom_values.push_back(right_wall);
+}
+// Usable on our tree dynamic grid.
+// Assumes lid-driven cavity, with top surface as moving lid.
+// Assumes square domain with square cells.
+void Simulator::centerline_x(
+  vector<CellData>& left_values, vector<CellData>& right_values)
+{
+  CellData bottom_wall;
+  bottom_wall.u = 0;
+  bottom_wall.v = 0;
+  bottom_wall.x = 0.5;
+  bottom_wall.y = 0;
+  left_values.push_back(bottom_wall);
+  right_values.push_back(bottom_wall);
+  double dim = 1.0 / cell_count[1];
+  // odd
+  if ( cell_count[0] & 1 )
+  {
+    size_t start_i = cell_count[0] >> 1;
+    for( size_t j = 0; j < cell_count[1]; ++j )
+    {
+      size_t ii = j*cell_count[0] + start_i;
+      Cell& cell = grid[0][ii];
+      if ( cell.active() )
+      {
+        // right on centerline
+        CellData cd;
+        cd.u = cell.u();
+        cd.v = cell.v();
+        cd.x = 0.5;
+        cd.y = (j+0.5)*dim;
+        left_values.push_back(cd);
+        right_values.push_back(cd);
+      }
+      else
+      {
+        // left of centerline
+        get_data( cell(0), left_values, 'r', 0.5-0.5*dim, j*dim, 0.5*dim );
+        get_data( cell(1), left_values, 'r', 0.5-0.5*dim, (j+0.5)*dim, 0.5*dim );
+        // right of centerline
+        get_data( cell(2), right_values, 'l', 0.5, j*dim, 0.5*dim );
+        get_data( cell(3), right_values, 'l', 0.5, (j+0.5)*dim, 0.5*dim );
+      }
+    }
+  }
+  // even
+  else
+  {
+    size_t right_i = cell_count[0] >> 1;
+    size_t left_i = right_i - 1;
+    // left of centerline
+    for( size_t j = 0; j < cell_count[1]; ++j )
+    {
+      size_t ii = j * cell_count[0] + left_i;
+      double xstart = left_i*dim;
+      double ystart = j*dim;
+      get_data( grid[0][ii], left_values, 'r', xstart, ystart, dim );
+    }
+    // left of centerline
+    for( size_t j = 0; j < cell_count[1]; ++j )
+    {
+      size_t ii = j * cell_count[0] + right_i;
+      double xstart = right_i*dim;
+      double ystart = j*dim;
+      get_data( grid[0][ii], right_values, 'l', xstart, ystart, dim );
+    }
+  }
+  CellData top_wall;
+  top_wall.u = U;
+  top_wall.v = 0;
+  top_wall.x = 0.5;
+  top_wall.y = 1.0;
+  left_values.push_back(top_wall);
+  right_values.push_back(top_wall);
 }
 
 // From side1 and side2 vector data, produces centerline data
@@ -399,7 +489,7 @@ void Simulator::produce_centerline_y(vector<CellData>& side1,
     else
     {
       double dx = x2 - x1;
-      double dy = side2.back().y - side1.back().y;
+      double dy = y2 - y1;
       double mag = sqrt( dx*dx + dy*dy );
       double dy1 = 0.5 - y1;
       double dx1 = dy1 / dy * dx;
@@ -416,25 +506,83 @@ void Simulator::produce_centerline_y(vector<CellData>& side1,
     }
   }
 }
+// From side1 and side2 vector data, produces centerline data
+// we assume 0.5 is the centerline for x or y
+void Simulator::produce_centerline_x(vector<CellData>& side1, 
+  vector<CellData>& side2, vector<CellData>& center)
+{
+  CellData cd;
+  cd.u = 0;
+  cd.v = 0;
+  cd.x = 0.5;
+  cd.y = 0;
+  while( not side1.empty() and not side2.empty() )
+  {
+    double x1 = side1.back().x;
+    double x2 = side2.back().x;
+    double y1 = side1.back().y;
+    double y2 = side2.back().y;
+    if( y1 == y2 )
+    {
+      cd.y = y1;
+      if( x1 == x2 )
+      {
+        cd.u = side1.back().u;
+        cd.v = side1.back().v;
+      }
+      else
+      {
+        cd.u = ( side1.back().u + side2.back().u ) * 0.5;
+        cd.v = ( side1.back().v + side2.back().v ) * 0.5;
+      }
+      center.push_back(cd);
+      side1.pop_back();
+      side2.pop_back();
+    }
+    else
+    {
+      double dx = x2 - x1;
+      double dy = y2 - y1;
+      double mag = sqrt( dx*dx + dy*dy );
+      double dx1 = 0.5 - x1;
+      double dy1 = dx1 / dx * dy;
+      double mag1 = sqrt( dx1*dx1 + dy1*dy1 );
+      double r2 = mag1 / mag;
+
+      cd.y = ( 1.0 - r2 ) * y1 + r2 * y2;
+      cd.u = ( 1.0 - r2 ) * side1.back().u + r2 * side2.back().u;
+      cd.v = ( 1.0 - r2 ) * side1.back().v + r2 * side2.back().v;
+
+      center.push_back(cd);
+      if( y1 < y2 ) side1.pop_back();
+      if( y2 < y1 ) side2.pop_back();
+    }
+  }
+}
 
 // outputs a file with centerline info. these are the line descriptions:
 // x positions of y-centerline
 // v values of y-centerline
 // y positions of x-centerline
 // u values of x-centerline
-void Simulator::print_centerline_y( vector<CellData>& center )
+void Simulator::print_centerlines( 
+  vector<CellData>& centerx, vector<CellData>& centery )
 {
   ofstream out;
-  out.open("centerline.tsv");
-  vector<CellData>::iterator it0 = center.begin();
-  vector<CellData>::iterator it = it0;
-  for ( it = it0; it != center.end(); ++it ) out << it->x << "\t";
+  out.open("centerlines.tsv");
+  vector<CellData>::iterator it = centery.begin();
+  for ( ; it != centery.end(); ++it ) out << it->x << "\t";
   out << endl;
-  for ( it = it0; it != center.end(); ++it ) out << it->v << "\t";
+  it = centery.begin();
+  for ( ; it != centery.end(); ++it ) out << it->v << "\t";
   out << endl;
-  for ( it = it0; it != center.end(); ++it ) out << it->y << "\t";
+  it = centerx.begin();
+  for ( ; it != centerx.end(); ++it ) out << it->y << "\t";
   out << endl;
-  for ( it = it0; it != center.end(); ++it ) out << it->u << "\t";
+  it = centerx.begin();
+  for ( ; it != centerx.end(); ++it ) out << it->u << "\t";
   out << endl;
   out.close();
 }
+
+

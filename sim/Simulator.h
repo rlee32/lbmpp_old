@@ -38,9 +38,7 @@ public:
   double get_nucf() const { return nuc / nu; }
   std::size_t get_display_interval() const { return display_interval; }
   void output_coarse_field( std::string output_file_name );
-  void centerline_x();
-  void centerline_y();
-
+  void output_centerlines();
 private:
   // Run time control.
   bool refinement = false; // If true, enables solution-adaptive refinement.
@@ -75,7 +73,7 @@ private:
   // coarse grid dimension
   std::size_t cell_count[2] = { 0, 0 };
   //
-  std::size_t display_interval = 1; 
+  std::size_t display_interval = 1;
 
   // Preprocessing 
   void read_settings(std::string filename);
@@ -94,7 +92,15 @@ private:
     double xstart, double ystart, double dim );
   void produce_centerline_y( std::vector<CellData>& side1, 
     std::vector<CellData>& side2, std::vector<CellData>& center);
-  void print_centerline_y( std::vector<CellData>& center );
+  void produce_centerline_x( std::vector<CellData>& side1, 
+    std::vector<CellData>& side2, std::vector<CellData>& center);
+  void centerline2file( std::vector<CellData>& center );
+  void print_centerlines(
+    std::vector<CellData>& centerx, std::vector<CellData>& centery );
+  void centerline_x( 
+    std::vector<CellData>& left_values, std::vector<CellData>& right_values );
+  void centerline_y(
+    std::vector<CellData>& top_values, std::vector<CellData>& bottom_values );
 
   // Initialization
 
