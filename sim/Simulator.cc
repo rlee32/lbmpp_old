@@ -70,13 +70,21 @@ void Simulator::iteration()
   grid.iteration(0);
 }
 
+void Simulator::output_solution( string output_suffix )
+{
+  output_coarse_field(output_suffix);
+  output_centerlines(output_suffix);
+}
+
 void Simulator::output_coarse_field(string output_suffix)
 {
   ofstream u, v;
   const vector<Cell>& g = grid.get_cells(0);
 
-  u.open("u_"+output_suffix);
-  v.open("v_"+output_suffix);
+  u.open("u_"+output_suffix+".dat");
+  v.open("v_"+output_suffix+".dat");
+  u.precision(std::numeric_limits< double >::max_digits10);
+  v.precision(std::numeric_limits< double >::max_digits10);
   for (size_t j = 0; j < cell_count[1]; ++j)
   {
     for (size_t i = 0; i < cell_count[0]; ++i)
@@ -232,7 +240,7 @@ void Simulator::read_coarse_solution()
 
 
 // the public method
-void Simulator::output_centerlines()
+void Simulator::output_centerlines( string output_suffix )
 {
   vector<CellData> top;
   vector<CellData> bottom;
@@ -244,7 +252,7 @@ void Simulator::output_centerlines()
   vector<CellData> centery;
   produce_centerline_y( top, bottom, centery );
   produce_centerline_x( left, right, centerx );
-
+  print_centerlines( output_suffix, centerx, centery );
 }
 
 
@@ -565,11 +573,12 @@ void Simulator::produce_centerline_x(vector<CellData>& side1,
 // v values of y-centerline
 // y positions of x-centerline
 // u values of x-centerline
-void Simulator::print_centerlines( 
+void Simulator::print_centerlines( string output_suffix, 
   vector<CellData>& centerx, vector<CellData>& centery )
 {
   ofstream out;
-  out.open("centerlines.tsv");
+  out.open("centerlines_"+output_suffix+".tsv");
+  out.precision(std::numeric_limits< double >::max_digits10);
   vector<CellData>::iterator it = centery.begin();
   for ( ; it != centery.end(); ++it ) out << it->x << "\t";
   out << endl;

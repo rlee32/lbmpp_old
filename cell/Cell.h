@@ -80,9 +80,9 @@ public:
 
   // Operators
   // Neighbour accessor
-  Cell& operator[](std::size_t i){ return (*(local.g))[local.neighbours[i]]; }
+  Cell& operator[](std::size_t i) const { return (*(local.g))[local.neighbours[i]]; }
   // Child accessor
-  Cell& operator()(std::size_t i){ return (*(local.cg))[local.children[i]]; }
+  Cell& operator()(std::size_t i) const { return (*(local.cg))[local.children[i]]; }
 
 
   struct

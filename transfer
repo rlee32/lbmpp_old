@@ -1,2 +1,4 @@
-mv *.dat results/
-mv *.png results/
+mv u_*.dat results/fields/
+mv v_*.dat results/fields/
+mv centerline*.tsv results/centerlines/
+mv *.png results/pics/

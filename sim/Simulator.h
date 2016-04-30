@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <limits>
 
 #include "../grid/Grid.h"
 #include "../grid/GridLevel.h"
@@ -37,8 +38,7 @@ public:
   double get_vc_model() const { return vc_model; }
   double get_nucf() const { return nuc / nu; }
   std::size_t get_display_interval() const { return display_interval; }
-  void output_coarse_field( std::string output_file_name );
-  void output_centerlines();
+  void output_solution( std::string output_suffix );
 private:
   // Run time control.
   bool refinement = false; // If true, enables solution-adaptive refinement.
@@ -74,6 +74,8 @@ private:
   std::size_t cell_count[2] = { 0, 0 };
   //
   std::size_t display_interval = 1;
+  //
+  const size_t output_precision = 16;
 
   // Preprocessing 
   void read_settings(std::string filename);
@@ -87,6 +89,7 @@ private:
   void read_coarse_solution();
 
   // Postprocessing
+  void output_coarse_field( std::string output_suffix );
   void get_data( Cell& cell, 
     std::vector<CellData>& data, char side, 
     double xstart, double ystart, double dim );
@@ -95,13 +98,13 @@ private:
   void produce_centerline_x( std::vector<CellData>& side1, 
     std::vector<CellData>& side2, std::vector<CellData>& center);
   void centerline2file( std::vector<CellData>& center );
-  void print_centerlines(
+  void print_centerlines( std::string output_suffix, 
     std::vector<CellData>& centerx, std::vector<CellData>& centery );
   void centerline_x( 
     std::vector<CellData>& left_values, std::vector<CellData>& right_values );
   void centerline_y(
     std::vector<CellData>& top_values, std::vector<CellData>& bottom_values );
-
+  void output_centerlines( std::string output_suffix );
   // Initialization
 
 };

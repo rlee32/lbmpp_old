@@ -49,7 +49,7 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   levels[0].create_coarse_grid( cell_count_x, cell_count_y, default_cell );
 
   // Testing refine operation.
-  levels[0].refine_all();
+  // levels[0].refine_all();
 }
 
 void Grid::set_coarse_solution(

@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
   
   if ( k >= sim.get_timesteps() )
   {
-    sim.output_coarse_field( case_name+".dat" );
+    sim.output_solution( case_name );
     sv.save_image( "mag_"+case_name+".png" );
   }
 

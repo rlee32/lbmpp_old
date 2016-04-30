@@ -455,20 +455,20 @@ inline void Cell::fill_strain_terms( double omega )
 inline void Cell::compute_strain_differences( 
   double& s11x, double& s12x, double& s12y, double& s22y, double dh_inv ) const
 {
-  // switch ( tree.fully_interior_cell )
-  // {
-  //   case true: // 4th order, 4-point stencil
-  //     {
-  //     const Cell* const& e1 = tree.neighbours[0];
-  //     const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-  //     const Cell* const& w1 = tree.neighbours[4];
-  //     const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-  //     s11x = dh_inv * ( 
-  //       -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-  //     s12x = dh_inv * ( 
-  //       -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
-  //     const Cell* const& n1 = tree.neighbours[2];
-  //     const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
+  switch ( local.fully_interior_cell )
+  {
+    case true: // 4th order, 4-point stencil
+    {
+      Cell& e1 = (*this)[0];
+      // const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
+      // const Cell* const& w1 = tree.neighbours[4];
+      // const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
+      // s11x = dh_inv * ( 
+      //   -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
+      // s12x = dh_inv * ( 
+      //   -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
+      // const Cell* const& n1 = tree.neighbours[2];
+      // const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
   //     const Cell* const& s1 = tree.neighbours[6];
   //     const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
   //     s12y = dh_inv * ( 
@@ -621,11 +621,11 @@ inline void Cell::compute_strain_differences(
   //         }
   //       break;
   //     }
-  //     }
-  //     break;
-  //   default:
-  //     break;
-  // }
+      }
+      break;
+    default:
+      break;
+  }
 }
 inline void Cell::compute_vc_body_force( double g[9], double nuc ) const
 {
