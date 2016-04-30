@@ -14,6 +14,7 @@
 class GridLevel
 {
 public:
+  GridLevel();
   // Performs one whole iteration at this grid level.
   void iteration( std::size_t relax_model, std::size_t vc_model );
   void refined_cell_bc() { bcs.refined_cell_bc(); }
@@ -63,22 +64,22 @@ private:
   // Member variables.
   // Basic
   std::vector<Cell> cells;
-  GridLevel* child_grid = nullptr;
-  GridLevel* parent_grid = nullptr;
+  GridLevel* child_grid;
+  GridLevel* parent_grid;
 
   // BCs
   BoundaryConditions bcs;
   
   // Quantities scaled for this grid level.
-  double scale_decrease = 1; // 2^-(tree depth)
-  double scale_increase = 1; // 2^(tree depth)
-  double tau = 0; // relaxation time.
-  double omega = 0; // inverse of tau. relaxation frequency.
-  double nu = 0; // viscosity.
-  double nuc = 0; // viscosity buffer.
+  double scale_decrease; // 2^-(tree depth)
+  double scale_increase; // 2^(tree depth)
+  double tau; // relaxation time.
+  double omega; // inverse of tau. relaxation frequency.
+  double nu; // viscosity.
+  double nuc; // viscosity buffer.
   
   // Dynamic grid
-  std::size_t active_cells = 0;
+  std::size_t active_cells;
   
   // Member functions.
   // Basic.

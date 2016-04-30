@@ -9,7 +9,9 @@ using namespace std;
 // }
 // Intended for coarsest cells.
 Cell::Cell( double rho, double u, double v, vector<Cell>* g, vector<Cell>* cg )
+: state(), local(), action(), vc()
 {
+  initialize();
   reconstruct_distribution( rho, u, v );
   local.g = g;
   local.cg = cg;
@@ -27,14 +29,45 @@ Cell::Cell( double rho, double u, double v, vector<Cell>* g, vector<Cell>* cg )
 // Constructor for cells generated from refinement.
 // Currently a homogeneous copy of state.
 // cg: child grid for new child (grandchild grid of parent).
-Cell::Cell( Cell* parent, vector<Cell>* cg )
+Cell::Cell( Cell* parent, vector<Cell>* cg ) : state(), local(), action(), vc()
 {
+  initialize();
   local.parent = parent->local.me;
   local.cg = cg;
   local.g = parent->local.cg;
   local.pg = parent->local.g;
   state = parent->state;
   parent->action.link_children = true;
+}
+
+// Assumes that the member have already been zero-initialized.
+void Cell::initialize()
+{
+  state.fc = 1;
+  state.rho = 1;
+  state.active = true;
+  local.me = -1;
+  local.parent = -1;
+  local.children[0] = -1;
+  local.children[1] = -1;
+  local.children[2] = -1;
+  local.children[3] = -1;
+  local.neighbours[0] = -1;
+  local.neighbours[1] = -1;
+  local.neighbours[2] = -1;
+  local.neighbours[3] = -1;
+  local.neighbours[4] = -1;
+  local.neighbours[5] = -1;
+  local.neighbours[6] = -1;
+  local.neighbours[7] = -1;
+  local.pg = nullptr;
+  local.g = nullptr;
+  local.cg = nullptr;
+  local.nn[0] = 2;
+  local.nn[1] = 2;
+  local.nn[2] = 2;
+  local.nn[3] = 2;
+  local.fully_interior_cell = true;
 }
 
 void Cell::reconstruct_distribution( double rho, double u, double v )

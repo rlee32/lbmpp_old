@@ -2,6 +2,12 @@
 
 using namespace std;
 
+BoundaryConditions::BoundaryConditions() 
+: U(0), next_level_bcs(nullptr), g(nullptr)
+{
+  
+}
+
 // We assume that the first and last cells in Face::cells are the corners!!!
 void BoundaryConditions::apply_bc()
 {

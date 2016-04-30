@@ -8,13 +8,14 @@
 class BoundaryConditions
 {
 public:
+  BoundaryConditions();
   void initialize( char sides[4], char bc[4], double U_, 
     BoundaryConditions* next_level_bcs_, std::vector<Cell>* g_ );
   void add_cell( int c, char side );
   void apply_bc();
   void refined_cell_bc();
 private:
-  double U = 0; // value for velocity boundary conditions.
+  double U; // value for velocity boundary conditions.
   // Auxiliary data structure.
   typedef struct Face
   {
@@ -23,24 +24,24 @@ private:
     // 'b': bottom
     // 'r': right
     // 'l': left
-    char side = 't';
+    char side;
     // 'w': wall
     // 'm': tangentially moving wall
     // 'i': velocity inlet
     // 'o': zero-gradient outlet
-    char type = 'w';
+    char type;
     // This defines the order of applying boundary conditions.
     // For example, a corner with one side wall, and one side moving wall, 
     //  the moving wall should be applied last and be dominant.
-    int rank = 0;
+    int rank;
     int type_rank( char type ) const;
     Face(char s, char t) : side(s), type(t) { rank = type_rank(type); }
     bool static compare(const Face& a, const Face& b) 
       { return a.rank < b.rank; }
   } Face;
   std::vector<Face> faces;
-  BoundaryConditions* next_level_bcs = nullptr;
-  std::vector<Cell>* g = nullptr;
+  BoundaryConditions* next_level_bcs;
+  std::vector<Cell>* g;
 
   void cell_bc( int c, char type, char side ) const;
   char next_side(char side) const;

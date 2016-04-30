@@ -30,13 +30,13 @@ private:
   CImg<unsigned char> image;
   void scalar2rgb(double min, double max, double value, float rgb[3]);
   void draw_text_line( std::string text, int line );
-  double last_elapsed_time = 0;
-  double last_iteration = 0;
+  double last_elapsed_time;
+  double last_iteration;
   // Temp values used during drawing field solution.
   struct
   {
-    double min = 0;
-    double max = 0;
+    double min;
+    double max;
   } temp;
   void draw_mag_tree( GridLevel* cg, 
     Cell& cell, std::size_t i, std::size_t j, std::size_t p );

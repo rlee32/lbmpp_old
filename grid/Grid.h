@@ -13,6 +13,8 @@
 class Grid 
 {
 public:
+  Grid() : relax_model(1), vc_model(0) 
+    { cell_count[0] = 0; cell_count[1] = 0; }
   void iteration( std::size_t level );
   std::size_t active_cells() const;
   std::vector<Cell>& get_cells(std::size_t index) 
@@ -42,7 +44,7 @@ public:
 private:
   const static std::size_t MAX_LEVELS = 32;
   GridLevel levels[MAX_LEVELS];
-  double relax_model = 1;
-  double vc_model = 0;
-  std::size_t cell_count[2] = { 0, 0 };// Coarsest level cell dimension.
+  double relax_model;
+  double vc_model;
+  std::size_t cell_count[2];// Coarsest level cell dimension.
 };

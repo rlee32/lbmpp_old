@@ -93,48 +93,48 @@ public:
 
   struct
   {
-    double fc = 1; // center distribution.
+    double fc; // center distribution.
     // advected distributions ( to index-correspond to the neighbours ).
-    double f[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; 
-    double rho = 1;
-    double u = 0;
-    double v = 0;
+    double f[8]; 
+    double rho;
+    double u;
+    double v;
     // buffers for advected distributions (for parallel advection).
     // also useful for holding bounced-back distributions!
-    double b[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    double b[8];
     // 
-    bool active = true;
+    bool active;
     // An interface cell will not collide, only advect. 
     // A cell can be both an interface and active if it is on the coarser 
     //  layer of an interface.
     // Non-boundary real cells must ALWAYS have neighbours 
     //  (whether real or interface) but interface cells do not need neighbours.
-    bool interface = false;
+    bool interface;
   } state;
   struct
   {
     // < 0 indices indicate invalid values.
     // The vector index for this cell in its grid level.
-    int me = -1;
+    int me;
     // Since Cells at each level are stored in vectors, we cannot use pointers 
     //  because vectors may resize (which invalidates pointers). So, we know 
     //  that parents are on the immediate level above and children on the 
     //  immediate level below. Therefore, we can simply store vector indices!
-    int parent = -1;
+    int parent;
     // Children are ordered in N-order curve.
-    int children[4] = { -1, -1, -1, -1 };
+    int children[4];
     // cell neighbours for every lattice direction (have same level)
     // the number of neighbours in each orthogonal direction (at least).
     // going ccw from {1,0}.
-    int neighbours[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    int neighbours[8];
     // grid levels
-    std::vector<Cell>* pg = nullptr; // parent grid.
-    std::vector<Cell>* g = nullptr; // the current grid level.
-    std::vector<Cell>* cg = nullptr; // child grid level.
+    std::vector<Cell>* pg; // parent grid.
+    std::vector<Cell>* g; // the current grid level.
+    std::vector<Cell>* cg; // child grid level.
     // Currently used for VC
-    std::size_t nn[4] = {2,2,2,2};
+    std::size_t nn[4];
     // following meaning there are at least 2 neighbours in every direction.
-    bool fully_interior_cell = true;
+    bool fully_interior_cell;
   } local;
   // These variables only last during one entire-grid iteration 
   //  (persists through sub-grid iterations).
@@ -143,9 +143,9 @@ public:
   {
     // A flag to identify cells that need refinement at the end of the current 
     //  whole-grid iteration.
-    bool refine = false;
+    bool refine;
     // Link newly-created children (not this cell itself).
-    bool link_children = false;
+    bool link_children;
   } action;
   // For viscosity-counteracting approach.
   // These are merely buffers for differencing.
@@ -153,20 +153,23 @@ public:
   {
     // Strain rate tensor values 
     // (with 2*rho omitted, since it cancels in differencing).
-    double s11 = 0;
-    double s12 = 0;
-    double s22 = 0;
+    double s11; 
+    double s12;
+    double s22;
     // spatial differences.
-    double s11x = 0;
-    double s12x = 0;
-    double s12y = 0;
-    double s22y = 0;
+    double s11x;
+    double s12x;
+    double s12y;
+    double s22y;
     // body forces
-    double gc = 0; // center body force term
-    double g[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // directional body force terms
-    double b[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // buffer for transported g
+    double gc; // center body force term
+    double g[8]; // directional body force terms
+    double b[8]; // buffer for transported g
   } vc;
 private:
+  // basic
+  void initialize();
+
   // SRT
   inline double next_fc_srt( double msq, double omega ) const;
   inline double next_fi_srt( std::size_t i, double msq, double omega ) const;

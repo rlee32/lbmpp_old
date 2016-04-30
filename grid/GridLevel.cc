@@ -2,6 +2,15 @@
 
 using namespace std;
 
+GridLevel::GridLevel() : 
+  child_grid(0),parent_grid(0),
+  scale_decrease(1),scale_increase(1),
+  tau(0),omega(0),nu(0),nuc(0),
+  active_cells(0)
+{
+
+}
+
 // Collide, explode and stream all cells on this grid level.
 void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
 {

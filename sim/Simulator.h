@@ -16,8 +16,9 @@
 // For post-processing purposes.
 typedef struct CellData
 {
-  double u=0,v=0;
-  double x=0,y=0;
+  double u,v;
+  double x,y;
+  CellData():u(0),v(0),x(0),y(0){}
 } CellData;
 
 class Simulator
@@ -41,41 +42,41 @@ public:
   void output_solution( std::string output_suffix );
 private:
   // Run time control.
-  bool refinement = false; // If true, enables solution-adaptive refinement.
-  std::size_t timesteps = 0;
+  bool refinement; // If true, enables solution-adaptive refinement.
+  std::size_t timesteps;
   // Solver parameters.
-  std::size_t relax_model = 1;
-  std::size_t vc_model = 0;
+  std::size_t relax_model;
+  std::size_t vc_model;
   // Physical parameters.
-  double Re = 0; // Reynolds number.
-  double M = 0; // Mach number for characteristic velocity.
-  double U = 0; // characteristic velocity, used for velocity BC values.
-  double nu = 0; // lattice viscosity of the coarsest cells.
-  double L = 0;
-  double tau = 0; // relaxation time of the coarsest cells.
-  double omega = 0; // relaxation frequency of the coarsest cells.
+  double Re; // Reynolds number.
+  double M; // Mach number for characteristic velocity.
+  double U; // characteristic velocity, used for velocity BC values.
+  double nu; // lattice viscosity of the coarsest cells.
+  double L;
+  double tau; // relaxation time of the coarsest cells.
+  double omega; // relaxation frequency of the coarsest cells.
   // Initial values.
-  double rho0 = 1;
-  double u0 = 0;
-  double v0 = 0;
-  std::string u0file = "";
-  std::string v0file = "";
+  double rho0;
+  double u0;
+  double v0;
+  std::string u0file;
+  std::string v0file;
   std::vector<double> u0field;
   std::vector<double> v0field;
-  double M0 = 0;
+  double M0;
   // For the viscosity-counteracting approach. The buffer viscosity.
-  double nuc = 0;
-  double nucf = 0;
+  double nuc;
+  double nucf;
   // Boundary conditions
-  char bc[4] = { 'w', 'w', 'w', 'w' }; // bottom, right, top, left
-  std::string face_order[4] = { "bottom", "right", "top", "left" };
-  char face_order_char[4] = { 'b', 'r', 't', 'l' };
+  char bc[4]; // bottom, right, top, left
+  std::string face_order[4];
+  char face_order_char[4];
   // coarse grid dimension
-  std::size_t cell_count[2] = { 0, 0 };
+  std::size_t cell_count[2];
   //
-  std::size_t display_interval = 1;
+  std::size_t display_interval;
   //
-  const size_t output_precision = 16;
+  static const size_t output_precision = 16;
 
   // Preprocessing 
   void read_settings(std::string filename);

@@ -2,8 +2,27 @@
 
 using namespace std;
 
-Simulator::Simulator(string filename)
+Simulator::Simulator(string filename) :
+  refinement(false), timesteps(0), relax_model(1), vc_model(0),
+  Re(0),M(0),U(0),nu(0),L(0),tau(0),omega(0),rho0(0),u0(0),v0(0),
+  u0file(""),v0file(""),
+  M0(0),nuc(0),nucf(0),
+  display_interval(1)
 {
+  bc[0] = 'w';
+  bc[1] = 'w';
+  bc[2] = 'w';
+  bc[3] = 'w';
+  face_order[0] = "bottom";
+  face_order[1] = "right";
+  face_order[2] = "top";
+  face_order[3] = "left";
+  face_order_char[0] = 'b';
+  face_order_char[1] = 'r';
+  face_order_char[2] = 't';
+  face_order_char[3] = 'l';
+  cell_count[0] = 0;
+  cell_count[1] = 0;
   read_settings(filename); 
 }
 

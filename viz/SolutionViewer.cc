@@ -2,8 +2,11 @@
 
 using namespace std;
 
-SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim)
+SolutionViewer::SolutionViewer(Simulator& sim, int max_pixel_dim) : 
+  last_elapsed_time(0), last_iteration(0)
 {
+  temp.min = 0;
+  temp.max = 0;
   int max_cell_dim = (sim.get_cell_count_0() > sim.get_cell_count_1()) ? 
     sim.get_cell_count_0() : sim.get_cell_count_1();
   pixels_per_cell = (double) max_pixel_dim / (double) max_cell_dim;
