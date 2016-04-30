@@ -455,178 +455,136 @@ inline void Cell::fill_strain_terms( double omega )
 inline void Cell::compute_strain_differences( 
   double& s11x, double& s12x, double& s12y, double& s22y, double dh_inv ) const
 {
-  switch ( local.fully_interior_cell )
+  // in each direction, five stencil possibilities:
+  // 1: at least 2 on both sides
+  // 2,3: only one on one side (requires 3 on the other side)
+  // 4,5: devoid of neighbours on one side.
+
+  // x-direction
+  // 4th order, 4-point centered stencil
+  if ( local.nn[0] >= 2 and local.nn[2] >= 2 )
   {
-    case true: // 4th order, 4-point stencil
+    const Cell& e1 = (*this)[0];
+    const Cell& e2 = e1[0];
+    const Cell& w1 = (*this)[4];
+    const Cell& w2 = w1[4];
+    s11x = dh_inv * ( 
+      -e2.vc.s11 + 8.0*e1.vc.s11 - 8.0*w1.vc.s11 + w2.vc.s11 ) / 12.0;
+    s12x = dh_inv * ( 
+      -e2.vc.s12 + 8.0*e1.vc.s12 - 8.0*w1.vc.s12 + w2.vc.s12 ) / 12.0;
+  }
+  else
+  {
+    // Boundary, or near-boundary cells.
+    // 4th order, 5-point one-sided stencil
+    if ( local.nn[0] == 1 )
     {
-      Cell& e1 = (*this)[0];
-      // const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-      // const Cell* const& w1 = tree.neighbours[4];
-      // const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-      // s11x = dh_inv * ( 
-      //   -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-      // s12x = dh_inv * ( 
-      //   -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
-      // const Cell* const& n1 = tree.neighbours[2];
-      // const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-  //     const Cell* const& s1 = tree.neighbours[6];
-  //     const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-  //     s12y = dh_inv * ( 
-  //       -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-  //     s22y = dh_inv * ( 
-  //       -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
-  //     }
-  //     break;
-  //   case false:
-  //     {
-  //     // x-direction
-  //     switch( tree.nn[0] )
-  //     {
-  //       case 0: // backward 2nd order, 3-point stencil
-  //         {
-  //         const Cell* const& w1 = tree.neighbours[4];
-  //         const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-  //         s11x = dh_inv * -( 
-  //           -3.0*vc.s11 + 4.0*w1->vc.s11 - w2->vc.s11 ) / 2.0;
-  //         s12x = dh_inv * -( 
-  //           -3.0*vc.s12 + 4.0*w1->vc.s12 - w2->vc.s12 ) / 2.0;
-  //         }
-  //         break;
-  //       case 1: // backward 4th order, 5-point stencil
-  //         {
-  //         const Cell* const& e1 = tree.neighbours[0];
-  //         const Cell* const& w1 = tree.neighbours[4];
-  //         const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-  //         const Cell* const& w3 = 
-  //           tree.neighbours[4]->tree.neighbours[4]->tree.neighbours[4];
-  //         s11x = dh_inv * -( 
-  //           - 3.0*e1->vc.s11 - 10.0*vc.s11 + 18.0*w1->vc.s11 
-  //           - 6.0*w2->vc.s11 + w3->vc.s11 ) / 12.0;
-  //         s12x = dh_inv * -( 
-  //           - 3.0*e1->vc.s12 - 10.0*vc.s12 + 18.0*w1->vc.s12 
-  //           - 6.0*w2->vc.s12 + w3->vc.s12 ) / 12.0;
-  //         }
-  //         break;
-  //       default: // now check other direction. 
-  //         switch( tree.nn[2] )
-  //         {
-  //           case 0: // forward 2nd order, 3-point stencil
-  //             {
-  //             const Cell* const& e1 = tree.neighbours[0];
-  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-  //             s11x = dh_inv * (
-  //               -3.0*vc.s11 + 4.0*e1->vc.s11 - e2->vc.s11 ) / 2.0;
-  //             s12x = dh_inv * ( 
-  //               -3.0*vc.s12 + 4.0*e1->vc.s12 - e2->vc.s12 ) / 2.0;
-  //             }
-  //             break;
-  //           case 1: // forward 4th order, 5-point stencil
-  //             {
-  //             const Cell* const& w1 = tree.neighbours[4];
-  //             const Cell* const& e1 = tree.neighbours[0];
-  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-  //             const Cell* const& e3 = 
-  //               tree.neighbours[0]->tree.neighbours[0]->tree.neighbours[0];
-  //             s11x = dh_inv * ( 
-  //               - 3.0*w1->vc.s11 - 10.0*vc.s11 + 18.0*e1->vc.s11 
-  //               - 6.0*e2->vc.s11 + e3->vc.s11 ) / 12.0;
-  //             s12x = dh_inv * ( 
-  //               - 3.0*w1->vc.s12 - 10.0*vc.s12 + 18.0*e1->vc.s12 
-  //               - 6.0*e2->vc.s12 + e3->vc.s12 ) / 12.0;
-  //             }
-  //             break;
-  //           default: // centered 4th order, 4-point stencil
-  //             {
-  //             const Cell* const& e1 = tree.neighbours[0];
-  //             const Cell* const& e2 = tree.neighbours[0]->tree.neighbours[0];
-  //             const Cell* const& w1 = tree.neighbours[4];
-  //             const Cell* const& w2 = tree.neighbours[4]->tree.neighbours[4];
-  //             s11x = dh_inv * ( 
-  //               -e2->vc.s11 + 8.0*e1->vc.s11 - 8.0*w1->vc.s11 + w2->vc.s11 ) / 12.0;
-  //             s12x = dh_inv * ( 
-  //               -e2->vc.s12 + 8.0*e1->vc.s12 - 8.0*w1->vc.s12 + w2->vc.s12 ) / 12.0;
-  //             }
-  //             break;
-  //         }
-  //       break;
-  //     }
-  //     // y-direction
-  //     switch( tree.nn[1] )
-  //     {
-  //       case 0: // backward 2nd order, 3-point stencil
-  //         {
-  //         const Cell* const& s1 = tree.neighbours[6];
-  //         const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-  //         s11x = dh_inv * -(
-  //           -3.0*vc.s11 + 4.0*s1->vc.s11 - s2->vc.s11 ) / 2.0;
-  //         s12x = dh_inv * -(
-  //           -3.0*vc.s12 + 4.0*s1->vc.s12 - s2->vc.s12 ) / 2.0;
-  //         }
-  //         break;
-  //       case 1: // backward 4th order, 5-point stencil
-  //         {
-  //         const Cell* const& n1 = tree.neighbours[2];
-  //         const Cell* const& s1 = tree.neighbours[6];
-  //         const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-  //         const Cell* const& s3 = 
-  //           tree.neighbours[6]->tree.neighbours[6]->tree.neighbours[6];
-  //         s11x = dh_inv * -( 
-  //           - 3.0*n1->vc.s11 - 10.0*vc.s11 + 18.0*s1->vc.s11 
-  //           - 6.0*s2->vc.s11 + s3->vc.s11 ) / 12.0;
-  //         s12x = dh_inv * -( 
-  //           - 3.0*n1->vc.s12 - 10.0*vc.s12 + 18.0*s1->vc.s12 
-  //           - 6.0*s2->vc.s12 + s3->vc.s12 ) / 12.0;
-  //         }
-  //         break;
-  //       default: // now check other direction. 
-  //         switch( tree.nn[3] )
-  //         {
-  //           case 0: // forward 2nd order, 3-point stencil
-  //             {
-  //             const Cell* const& n1 = tree.neighbours[2];
-  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-  //             s11x = dh_inv * (
-  //               -3.0*vc.s11 + 4.0*n1->vc.s11 - n2->vc.s11 ) / 2.0;
-  //             s12x = dh_inv * ( 
-  //               -3.0*vc.s12 + 4.0*n1->vc.s12 - n2->vc.s12 ) / 2.0;
-  //             }
-  //             break;
-  //           case 1: // forward 4th order, 5-point stencil
-  //             {
-  //             const Cell* const& s1 = tree.neighbours[6];
-  //             const Cell* const& n1 = tree.neighbours[2];
-  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-  //             const Cell* const& n3 = 
-  //               tree.neighbours[2]->tree.neighbours[2]->tree.neighbours[2];
-  //             s11x = dh_inv * ( 
-  //               - 3.0*s1->vc.s11 - 10.0*vc.s11 + 18.0*n1->vc.s11 
-  //               - 6.0*n2->vc.s11 + n3->vc.s11 ) / 12.0;
-  //             s12x = dh_inv * ( 
-  //               - 3.0*s1->vc.s12 - 10.0*vc.s12 + 18.0*n1->vc.s12 
-  //               - 6.0*n2->vc.s12 + n3->vc.s12 ) / 12.0;
-  //             }
-  //             break;
-  //           default: // centered 4th order, 4-point stencil
-  //             {
-  //             const Cell* const& n1 = tree.neighbours[2];
-  //             const Cell* const& n2 = tree.neighbours[2]->tree.neighbours[2];
-  //             const Cell* const& s1 = tree.neighbours[6];
-  //             const Cell* const& s2 = tree.neighbours[6]->tree.neighbours[6];
-  //             s12y = dh_inv * ( 
-  //               -n2->vc.s12 + 8.0*n1->vc.s12 - 8.0*s1->vc.s12 + s2->vc.s12 ) / 12.0;
-  //             s22y = dh_inv * ( 
-  //               -n2->vc.s22 + 8.0*n1->vc.s22 - 8.0*s1->vc.s22 + s2->vc.s22 ) / 12.0;
-  //             }
-  //             break;
-  //         }
-  //       break;
-  //     }
-      }
-      break;
-    default:
-      break;
+      const Cell& e1 = (*this)[0];
+      const Cell& w1 = (*this)[4];
+      const Cell& w2 = w1[4];
+      const Cell& w3 = w2[4];
+      s11x = dh_inv * -( 
+        - 3.0*e1.vc.s11 - 10.0*vc.s11 + 18.0*w1.vc.s11 
+        - 6.0*w2.vc.s11 + w3.vc.s11 ) / 12.0;
+      s12x = dh_inv * -( 
+        - 3.0*e1.vc.s12 - 10.0*vc.s12 + 18.0*w1.vc.s12 
+        - 6.0*w2.vc.s12 + w3.vc.s12 ) / 12.0;
+    }
+    // 2nd order, 3-point one-sided stencil
+    if ( local.nn[0] == 0 )
+    {
+      const Cell& w1 = (*this)[4];
+      const Cell& w2 = w1[4];
+      s11x = dh_inv * -( -3.0*vc.s11 + 4.0*w1.vc.s11 - w2.vc.s11 ) / 2.0;
+      s12x = dh_inv * -( -3.0*vc.s12 + 4.0*w1.vc.s12 - w2.vc.s12 ) / 2.0;
+    }
+    // 4th order, 5-point one-sided stencil
+    if ( local.nn[2] == 1 )
+    {
+      const Cell& w1 = (*this)[4];
+      const Cell& e1 = (*this)[0];
+      const Cell& e2 = e1[0];
+      const Cell& e3 = e2[0];
+      s11x = dh_inv * ( 
+        - 3.0*w1.vc.s11 - 10.0*vc.s11 + 18.0*e1.vc.s11 
+        - 6.0*e2.vc.s11 + e3.vc.s11 ) / 12.0;
+      s12x = dh_inv * ( 
+        - 3.0*w1.vc.s12 - 10.0*vc.s12 + 18.0*e1.vc.s12 
+        - 6.0*e2.vc.s12 + e3.vc.s12 ) / 12.0;
+    }
+    // 2nd order, 3-point one-sided stencil
+    if ( local.nn[2] == 0 )
+    {
+      const Cell& e1 = (*this)[0];
+      const Cell& e2 = e1[0];
+      s11x = dh_inv * ( -3.0*vc.s11 + 4.0*e1.vc.s11 - e2.vc.s11 ) / 2.0;
+      s12x = dh_inv * ( -3.0*vc.s12 + 4.0*e1.vc.s12 - e2.vc.s12 ) / 2.0;
+    }
+  }
+
+  // y-direction
+  // 4th order, 4-point centered stencil
+  if ( local.nn[1] >= 2 and local.nn[3] >= 2 )
+  {
+    const Cell& n1 = (*this)[2];
+    const Cell& n2 = n1[2];
+    const Cell& s1 = (*this)[6];
+    const Cell& s2 = s1[6];
+    s12y = dh_inv * ( 
+      -n2.vc.s12 + 8.0*n1.vc.s12 - 8.0*s1.vc.s12 + s2.vc.s12 ) / 12.0;
+    s22y = dh_inv * ( 
+      -n2.vc.s22 + 8.0*n1.vc.s22 - 8.0*s1.vc.s22 + s2.vc.s22 ) / 12.0;
+  }
+  else
+  {
+    // Boundary, or near-boundary cells.
+    // 4th order, 5-point one-sided stencil
+    if ( local.nn[1] == 1 )
+    {
+      const Cell& n1 = (*this)[2];
+      const Cell& s1 = (*this)[6];
+      const Cell& s2 = s1[6];
+      const Cell& s3 = s2[6];
+      s11x = dh_inv * -( 
+        - 3.0*n1.vc.s11 - 10.0*vc.s11 + 18.0*s1.vc.s11 
+        - 6.0*s2.vc.s11 + s3.vc.s11 ) / 12.0;
+      s12x = dh_inv * -( 
+        - 3.0*n1.vc.s12 - 10.0*vc.s12 + 18.0*s1.vc.s12 
+        - 6.0*s2.vc.s12 + s3.vc.s12 ) / 12.0;
+    }
+    // 2nd order, 3-point one-sided stencil
+    if ( local.nn[1] == 0 )
+    {
+      const Cell& s1 = (*this)[6];
+      const Cell& s2 = s1[6];
+      s11x = dh_inv * -( -3.0*vc.s11 + 4.0*s1.vc.s11 - s2.vc.s11 ) / 2.0;
+      s12x = dh_inv * -( -3.0*vc.s12 + 4.0*s1.vc.s12 - s2.vc.s12 ) / 2.0;
+    }
+    // 4th order, 5-point one-sided stencil
+    if ( local.nn[3] == 1 )
+    {
+      const Cell& s1 = (*this)[6];
+      const Cell& n1 = (*this)[2];
+      const Cell& n2 = n1[2];
+      const Cell& n3 = n2[2];
+      s11x = dh_inv * ( 
+        - 3.0*s1.vc.s11 - 10.0*vc.s11 + 18.0*n1.vc.s11 
+        - 6.0*n2.vc.s11 + n3.vc.s11 ) / 12.0;
+      s12x = dh_inv * ( 
+        - 3.0*s1.vc.s12 - 10.0*vc.s12 + 18.0*n1.vc.s12 
+        - 6.0*n2.vc.s12 + n3.vc.s12 ) / 12.0;
+    }
+    // 2nd order, 3-point one-sided stencil
+    if ( local.nn[3] == 0 )
+    {
+      const Cell& n1 = (*this)[2];
+      const Cell& n2 = n1[2];
+      s11x = dh_inv * ( -3.0*vc.s11 + 4.0*n1.vc.s11 - n2.vc.s11 ) / 2.0;
+      s12x = dh_inv * ( -3.0*vc.s12 + 4.0*n1.vc.s12 - n2.vc.s12 ) / 2.0;
+    }
   }
 }
+
 inline void Cell::compute_vc_body_force( double g[9], double nuc ) const
 {
   double Fx = -nuc * ( vc.s11x + vc.s12x );
