@@ -1,5 +1,5 @@
 CXX = c++
-CXX_FLAGS = -std=c++11 -fopenmp
+CXX_FLAGS = -std=c++0x -fopenmp
 OPT_FLAGS = -O3 
 # OPT_FLAGS += -fopenmp -ffast-math
 DEBUG_FLAGS = -g -Wall -pedantic -Wno-strict-overflow
