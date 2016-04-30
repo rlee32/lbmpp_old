@@ -95,5 +95,9 @@ private:
   void refine_marked();
   std::size_t compute_active_cells() const;
 
-
+  // VC
+  void stream_body_force_parallel();
+  void bufferize_body_force_parallel();
+  void apply_advected_vc_body_force( 
+    double omega, double scale_decrease, double scale_increase, double nuc );
 };

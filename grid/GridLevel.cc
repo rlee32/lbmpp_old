@@ -12,7 +12,13 @@ void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
   for(size_t i = 0; i < cells.size(); ++i)
   {
     cells[i].collide(
-      relax_model, vc_model, omega, scale_increase, scale_decrease, nuc);
+      relax_model, vc_model, omega, scale_decrease, scale_increase, nuc);
+  }
+  if(vc_model == 2)
+  {
+    stream_body_force_parallel();
+    bufferize_body_force_parallel();
+    apply_advected_vc_body_force( omega, scale_decrease, scale_increase, nuc );
   }
 
   // cout << "BC" << endl;
@@ -61,6 +67,35 @@ void GridLevel::bufferize_parallel()
   for(size_t i = 0; i < cells.size(); ++i)
   {
     cells[i].bufferize_parallel();
+  }
+}
+
+void GridLevel::stream_body_force_parallel()
+{
+  #pragma omp parallel for
+  for(size_t i = 0; i < cells.size(); ++i)
+  {
+    cells[i].stream_body_force_parallel();
+  }
+}
+
+void GridLevel::bufferize_body_force_parallel()
+{
+  #pragma omp parallel for
+  for(size_t i = 0; i < cells.size(); ++i)
+  {
+    cells[i].bufferize_body_force_parallel();
+  }
+}
+
+void GridLevel::apply_advected_vc_body_force( 
+  double omega, double scale_decrease, double scale_increase, double nuc )
+{
+  #pragma omp parallel for
+  for(size_t i = 0; i < cells.size(); ++i)
+  {
+    cells[i].apply_advected_vc_body_force(
+      omega, scale_decrease, scale_increase, nuc);
   }
 }
 

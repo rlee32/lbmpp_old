@@ -13,11 +13,17 @@ clear; clc;
 % u = dlmread('../results/u_G101_M100_T100_RM1_VCM0_VCF0_Re100.dat');
 % v = dlmread('../results/v_G101_M100_T100_RM1_VCM0_VCF0_Re100.dat');
 
-% % SRT 1000 Re
-% M = 0.1;
-% Re = 1000;
-% u = dlmread('../results/u_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
-% v = dlmread('../results/v_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
+% SRT 1000 Re
+M = 0.1;
+Re = 1000;
+u = dlmread('../results/fields/u_G101_M100_T100_RM1_VCM0_VCF0_Re1000.dat');
+v = dlmread('../results/fields/v_G101_M100_T100_RM1_VCM0_VCF0_Re1000.dat');
+
+% SRT + SVC 1000 Re
+M = 0.1;
+Re = 1000;
+u = dlmread('../results/fields/u_G101_M100_T100_RM1_VCM2_VCF2_Re1000.dat');
+v = dlmread('../results/fields/v_G101_M100_T100_RM1_VCM2_VCF2_Re1000.dat');
 
 % % SRT 2500 Re
 % M = 0.1;
@@ -25,19 +31,23 @@ clear; clc;
 % u = dlmread('../results/u_G151_M100_T125_RM1_VCM0_VCF0_Re2500.dat');
 % v = dlmread('../results/v_G151_M100_T125_RM1_VCM0_VCF0_Re2500.dat');
 
-% MRT 100 Re
-M = 0.1;
-Re = 100;
-u = dlmread('../results/fields/u_G175_M100_T100_RM3_VCM0_VCF0_Re100.dat');
-v = dlmread('../results/fields/v_G175_M100_T100_RM3_VCM0_VCF0_Re100.dat');
-
-% % MRT 1000 Re
+% % MRT 100 Re
 % M = 0.1;
-% Re = 1000;
-% % u = dlmread('../results/u_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
-% % v = dlmread('../results/v_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
-% u = dlmread('../results/u_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
-% v = dlmread('../results/v_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+% Re = 100;
+% u = dlmread('../results/fields/u_G175_M100_T100_RM3_VCM0_VCF0_Re100.dat');
+% v = dlmread('../results/fields/v_G175_M100_T100_RM3_VCM0_VCF0_Re100.dat');
+
+% MRT 1000 Re
+M = 0.1;
+Re = 1000;
+u = dlmread('../results/fields/u_G101_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+v = dlmread('../results/fields/v_G101_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+
+% MRT 1000 Re + VC
+M = 0.1;
+Re = 1000;
+u = dlmread('../results/fields/u_G101_M100_T100_RM3_VCM2_VCF1_Re1000.dat');
+v = dlmread('../results/fields/v_G101_M100_T100_RM3_VCM2_VCF1_Re1000.dat');
 
 % % MRT 5000 Re
 % M = 0.2;
@@ -97,7 +107,9 @@ if validation
     hold on;
 end
 U = M / sqrt(3);
-plot( y, [0; (mean(u(:,cols),2)/U); 1] );
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', 'Present LBM' );
+% plot( y, [0; (mean(u(:,cols),2)/U); 1] );
 title(['Centerline y vs. u-velocity at Re = ' num2str(Re) ...
     ', M = ' num2str(M)]);
 xlabel('y');

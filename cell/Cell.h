@@ -68,6 +68,12 @@ public:
     { return next_level_cells[ local.children[0] ].state.interface; }
   Cell& parent() { return (*(local.pg))[local.parent]; }
   
+  // VC
+  void stream_body_force_parallel();
+  void bufferize_body_force_parallel();
+  void apply_advected_vc_body_force( double omega, double dt, 
+    double dh_inv, double nuc );
+
   // For initialization from file.
   void set_uv( double u, double v ) { state.u = u; state.v = v; };
   void reconstruct_distribution( double u_, double v_, double rho_ );
@@ -155,6 +161,10 @@ public:
     double s12x = 0;
     double s12y = 0;
     double s22y = 0;
+    // body forces
+    double gc = 0; // center body force term
+    double g[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // directional body force terms
+    double b[8] = { 0, 0, 0, 0, 0, 0, 0, 0 }; // buffer for transported g
   } vc;
 private:
   // SRT
@@ -176,7 +186,7 @@ private:
   inline void fill_strain_terms( double omega );
   inline void compute_strain_differences( 
     double& s11x,double& s12x,double& s12y,double& s22y,double dh_inv ) const;
-  inline void compute_vc_body_force( double g[9], double nuc ) const;
+  inline void compute_vc_body_force( double nuc );
   inline void apply_steady_vc_body_force( 
     double omega, double scale_increase, double scale_decrease, double nuc );
   

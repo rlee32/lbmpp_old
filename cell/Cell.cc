@@ -353,14 +353,6 @@ void Cell::collide( size_t relax_model, size_t vc_model, double omega,
 {
   if ( state.active and not state.interface )
   {
-    // if ( local.me == 0 )
-    // {
-    //   cout << scale_increase << " ";
-    //   for (int i = 0; i < 8; ++i) cout << local.neighbours[i] << " ";
-    //   cout << endl;
-    //   cin.ignore();
-    // }
-    
     // Relaxation
     switch( relax_model )
     {
@@ -393,6 +385,10 @@ void Cell::collide( size_t relax_model, size_t vc_model, double omega,
           omega, scale_decrease, scale_increase, nuc );
         break;
       case 2:
+        fill_strain_terms( omega );
+        compute_strain_differences( 
+          vc.s11x, vc.s12x, vc.s12y, vc.s22y, scale_increase );
+        compute_vc_body_force( nuc );
         break;
       case 3:
         break;
@@ -585,31 +581,37 @@ inline void Cell::compute_strain_differences(
   }
 }
 
-inline void Cell::compute_vc_body_force( double g[9], double nuc ) const
+inline void Cell::compute_vc_body_force( double nuc )
 {
   double Fx = -nuc * ( vc.s11x + vc.s12x );
   double Fy = -nuc * ( vc.s22y + vc.s12y );
   const double& u = state.u;
   const double& v = state.v;
-  g[0] = 4.0 / 3.0 * ( Fx*(-u) + Fy*(-v) );
-  g[1] = 1.0 / 3.0 * ( Fx*(1+2*u) + Fy*(-v) );
-  g[2] = 1.0 / 12.0 * ( Fx*(1+2*u+3*v) + Fy*(1+3*u+2*v) );
-  g[3] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(1+2*v) );
-  g[4] = 1.0 / 12.0 * ( Fx*(-1+2*u-3*v) + Fy*(1-3*u+2*v) );
-  g[5] = 1.0 / 3.0 * ( Fx*(-1+2*u) + Fy*(-v) );
-  g[6] = 1.0 / 12.0 * ( Fx*(-1+2*u+3*v) + Fy*(-1+3*u+2*v) );
-  g[7] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(-1+2*v) );
-  g[8] = 1.0 / 12.0 * ( Fx*(1+2*u-3*v) + Fy*(-1-3*u+2*v) );
+  vc.gc = 4.0 / 3.0 * ( Fx*(-u) + Fy*(-v) );
+  vc.g[0] = 1.0 / 3.0 * ( Fx*(1+2*u) + Fy*(-v) );
+  vc.g[1] = 1.0 / 12.0 * ( Fx*(1+2*u+3*v) + Fy*(1+3*u+2*v) );
+  vc.g[2] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(1+2*v) );
+  vc.g[3] = 1.0 / 12.0 * ( Fx*(-1+2*u-3*v) + Fy*(1-3*u+2*v) );
+  vc.g[4] = 1.0 / 3.0 * ( Fx*(-1+2*u) + Fy*(-v) );
+  vc.g[5] = 1.0 / 12.0 * ( Fx*(-1+2*u+3*v) + Fy*(-1+3*u+2*v) );
+  vc.g[6] = 1.0 / 3.0 * ( Fx*(-u) + Fy*(-1+2*v) );
+  vc.g[7] = 1.0 / 12.0 * ( Fx*(1+2*u-3*v) + Fy*(-1-3*u+2*v) );
 }
 inline void Cell::apply_steady_vc_body_force( double omega, double dt, 
   double dh_inv, double nuc )
 {
-  double g[9] = {0,0,0,0,0,0,0,0,0};
   fill_strain_terms( omega );
   compute_strain_differences( vc.s11x, vc.s12x, vc.s12y, vc.s22y, dh_inv );
-  compute_vc_body_force( g, nuc );
-  state.fc += dt*g[0];
-  for(size_t i = 0; i < 8; ++i) state.f[i] += dt*g[i+1];
+  compute_vc_body_force( nuc );
+  state.fc += dt*vc.gc;
+  for(size_t i = 0; i < 8; ++i) state.f[i] += dt*vc.g[i];
+}
+
+void Cell::apply_advected_vc_body_force( double omega, double dt, 
+  double dh_inv, double nuc )
+{
+  state.fc += dt*vc.gc;
+  for(size_t i = 0; i < 8; ++i) state.f[i] += 0.5*dt*(vc.g[i] + vc.b[i]);
 }
 
 // Single-relaxation time advance of fc.
@@ -778,6 +780,26 @@ void Cell::stream_parallel( vector<Cell>& g )
         g[ local.neighbours[OPPOSITE(i)] ].state.f[i] : state.b[i];
     }
   }
+}
+
+// First, must populate vc.g, because if no neighbour then vc.g value is used.
+void Cell::stream_body_force_parallel()
+{
+  if( state.active )
+  {
+    for(size_t i = 0; i < 8; ++i)
+    {
+      // This takes an advected term if available. 
+      // If not, corresponding vc.g value is taken. 
+      vc.b[i] = ( has_neighbour( OPPOSITE(i) ) ) ? 
+        (*this)[OPPOSITE(i)].vc.g[i] : vc.g[i];
+    }
+  }
+}
+
+void Cell::bufferize_body_force_parallel()
+{
+  for(size_t i = 0; i < 8; ++i) vc.g[i] = vc.b[i];
 }
 
 void Cell::bufferize_parallel()

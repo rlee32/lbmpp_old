@@ -10,6 +10,7 @@ SRCS = driver.cc
 else
 SRCS = visual_driver.cc
 LD_FLAGS += -L/usr/X11R6/lib -lm -lpthread -lX11
+SRCS +=	viz/SolutionViewer.cc
 endif
 
 SRCS +=	sim/Simulator.cc
@@ -17,7 +18,6 @@ SRCS +=	cell/Cell.cc
 SRCS +=	grid/Grid.cc
 SRCS +=	grid/GridLevel.cc
 SRCS +=	grid/BoundaryConditions.cc
-SRCS +=	viz/SolutionViewer.cc
 
 %.o: %.cc
 	$(CXX) $(CXX_FLAGS) $(OPT_FLAGS) $(DEBUG_FLAGS) -c $< -o $@ $(LD_FLAGS)
