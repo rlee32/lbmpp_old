@@ -39,9 +39,9 @@ public:
     std::vector<Cell>* cg ); // meant for (single-level) refine operation.
   
   // state
-  const double u() const { return state.u; }
-  const double v() const { return state.v; }
-  const bool active() const { return state.active; }
+  double u() const { return state.u; }
+  double v() const { return state.v; }
+  bool active() const { return state.active; }
 
   // Iteration
   void collide( std::size_t relax_model, std::size_t vc_model, 
