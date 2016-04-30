@@ -102,8 +102,8 @@ void Simulator::output_coarse_field(string output_suffix)
 
   u.open("u_"+output_suffix+".dat");
   v.open("v_"+output_suffix+".dat");
-  u.precision(std::numeric_limits< double >::max_digits10);
-  v.precision(std::numeric_limits< double >::max_digits10);
+  u.precision(std::numeric_limits< double >::digits10);
+  v.precision(std::numeric_limits< double >::digits10);
   for (size_t j = 0; j < cell_count[1]; ++j)
   {
     for (size_t i = 0; i < cell_count[0]; ++i)
@@ -597,7 +597,7 @@ void Simulator::print_centerlines( string output_suffix,
 {
   ofstream out;
   out.open("centerlines_"+output_suffix+".tsv");
-  out.precision(std::numeric_limits< double >::max_digits10);
+  out.precision(std::numeric_limits< double >::digits10);
   vector<CellData>::iterator it = centery.begin();
   for ( ; it != centery.end(); ++it ) out << it->x << "\t";
   out << endl;
