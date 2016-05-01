@@ -68,10 +68,10 @@ v = dlmread('../results/fields/v_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 151x151'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 151x151'] );
 
 figure(1);
 legend('show');
