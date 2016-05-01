@@ -4,7 +4,7 @@
 coarse_cells 301 301 # cells in x, y direction.
 
 # Physical parameters; these are used to compute the viscosity.
-Re 100000 # Reynolds number
+Re 1000000 # Reynolds number
 M 0.2 # Characteristic Mach number. This value is also used for BC. 
 L 301 # Characteristic Length. Must ensure consistency with cell count. 
 
@@ -46,10 +46,10 @@ v0 0
 # Initial solution from file
 # Comment this out if no initial solution desired.
 #M0 0.2
-#u0file results/fields/u_G257_M200_T500_RM3_VCM0_VCF0_Re21000.dat
-#v0file results/fields/v_G257_M200_T500_RM3_VCM0_VCF0_Re21000.dat
+#u0file results/fields/u_G201_M200_T100_RM3_VCM0_VCF0_Re5000.dat
+#v0file results/fields/v_G201_M200_T100_RM3_VCM0_VCF0_Re5000.dat
 
-display_interval 100
+display_interval 200
 
 # set this to 1 for saving pictures at display_interval (for a movie).
-picset 0
+picset 1

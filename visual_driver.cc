@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
             sv.display();
             if ( sim.do_picset() )
             {
-              sim.output_picset_field();
+              sim.output_picset_field( k/sim.get_display_interval() );
             }
           }
           ++k;

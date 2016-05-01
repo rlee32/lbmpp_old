@@ -1,0 +1,7 @@
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c driver.cc -o driver.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c sim/Simulator.cc -o sim/Simulator.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c cell/Cell.cc -o cell/Cell.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/Grid.cc -o grid/Grid.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/GridLevel.cc -o grid/GridLevel.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow -c grid/BoundaryConditions.cc -o grid/BoundaryConditions.o 
+c++ -std=c++0x -fopenmp -O3  -g -Wall -pedantic -Wno-strict-overflow driver.o sim/Simulator.o cell/Cell.o grid/Grid.o grid/GridLevel.o grid/BoundaryConditions.o -o lbmpp 

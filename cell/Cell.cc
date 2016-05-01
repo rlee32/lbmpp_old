@@ -89,8 +89,7 @@ void Cell::reconstruct_distribution( double rho, double u, double v )
 }
 
 
-// Called during linking stage if a parent neighbour is discovered to have 
-//  no children.
+// Called during refine stage if a neighbour is discovered to have no children.
 void Cell::create_interface_children( vector<Cell>& child_cells, 
   vector<Cell>& grandchild_cells )
 {
@@ -367,9 +366,7 @@ void Cell::create_children( vector<Cell>& next_level_cells,
 void Cell::refine( vector<Cell>& next_level_cells, 
     vector<Cell>& grandchild_cells )
 {
-  // We assume all children made or no children made.
-  bool no_children = local.children[0] < 0;
-  if( no_children )
+  if( not has_children() )
   {
     create_children( next_level_cells, grandchild_cells );
   }

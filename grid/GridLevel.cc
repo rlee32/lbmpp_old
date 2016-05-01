@@ -297,6 +297,7 @@ void GridLevel::link_marked()
 }
 // Checks all cells to see if they have been marked for refinement 
 //  and refines them.
+// Do not parallelize! The reason is addition to cell vector.
 void GridLevel::refine_marked()
 {
   // Do not parallelize without using locks!!!

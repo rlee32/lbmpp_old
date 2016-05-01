@@ -34,7 +34,7 @@ Simulator::Simulator(string filename) :
   string timesteps_string = "T"+to_string( (long long)(timesteps/1000) );
   string relax_model_string = "RM"+to_string( (long long)(relax_model) );
   string vc_model_string = "VCM"+to_string( (long long)(vc_model) );
-  string nucf_string = "VCF"+to_string( (long long)round(nucf*10.0) );
+  string nucf_string = "VCF"+to_string( (long long)round((nuc/nu)*10.0) );
   string re_string = "Re"+to_string( (long long)round(Re) );
   output_suffix = grid_string+"_"+mach_string+"_"+timesteps_string+"_"
     +relax_model_string+"_"+vc_model_string+"_"+nucf_string+"_"+re_string;
@@ -134,13 +134,12 @@ void Simulator::output_coarse_field()
   v.close();
 }
 
-void Simulator::output_picset_field()
+void Simulator::output_picset_field(size_t k)
 {
   ofstream u, v;
   const vector<Cell>& g = grid.get_cells(0);
-
-  u.open("picset/u_"+output_suffix+".dat");
-  v.open("picset/v_"+output_suffix+".dat");
+  u.open("picset/u_"+output_suffix+"_"+to_string((int)k)+".dat");
+  v.open("picset/v_"+output_suffix+"_"+to_string((int)k)+".dat");
   u.precision(std::numeric_limits< double >::digits10);
   v.precision(std::numeric_limits< double >::digits10);
   for (size_t j = 0; j < cell_count[1]; ++j)

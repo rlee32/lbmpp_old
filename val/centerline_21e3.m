@@ -57,11 +57,33 @@ plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
 plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
+% MRT 301x301
+M = 0.1;
+u = dlmread('../results/fields/u_G301_M100_T300_RM3_VCM0_VCF1_Re21000.dat');
+v = dlmread('../results/fields/v_G301_M100_T300_RM3_VCM0_VCF1_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 301x301'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 301x301'] );
+% MRT 301x301
+M = 0.3;
+u = dlmread('../results/fields/u_G301_M300_T400_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G301_M300_T400_RM3_VCM0_VCF0_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 301x301'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 301x301'] );
 
 % MRT 375x375
 M = 0.2;
-u = dlmread('../results/fields/u_G375_M200_T150_RM3_VCM0_VCF0_Re21000.dat');
-v = dlmread('../results/fields/v_G375_M200_T150_RM3_VCM0_VCF0_Re21000.dat');
+u = dlmread('../results/fields/u_G375_M200_T151_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G375_M200_T151_RM3_VCM0_VCF0_Re21000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
@@ -69,6 +91,30 @@ plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 375x375'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
 plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 375x375'] );
+
+% MRT 401x401
+M = 0.2;
+u = dlmread('../results/fields/u_G401_M200_T125_RM3_VCM0_VCF1_Re21000.dat');
+v = dlmread('../results/fields/v_G401_M200_T125_RM3_VCM0_VCF1_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 401x401'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 401x401'] );
+
+% MRT 601x601
+M = 0.2;
+u = dlmread('../results/fields/u_G601_M200_T30_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G601_M200_T30_RM3_VCM0_VCF0_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 601x601'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 601x601'] );
 
 figure(1);
 legend('show');

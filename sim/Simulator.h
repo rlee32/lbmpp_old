@@ -41,7 +41,7 @@ public:
   std::size_t get_display_interval() const { return display_interval; }
   void output_solution();
   bool do_picset() { return picset; }
-  void output_picset_field();
+  void output_picset_field(std::size_t k);
   std::string get_output_suffix() { return output_suffix; }
 private:
   // Run time control.
