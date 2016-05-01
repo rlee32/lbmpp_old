@@ -126,8 +126,14 @@ void GridLevel::initialize( double scale_increase,
   bcs.initialize( sides, bc, U, next_grid_level_->get_bcs(), &cells );
   // compute scale factors.
   scale_decrease = 1.0 / scale_increase;
-  nu = scale_decrease * nu0;
-  nuc = scale_decrease * nuc0;
+  // scale_decrease = 1.0;
+  // scale_increase = 1.0;
+  // nu = scale_decrease * nu0;
+  // nuc = scale_decrease * nuc0;
+  nu = scale_increase * nu0;
+  nuc = scale_increase * nuc0;
+  // nu = nu0;
+  // nuc = nuc0;
   tau = 3 * (nu + nuc) + 0.5;
   omega = 1 / tau;
   // cout << nu << " " << nuc << " " << tau << " " << omega << endl;
@@ -324,6 +330,7 @@ void GridLevel::refine_all()
 // This is a test function to be called during initialization.
 void GridLevel::refine_half( size_t i_cells, size_t j_cells )
 {
+  // assuming row-major coarse grid
   for(size_t j = 0; j < j_cells; ++j)
   {
     for(size_t i = 0; i < i_cells/2; ++i)

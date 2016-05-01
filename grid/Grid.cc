@@ -50,6 +50,7 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
 
   // Testing refine operation.
   // levels[0].refine_all();
+  // levels[0].refine_half();
 }
 
 void Grid::set_coarse_solution(

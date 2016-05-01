@@ -1,12 +1,12 @@
 # Use hashtag for comments.
 
 # Grid definition.
-coarse_cells 501 501 # cells in x, y direction.
+coarse_cells 75 75 # cells in x, y direction.
 
 # Physical parameters; these are used to compute the viscosity.
-Re 1000000 # Reynolds number
-M 0.3 # Characteristic Mach number. This value is also used for BC. 
-L 501 # Characteristic Length. Must ensure consistency with cell count. 
+Re 1000 # Reynolds number
+M 0.2 # Characteristic Mach number. This value is also used for BC. 
+L 75 # Characteristic Length. Must ensure consistency with cell count. 
 
 # Numerical parameters.
 # Relaxation time model:
@@ -25,7 +25,7 @@ vc_model 0
 nucf 0.0 # multiple of viscosity to serve as a buffer viscosity.
 
 # Solution and run time control.
-timesteps 100000 # maximum number of timesteps to run.
+timesteps 50000 # maximum number of timesteps to run.
 refinement 0 # solution-adaptive refinement: 1 = true, 0 = false
 
 # boundary conditions
@@ -49,7 +49,7 @@ v0 0
 #u0file results/fields/u_G125_M100_T100_RM3_VCM0_VCF0_Re1000.dat
 #v0file results/fields/v_G125_M100_T100_RM3_VCM0_VCF0_Re1000.dat
 
-display_interval 500
+display_interval 1000
 
 # set this to 1 for saving pictures at display_interval (for a movie).
-picset 1
+picset 0
