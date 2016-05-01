@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#SBATCH --partition class
+#SBATCH -N 1
+#SBATCH --exclusive
+#SBATCH --time=00:30:00
+
+#SBATCH -J test
+#SBATCH --error=stderr
+#SBATCH --output=stdout
+
+# Up to four nodes can be used on the 'short', 'med', and 'long' partitions.
+# The maximum run times for each are 30, 120, and 360 minutes, respectively.
+# You can view the different queues and time limits via the slurm command 
+# 'sinfo'.
+
+make clean
+make NOVIZ=1 -j12
+./lbmpp
+
+
+
