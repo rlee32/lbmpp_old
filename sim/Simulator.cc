@@ -138,8 +138,8 @@ void Simulator::output_picset_field(size_t k)
 {
   ofstream u, v;
   const vector<Cell>& g = grid.get_cells(0);
-  u.open("picset/u_"+output_suffix+"_"+to_string((int)k)+".dat");
-  v.open("picset/v_"+output_suffix+"_"+to_string((int)k)+".dat");
+  u.open("picset/u_"+output_suffix+"_"+to_string((long long)k)+".dat");
+  v.open("picset/v_"+output_suffix+"_"+to_string((long long)k)+".dat");
   u.precision(std::numeric_limits< double >::digits10);
   v.precision(std::numeric_limits< double >::digits10);
   for (size_t j = 0; j < cell_count[1]; ++j)

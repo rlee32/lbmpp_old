@@ -375,6 +375,7 @@ void Cell::refine( vector<Cell>& next_level_cells,
     // cout << "ACTIVATION" << endl;
     activate_children( next_level_cells );
   }
+  // cycle through neighbours 
   state.active = false;
 }
 
