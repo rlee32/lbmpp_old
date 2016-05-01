@@ -3,8 +3,8 @@ clear;clc;close all;
 folder = '../picset/';
 % middle = 'G251_M200_T100_RM3_VCM0_VCF0_Re100000';
 % frames = 1000;
-middle = 'G401_M200_T100_RM3_VCM0_VCF0_Re1000000';
-frames = 500;
+middle = 'G501_M300_T100_RM3_VCM0_VCF0_Re1000000';
+frames = 200;
 
 figure;
 hold on;
