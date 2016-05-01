@@ -378,7 +378,17 @@ void Cell::refine( vector<Cell>& next_level_cells,
   // cycle through neighbours 
   for(size_t i = 0; i < 8; ++i)
   {
-    // if ( has_neighbour(i) and )
+    if ( has_neighbour(i) )
+    {
+      // if not slated to refine and does not have children,
+      // needs to be made interface.
+      if ( not (*this)[i].action.refine and not (*this)[i].has_children() )
+      {
+        // Need to split to make interface!
+        (*this)[i].create_interface_children(
+          next_level_cells, grandchild_cells);
+      }
+    }
   }
   state.active = false;
 }

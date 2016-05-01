@@ -25,77 +25,59 @@ title('Centerline y vs. u-velocity at Re = 1000');
 xlabel('y');
 ylabel('u');
 
-% SRT 1000 Re 101x101
+% MRT 1000 Re 125x125
 M = 0.1;
-u = dlmread('../results/fields/u_G101_M100_T100_RM1_VCM0_VCF0_Re1000.dat');
-v = dlmread('../results/fields/v_G101_M100_T100_RM1_VCM0_VCF0_Re1000.dat');
+u = dlmread('../results/fields/u_G125_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+v = dlmread('../results/fields/v_G125_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['SRT, M=' num2str(M) ', 101x101'] );
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 125x125'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['SRT, M=' num2str(M) ', 101x101'] );
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 125x125'] );
 
-% SRT 1000 Re 151x151
-M = 0.1;
-u = dlmread('../results/fields/u_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
-v = dlmread('../results/fields/v_G151_M100_T125_RM1_VCM0_VCF0_Re1000.dat');
+% MRT VC
+M = 0.2;
+u = dlmread('../results/fields/u_G125_M200_T50_RM3_VCM2_VCF2_Re1000.dat');
+v = dlmread('../results/fields/v_G125_M200_T50_RM3_VCM2_VCF2_Re1000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['SRT, M=' num2str(M) ', 151x151'] );
+plot( y, uc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.2), M=' num2str(M) ', 125x125'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['SRT, M=' num2str(M) ', 151x151'] );
+plot( x, vc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.2), M=' num2str(M) ', 125x125'] );
 
-% SRT + VC 1000 Re
-M = 0.1;
-u = dlmread('../results/fields/u_G101_M100_T100_RM1_VCM2_VCF2_Re1000.dat');
-v = dlmread('../results/fields/v_G101_M100_T100_RM1_VCM2_VCF2_Re1000.dat');
+% MRT VC
+M = 0.2;
+u = dlmread('../results/fields/u_G125_M200_T50_RM3_VCM2_VCF4_Re1000.dat');
+v = dlmread('../results/fields/v_G125_M200_T50_RM3_VCM2_VCF4_Re1000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['SRT-VC, M=' num2str(M) ', 101x101'] );
+plot( y, uc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.4), M=' num2str(M) ', 125x125'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['SRT-VC, M=' num2str(M) ', 101x101'] );
+plot( x, vc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.4), M=' num2str(M) ', 125x125'] );
 
-% MRT 1000 Re 101x101
-M = 0.1;
-u = dlmread('../results/fields/u_G101_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
-v = dlmread('../results/fields/v_G101_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
+% MRT VC
+M = 0.2;
+u = dlmread('../results/fields/u_G125_M200_T50_RM3_VCM2_VCF8_Re1000.dat');
+v = dlmread('../results/fields/v_G125_M200_T50_RM3_VCM2_VCF8_Re1000.dat');
 U = M / sqrt(3);
 figure(1);
 [y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
+plot( y, uc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.8), M=' num2str(M) ', 125x125'] );
 figure(2);
 [x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
-
-% MRT 1000 Re 151x151
-M = 0.1;
-u = dlmread('../results/fields/u_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
-v = dlmread('../results/fields/v_G151_M100_T100_RM3_VCM0_VCF0_Re1000.dat');
-U = M / sqrt(3);
-figure(1);
-[y, uc] = get_centerline_u(u,U);
-plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
-figure(2);
-[x, vc] = get_centerline_v(v);
-plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 101x101'] );
-
-% % MRT 1000 Re + VC
-% M = 0.1;
-% u = dlmread('../results/fields/u_G101_M100_T100_RM3_VCM2_VCF1_Re1000.dat');
-% v = dlmread('../results/fields/v_G101_M100_T100_RM3_VCM2_VCF1_Re1000.dat');
-% U = M / sqrt(3);
-% figure(1);
-% [y, uc] = get_centerline_u(u,U);
-% plot( y, uc/U, 'DisplayName', ['MRT-VC, M=' num2str(M) ', 101x101'] );
-% figure(2);
-% [x, vc] = get_centerline_v(v);
-% plot( x, vc/U, 'DisplayName', ['MRT-VC, M=' num2str(M) ', 101x101'] );
+plot( x, vc/U, 'DisplayName', ...
+    ['MRT-VC (\nu_c / \nu = 0.8), M=' num2str(M) ', 125x125'] );
 
 figure(1);
 legend('show');
