@@ -378,7 +378,7 @@ void Cell::refine( vector<Cell>& next_level_cells,
   // cycle through neighbours 
   for(size_t i = 0; i < 8; ++i)
   {
-    if ( has_neighbour(i) and )
+    // if ( has_neighbour(i) and )
   }
   state.active = false;
 }
