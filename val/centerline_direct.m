@@ -1,6 +1,8 @@
 clear; clc;
 % close all;
 
+addpath subroutines
+
 % Change the dlmread entry according to the desired solution file.
 % The solution file nomencalture descriptions can be found in 
 %  the README.txt in the '../results/' folder. 

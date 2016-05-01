@@ -1,6 +1,8 @@
 clear; clc;
 % close all;
 
+addpath subroutines
+
 % This reads centerlines from uniform fields.
 
 % Change the dlmread entry according to the desired solution file.
