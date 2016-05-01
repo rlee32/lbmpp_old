@@ -45,6 +45,10 @@ int main(int argc, char ** argv)
             sv.draw_velocity_magnitude( sim.grid );
             sv.draw_status( k, sim, timer.stop() );
             sv.display();
+            if ( sim.do_picset() )
+            {
+              sim.output_picset_field();
+            }
           }
           ++k;
         }
@@ -58,26 +62,10 @@ int main(int argc, char ** argv)
     // cin.ignore();
   }
   
-  std::size_t cx = sim.get_cell_count_0();
-  std::size_t cy = sim.get_cell_count_1();
-  string grid_string = "G"+to_string( cx );
-  if( cx != cy )
-  {
-    grid_string += "x"+to_string( cy );
-  }
-  string mach_string = "M"+to_string( (size_t)(sim.get_M()*1000.0) );
-  string timesteps_string = "T"+to_string( (size_t)(sim.get_timesteps()/1000) );
-  string relax_model_string = "RM"+to_string( (size_t)(sim.get_relax_model()) );
-  string vc_model_string = "VCM"+to_string( (size_t)(sim.get_vc_model()) );
-  string nucf_string = "VCF"+to_string( (size_t)round(sim.get_nucf()*10.0) );
-  string re_string = "Re"+to_string( (size_t)round(sim.get_Re()) );
-  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"
-    +relax_model_string+"_"+vc_model_string+"_"+nucf_string+"_"+re_string;
-  
   if ( k >= sim.get_timesteps() )
   {
-    sim.output_solution( case_name );
-    sv.save_image( "mag_"+case_name+".png" );
+    sim.output_solution();
+    sv.save_image( "mag_"+sim.get_output_suffix()+".png" );
   }
 
   cout << "Simulation finished! Press enter to continue." << endl;

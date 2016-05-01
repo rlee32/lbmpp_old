@@ -7,7 +7,8 @@ Simulator::Simulator(string filename) :
   Re(0),M(0),U(0),nu(0),L(0),tau(0),omega(0),rho0(0),u0(0),v0(0),
   u0file(""),v0file(""),
   M0(0),nuc(0),nucf(0),
-  display_interval(1)
+  display_interval(1),
+  picset(0)
 {
   bc[0] = 'w';
   bc[1] = 'w';
@@ -23,7 +24,20 @@ Simulator::Simulator(string filename) :
   face_order_char[3] = 'l';
   cell_count[0] = 0;
   cell_count[1] = 0;
-  read_settings(filename); 
+  read_settings(filename);
+  string grid_string = "G"+to_string( (long long)cell_count[0] );
+  if( cell_count[0] != cell_count[1] )
+  {
+    grid_string += "x"+to_string( (long long)cell_count[1] );
+  }
+  string mach_string = "M"+to_string( (long long)(M*1000.0) );
+  string timesteps_string = "T"+to_string( (long long)(timesteps/1000) );
+  string relax_model_string = "RM"+to_string( (long long)(relax_model) );
+  string vc_model_string = "VCM"+to_string( (long long)(vc_model) );
+  string nucf_string = "VCF"+to_string( (long long)round(nucf*10.0) );
+  string re_string = "Re"+to_string( (long long)round(Re) );
+  output_suffix = grid_string+"_"+mach_string+"_"+timesteps_string+"_"
+    +relax_model_string+"_"+vc_model_string+"_"+nucf_string+"_"+re_string;
 }
 
 void Simulator::read_settings(string filename)
@@ -63,6 +77,7 @@ void Simulator::read_settings(string filename)
         if ( not parameter.compare("v0file") ) iss >> v0file;
         if ( not parameter.compare("M0") ) iss >> M0;
         if ( not parameter.compare("display_interval") ) iss >> display_interval;
+        if ( not parameter.compare("picset") ) iss >> picset;
         for ( size_t i = 0; i < 4; ++i )
         {
           if ( not parameter.compare(face_order[i]) ) { iss >> bc[i]; }
@@ -89,19 +104,43 @@ void Simulator::iteration()
   grid.iteration(0);
 }
 
-void Simulator::output_solution( string output_suffix )
+void Simulator::output_solution()
 {
-  output_coarse_field(output_suffix);
-  output_centerlines(output_suffix);
+  output_coarse_field();
+  output_centerlines();
 }
 
-void Simulator::output_coarse_field(string output_suffix)
+void Simulator::output_coarse_field()
 {
   ofstream u, v;
   const vector<Cell>& g = grid.get_cells(0);
 
   u.open("u_"+output_suffix+".dat");
   v.open("v_"+output_suffix+".dat");
+  u.precision(std::numeric_limits< double >::digits10);
+  v.precision(std::numeric_limits< double >::digits10);
+  for (size_t j = 0; j < cell_count[1]; ++j)
+  {
+    for (size_t i = 0; i < cell_count[0]; ++i)
+    {
+      size_t ii = i + j * cell_count[0];
+      u << g[ii].state.u << "\t";
+      v << g[ii].state.v << "\t";
+    }
+    u << endl;
+    v << endl;
+  }
+  u.close();
+  v.close();
+}
+
+void Simulator::output_picset_field()
+{
+  ofstream u, v;
+  const vector<Cell>& g = grid.get_cells(0);
+
+  u.open("picset/u_"+output_suffix+".dat");
+  v.open("picset/v_"+output_suffix+".dat");
   u.precision(std::numeric_limits< double >::digits10);
   v.precision(std::numeric_limits< double >::digits10);
   for (size_t j = 0; j < cell_count[1]; ++j)
@@ -259,7 +298,7 @@ void Simulator::read_coarse_solution()
 
 
 // the public method
-void Simulator::output_centerlines( string output_suffix )
+void Simulator::output_centerlines()
 {
   vector<CellData> top;
   vector<CellData> bottom;
@@ -271,7 +310,7 @@ void Simulator::output_centerlines( string output_suffix )
   vector<CellData> centery;
   produce_centerline_y( top, bottom, centery );
   produce_centerline_x( left, right, centerx );
-  print_centerlines( output_suffix, centerx, centery );
+  print_centerlines( centerx, centery );
 }
 
 
@@ -592,7 +631,7 @@ void Simulator::produce_centerline_x(vector<CellData>& side1,
 // v values of y-centerline
 // y positions of x-centerline
 // u values of x-centerline
-void Simulator::print_centerlines( string output_suffix, 
+void Simulator::print_centerlines( 
   vector<CellData>& centerx, vector<CellData>& centery )
 {
   ofstream out;
