@@ -32,30 +32,15 @@ int main(int argc, char ** argv)
     {
       cout << "Average speed: " << k / timer.stop()
         << " iterations / second" << endl;
+      if ( sim.do_picset() )
+      {
+        sim.output_picset_field();
+      }
     }
     ++k;
   }
   
-  std::size_t cx = sim.get_cell_count_0();
-  std::size_t cy = sim.get_cell_count_1();
-  string grid_string = "G"+to_string( (long long)cx );
-  if( cx != cy )
-  {
-    grid_string += "x"+to_string( (long long)cy );
-  }
-  string mach_string = "M"+to_string( (long long)(sim.get_M()*1000.0) );
-  string timesteps_string = "T"+to_string( (long long)(sim.get_timesteps()/1000) );
-  string relax_model_string = "RM"+to_string( (long long)(sim.get_relax_model()) );
-  string vc_model_string = "VCM"+to_string( (long long)(sim.get_vc_model()) );
-  string nucf_string = "VCF"+to_string( (long long)round(sim.get_nucf()*10.0) );
-  string re_string = "Re"+to_string( (long long)round(sim.get_Re()) );
-  string case_name = grid_string+"_"+mach_string+"_"+timesteps_string+"_"
-    +relax_model_string+"_"+vc_model_string+"_"+nucf_string+"_"+re_string;
-  
-  if ( k >= sim.get_timesteps() )
-  {
-    sim.output_solution( case_name );
-  }
+  if ( k >= sim.get_timesteps() ) sim.output_solution();
 
   cout << "Simulation finished!" << endl;
 

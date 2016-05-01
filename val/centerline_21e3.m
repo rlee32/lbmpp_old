@@ -34,29 +34,41 @@ figure(2);
 [x, vc] = get_centerline_v(v);
 plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 257x257'] );
 
-% % MRT 
-% M = 0.2;
-% u = dlmread('../results/fields/u_G257_M200_T600_RM3_VCM0_VCF0_Re21000.dat');
-% v = dlmread('../results/fields/v_G257_M200_T600_RM3_VCM0_VCF0_Re21000.dat');
-% U = M / sqrt(3);
-% figure(1);
-% [y, uc] = get_centerline_u(u,U);
-% plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 257x257'] );
-% figure(2);
-% [x, vc] = get_centerline_v(v);
-% plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 257x257'] );
+% MRT 325x325
+M = 0.2;
+u = dlmread('../results/fields/u_G325_M200_T75_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G325_M200_T75_RM3_VCM0_VCF0_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
 
-% % MRT 
-% M = 0.2;
-% u = dlmread('../results/fields/u_G301_M200_T0_RM3_VCM0_VCF0_Re21000.dat');
-% v = dlmread('../results/fields/v_G301_M200_T0_RM3_VCM0_VCF0_Re21000.dat');
-% U = M / sqrt(3);
-% figure(1);
-% [y, uc] = get_centerline_u(u,U);
-% plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 257x257'] );
-% figure(2);
-% [x, vc] = get_centerline_v(v);
-% plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 257x257'] );
+% MRT 325x325
+M = 0.2;
+u = dlmread('../results/fields/u_G325_M200_T250_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G325_M200_T250_RM3_VCM0_VCF0_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 325x325'] );
+
+% MRT 375x375
+M = 0.2;
+u = dlmread('../results/fields/u_G375_M200_T150_RM3_VCM0_VCF0_Re21000.dat');
+v = dlmread('../results/fields/v_G375_M200_T150_RM3_VCM0_VCF0_Re21000.dat');
+U = M / sqrt(3);
+figure(1);
+[y, uc] = get_centerline_u(u,U);
+plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 375x375'] );
+figure(2);
+[x, vc] = get_centerline_v(v);
+plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 375x375'] );
 
 figure(1);
 legend('show');

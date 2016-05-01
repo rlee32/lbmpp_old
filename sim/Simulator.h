@@ -39,7 +39,10 @@ public:
   double get_vc_model() const { return vc_model; }
   double get_nucf() const { return nuc / nu; }
   std::size_t get_display_interval() const { return display_interval; }
-  void output_solution( std::string output_suffix );
+  void output_solution();
+  bool do_picset() { return picset; }
+  void output_picset_field();
+  std::string get_output_suffix() { return output_suffix; }
 private:
   // Run time control.
   bool refinement; // If true, enables solution-adaptive refinement.
@@ -73,9 +76,10 @@ private:
   char face_order_char[4];
   // coarse grid dimension
   std::size_t cell_count[2];
-  //
+  // output control
   std::size_t display_interval;
-  //
+  bool picset;
+  std::string output_suffix;
   static const size_t output_precision = 16;
 
   // Preprocessing 
@@ -90,7 +94,7 @@ private:
   void read_coarse_solution();
 
   // Postprocessing
-  void output_coarse_field( std::string output_suffix );
+  void output_coarse_field();
   void get_data( Cell& cell, 
     std::vector<CellData>& data, char side, 
     double xstart, double ystart, double dim );
@@ -99,13 +103,13 @@ private:
   void produce_centerline_x( std::vector<CellData>& side1, 
     std::vector<CellData>& side2, std::vector<CellData>& center);
   void centerline2file( std::vector<CellData>& center );
-  void print_centerlines( std::string output_suffix, 
+  void print_centerlines( 
     std::vector<CellData>& centerx, std::vector<CellData>& centery );
   void centerline_x( 
     std::vector<CellData>& left_values, std::vector<CellData>& right_values );
   void centerline_y(
     std::vector<CellData>& top_values, std::vector<CellData>& bottom_values );
-  void output_centerlines( std::string output_suffix );
+  void output_centerlines();
   // Initialization
 
 };
