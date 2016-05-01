@@ -3,6 +3,7 @@
 #SBATCH --partition class
 #SBATCH -N 1
 #SBATCH --exclusive
+#SBATCH -w deepthought2
 #SBATCH --time=00:30:00
 
 #SBATCH -J test
