@@ -619,8 +619,8 @@ void Simulator::produce_centerline_x(vector<CellData>& side1,
       cd.v = ( 1.0 - r2 ) * side1.back().v + r2 * side2.back().v;
 
       center.push_back(cd);
-      if( y1 < y2 ) side1.pop_back();
-      if( y2 < y1 ) side2.pop_back();
+      if( y1 > y2 ) side1.pop_back();
+      if( y2 > y1 ) side2.pop_back();
     }
   }
 }

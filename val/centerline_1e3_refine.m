@@ -65,6 +65,19 @@ figure(2);
 plot( x, vc/U, 'DisplayName', ...
     ['MRT, M=' num2str(M) ', 75x75 refined to 150x150'] );
 
+% MRT 50 / 100
+% Refined
+M = 0.2;
+[x, y, uc, vc] = get_centerlines( ...
+    '../results/centerlines/centerlines_G50_M200_T50_RM3_VCM0_VCF0_Re1000.tsv');
+U = M / sqrt(3);
+figure(1);
+plot( y, uc/U, 'DisplayName', ...
+    ['MRT, M=' num2str(M) ', 50x25 + 100x50'] );
+figure(2);
+plot( x, vc/U, 'DisplayName', ...
+    ['MRT, M=' num2str(M) ', 50x25 + 100x50'] );
+
 figure(1);
 legend('show');
 figure(2);

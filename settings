@@ -1,12 +1,12 @@
 # Use hashtag for comments.
 
 # Grid definition.
-coarse_cells 50 50 # cells in x, y direction.
+coarse_cells 75 75 # cells in x, y direction.
 
 # Physical parameters; these are used to compute the viscosity.
 Re 1000 # Reynolds number
 M 0.2 # Characteristic Mach number. This value is also used for BC. 
-L 50 # Characteristic Length. Must ensure consistency with cell count. 
+L 75 # Characteristic Length. Must ensure consistency with cell count. 
 
 # Numerical parameters.
 # Relaxation time model:
