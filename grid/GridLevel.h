@@ -43,6 +43,8 @@ public:
   std::vector<Cell>* get_parent_grid() { return &parent_grid->get_cells(); }
   std::vector<Cell>* get_grandchild_grid()
     { return &( child_grid->get_next_grid_level()->get_cells() ); }
+  void reset_refine()
+    { for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine=false; }
 
 
   void refresh_active_cells();
@@ -54,6 +56,10 @@ public:
   void refine_all();
   // void refine_range(std::size_t start_index, std::size_t end_index);
   void refine_half( std::size_t i_cells, std::size_t j_cells );
+  void refine_three_parts( std::size_t i_cells, std::size_t j_cells );
+  void refine_three_parts_rotated( size_t i_cells, size_t j_cells );
+  void refine_three_parts_rotated_flipped( 
+    size_t i_cells, size_t j_cells );
   void print_cell_status( std::size_t i_cells, std::size_t j_cells );
   
   // Mainly for post-processing purposes.

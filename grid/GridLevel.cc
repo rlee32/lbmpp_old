@@ -370,6 +370,126 @@ void GridLevel::refine_half( size_t i_cells, size_t j_cells )
   child_grid->refresh_active_cells();
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
+// This is a test function to be called during initialization.
+// This is to be called on course grid.
+void GridLevel::refine_three_parts( size_t i_cells, size_t j_cells )
+{
+  size_t coarse_boundary = i_cells/2;
+  // assuming row-major coarse grid
+  size_t medium_cells = 0;
+  for(size_t j = 0; j < j_cells; ++j)
+  {
+    for(size_t i = coarse_boundary; i < i_cells; ++i)
+    {
+      size_t ii = i + j*i_cells;
+      cells[ii].action.refine = true;
+      ++medium_cells;
+    }
+  }
+  // These are end-of-whole-grid-iteration operations.
+  refine_marked();
+  link_marked();
+  refined_cell_bc();
+  active_cells = compute_active_cells();
+  child_grid->refresh_active_cells();
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
+
+  GridLevel& next_level = *get_next_grid_level();
+  size_t med_cols = i_cells - coarse_boundary;
+  size_t row_cells = 4*med_cols;
+  size_t offset_ii = (med_cols/2)*4;
+  size_t ii = offset_ii + 8;
+  for(size_t j = 0; j < j_cells-1; ++j)
+  {
+    size_t ii_end = ii + row_cells - offset_ii;
+    for( ; ii < ii_end; ++ii) (*get_child_grid())[ii].action.refine = true;
+    ii += offset_ii + 4;
+  }
+  ii -= 4;
+  size_t ii_end = ii + row_cells - offset_ii;
+  for( ; ii < ii_end; ++ii) (*get_child_grid())[ii].action.refine = true;
+
+  // These are end-of-whole-grid-iteration operations.
+  next_level.refine_marked();
+  next_level.link_marked();
+  next_level.refined_cell_bc();
+  next_level.refresh_active_cells();
+  next_level.get_next_grid_level()->refresh_active_cells();
+  next_level.reset_refine();
+}
+// This is a test function to be called during initialization.
+// This is to be called on course grid.
+void GridLevel::refine_three_parts_rotated( size_t i_cells, size_t j_cells )
+{
+  // assuming row-major coarse grid
+  for(size_t j = j_cells/3; j < j_cells; ++j)
+  {
+    for(size_t i = 0; i < i_cells; ++i)
+    {
+      size_t ii = i + j*i_cells;
+      cells[ii].action.refine = true;
+    }
+  }
+  // These are end-of-whole-grid-iteration operations.
+  refine_marked();
+  link_marked();
+  refined_cell_bc();
+  active_cells = compute_active_cells();
+  child_grid->refresh_active_cells();
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
+
+  GridLevel& next_level = *get_next_grid_level();
+  size_t med_rows = j_cells - j_cells/3;
+  size_t row_cells = 4*i_cells;
+  for(size_t ii = (med_rows/2)*row_cells; ii < (med_rows+1)*row_cells; ++ii)
+  {
+    (*get_child_grid())[ii].action.refine = true;
+  }
+  
+  // These are end-of-whole-grid-iteration operations.
+  next_level.refine_marked();
+  next_level.link_marked();
+  next_level.refined_cell_bc();
+  next_level.refresh_active_cells();
+  next_level.get_next_grid_level()->refresh_active_cells();
+  next_level.reset_refine();
+}
+// This is a test function to be called during initialization.
+// This is to be called on course grid.
+void GridLevel::refine_three_parts_rotated_flipped( size_t i_cells, size_t j_cells )
+{
+  // assuming row-major coarse grid
+  for(size_t j = 0; j < 2*j_cells/3; ++j)
+  {
+    for(size_t i = 0; i < i_cells; ++i)
+    {
+      size_t ii = i + j*i_cells;
+      cells[ii].action.refine = true;
+    }
+  }
+  // These are end-of-whole-grid-iteration operations.
+  refine_marked();
+  link_marked();
+  refined_cell_bc();
+  active_cells = compute_active_cells();
+  child_grid->refresh_active_cells();
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
+
+  GridLevel& next_level = *get_next_grid_level();
+  size_t med_rows = 2*j_cells/3;
+  size_t row_cells = 4*i_cells;
+  for(size_t ii = 0; ii < (med_rows/2)*row_cells; ++ii)
+  {
+    (*get_child_grid())[ii].action.refine = true;
+  }
+  // These are end-of-whole-grid-iteration operations.
+  next_level.refine_marked();
+  next_level.link_marked();
+  next_level.refined_cell_bc();
+  next_level.refresh_active_cells();
+  next_level.get_next_grid_level()->refresh_active_cells();
+  next_level.reset_refine();
+}
 void GridLevel::print_cell_status( std::size_t i_cells, std::size_t j_cells )
 {
   // assuming row-major coarse grid
