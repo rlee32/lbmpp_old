@@ -37,6 +37,18 @@ figure(2);
 [x, vc] = get_centerline_v(v);
 plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 150x150'] );
 
+% % MRT 100x100
+% M = 0.2;
+% u = dlmread('../results/fields/u_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
+% v = dlmread('../results/fields/v_G100_M200_T50_RM3_VCM0_VCF0_Re1000.dat');
+% U = M / sqrt(3);
+% figure(1);
+% [y, uc] = get_centerline_u(u,U);
+% plot( y, uc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 100x100'] );
+% figure(2);
+% [x, vc] = get_centerline_v(v);
+% plot( x, vc/U, 'DisplayName', ['MRT, M=' num2str(M) ', 100x100'] );
+
 % MRT 75 to 150
 % Refined
 M = 0.2;

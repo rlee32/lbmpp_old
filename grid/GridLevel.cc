@@ -11,12 +11,9 @@ GridLevel::GridLevel() :
 
 }
 
-// Collide, explode and stream all cells on this grid level.
-void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
+void GridLevel::collide( size_t relax_model, size_t vc_model )
 {
   reconstruct_macro();
-  
-  // Collide
   #pragma omp parallel for
   for(size_t i = 0; i < cells.size(); ++i)
   {
@@ -29,18 +26,35 @@ void GridLevel::iteration( std::size_t relax_model, std::size_t vc_model )
     bufferize_body_force_parallel();
     apply_advected_vc_body_force( omega, scale_decrease, scale_increase, nuc );
   }
+}
 
-  // cout << "BC" << endl;
+
+// static void printdist(Cell& cell)
+// {
+//   cout << "gridlevel f: ";
+//   for(int i = 0; i < 8; ++i ) cout << cell.state.f[i] << " ";
+//   cout <<endl;
+// }
+// static const int ccc = 10;
+
+void GridLevel::stream()
+{
   bcs.apply_bc();
-
-  // cout << "Stream" << endl;
-  // Stream
   stream_parallel();
+  // printdist(cells[ccc]);
   bufferize_parallel();
-  
-  // cout << "Finish stream" << endl;
+  // printdist(cells[ccc]);
   refresh_active_cells();
-  // cout << active_cells << endl;
+}
+void GridLevel::explode()
+{
+  // #pragma omp parallel for
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].explode();
+}
+void GridLevel::coalesce()
+{
+  // #pragma omp parallel for
+  for(size_t i = 0; i < cells.size(); ++i) cells[i].coalesce();
 }
 
 void GridLevel::refresh_active_cells()
@@ -146,6 +160,15 @@ void GridLevel::create_coarse_grid( size_t cell_count_x, size_t cell_count_y,
 {
   active_cells = cell_count_x * cell_count_y;
   cells.resize( active_cells, default_cell );
+  for(size_t i = 0; i < cell_count_x*cell_count_y; ++i)
+  {
+    cells[i].local.me = i;
+  }
+  cells[0].bc.corner = 0;
+  cells[cell_count_x-1].bc.corner = 2;
+  cells[ (cell_count_y-1)*cell_count_x ].bc.corner = 1;
+  cells[ cell_count_y*cell_count_x-1 ].bc.corner = 3;
+
   
   // East neighbours
   for (size_t i = 0; i < cell_count_x-1; ++i)
@@ -296,7 +319,7 @@ void GridLevel::link_marked()
   {
     if ( cells[i].action.link_children )
     {
-      // cout << "Linking dawg" << endl;
+      // cout << "Linking " << cells[i].local.me << endl;
       cells[i].link_children( cells, child_grid->get_cells() );
     }
   }
@@ -333,7 +356,7 @@ void GridLevel::refine_half( size_t i_cells, size_t j_cells )
   // assuming row-major coarse grid
   for(size_t j = 0; j < j_cells; ++j)
   {
-    for(size_t i = 0; i < i_cells/2; ++i)
+    for(size_t i = i_cells/2; i < i_cells; ++i)
     {
       size_t ii = i + j*i_cells;
       cells[ii].action.refine = true;
@@ -347,6 +370,21 @@ void GridLevel::refine_half( size_t i_cells, size_t j_cells )
   child_grid->refresh_active_cells();
   for(size_t i = 0; i < cells.size(); ++i) cells[i].action.refine = false;
 }
+void GridLevel::print_cell_status( std::size_t i_cells, std::size_t j_cells )
+{
+  // assuming row-major coarse grid
+  for(int j = j_cells-1; j >= 0; --j)
+  {
+    for(size_t i = 0; i < i_cells; ++i)
+    {
+      size_t ii = j*i_cells + i;
+      cout << cells[ii].state.active <<  " ";
+    }
+    cout << endl;
+  }
+}
+
+
 
 // Call AFTER refinement (via action.refine), and BEFORE linking children.
 // Goes through all cells and identifies newly-created cells that 

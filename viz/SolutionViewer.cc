@@ -39,6 +39,7 @@ void SolutionViewer::draw_velocity_magnitude(Grid& grid)
 {
   size_t cell_count_x = grid.cell_count_x();
   size_t cell_count_y = grid.cell_count_y();
+  grid.reconstruct_macro();
   temp.min = grid.min_mag();
   temp.max = grid.max_mag();
   for (size_t i = 0; i < cell_count_x; ++i)
@@ -79,9 +80,20 @@ void SolutionViewer::draw_mag_tree( GridLevel* cg,
        g[ cell.local.children[2] ], i+cdim, j+cdim, cdim );
     draw_mag_tree( cg->get_next_grid_level(), 
        g[ cell.local.children[3] ], i+cdim, j, cdim );
+    if (pixels_per_cell > 4)
+    {
+      const float black[] = {0,0,0};
+      // image.draw_line(i,j,i+p,j,black);
+      // image.draw_line(i+p,j,i+p,j+p,black);
+      // image.draw_line(i+p,j+p,i,j+p,black);
+      // image.draw_line(i,j+p,i,j,black);
+      image.draw_line(i,j+p/2,i+p,j+p/2,black);
+      image.draw_line(i+p/2,j,i+p/2,j+p,black);
+    }
   }
   else
   {
+    // cell.reconstruct_macro();
     // Draw this cell
     float rgb[3];
     scalar2rgb( temp.min, temp.max, cell.get_mag(), rgb );

@@ -55,8 +55,8 @@ public:
   void moving_wall(char side, double U);
   
   // For dynamic mesh.
-  void coalesce( std::vector<Cell>& cg );
-  void explode_homogeneous( std::vector<Cell>& cg );
+  void explode();
+  void coalesce();
   void refine( std::vector<Cell>& next_level_cells, 
     std::vector<Cell>& grandchild_cells );
   void create_interface_children( std::vector<Cell>& next_level_cells, 
@@ -166,6 +166,14 @@ public:
     double g[8]; // directional body force terms
     double b[8]; // buffer for transported g
   } vc;
+  // Okay, this adds some memory. 
+  // But hey, it makes things a lot easier!!!
+  struct
+  {
+    int corner; // -1: not corner, 0-3: Morton-order N-curve corners.
+    // Which directional components to coalesce when interface. 
+    bool coalesce[8];
+  } bc;
 private:
   // basic
   void initialize();

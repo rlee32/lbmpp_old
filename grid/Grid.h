@@ -38,6 +38,8 @@ public:
   double max_rho() const;
   double min_rho() const;
   double mag( std::size_t level, std::size_t cell_index ) const;
+  void reconstruct_macro();
+
 
   // Operators
   GridLevel& operator[](std::size_t i) { return levels[i]; }

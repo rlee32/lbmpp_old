@@ -2,20 +2,107 @@
 
 using namespace std;
 
+// void printdist(Cell& cell)
+// {
+//   // cout << "grid f: ";
+//   // for(int i = 0; i < 8; ++i ) cout << cell.state.f[i] << " ";
+//   // cout <<endl;
+//   // cout << "grid b: ";
+//   // for(int i = 0; i < 8; ++i ) cout << cell.state.b[i] << " ";
+//   // cout <<endl;
+// }
+// void printneighbours(Cell& cell)
+// {
+//   cout << "n: ";
+//   for(int i = 0; i < 8; ++i ) cout << cell.local.neighbours[i] << " ";
+//   cout <<endl;
+// }
+// // static void printchildren(Cell& cell)
+// // {
+// //   cout << "children: ";
+// //   for(int i = 0; i < 4; ++i ) cout << cell(i).local.me << " ";
+// //   cout <<endl;
+// // }
+// static void printinterface(Cell& c)
+// {
+//   cout << "coal interface: ";
+//   for(size_t i = 0; i < 8; ++i ) if(c.bc.coalesce[i]) cout << c.bc.coalesce[i] << " ";
+//   cout <<endl;
+// }
+// const int ccc = 10;
+
 void Grid::iteration( size_t level )
 {
+  // printchildren(levels[0].get_cell(84));
+  // printchildren(levels[0].get_cell(85));
+  // printchildren(levels[0].get_cell(94));
+  // printchildren(levels[0].get_cell(95));
+  // // printneighbours(levels[0].get_cell(94));
+  // printneighbours(levels[1].get_cell(197));
+  // printchildren(levels[0].get_cell(5));
+  // printchildren(levels[0].get_cell(15));
+  // printchildren(levels[0].get_cell(25));
+  // printchildren(levels[0].get_cell(35));
+  // printchildren(levels[0].get_cell(45));
+  // printchildren(levels[0].get_cell(55));
+  // printchildren(levels[0].get_cell(65));
+  // printchildren(levels[0].get_cell(75));
+  // printchildren(levels[0].get_cell(85));
+  // printchildren(levels[0].get_cell(95));
+  // printchildren(levels[0].get_cell(9));
+  // printchildren(levels[0].get_cell(19));
+  // printchildren(levels[0].get_cell(29));
+  // printchildren(levels[0].get_cell(39));
+  // printchildren(levels[0].get_cell(49));
+  // printchildren(levels[0].get_cell(59));
+  // printchildren(levels[0].get_cell(69));
+  // printchildren(levels[0].get_cell(79));
+  // printchildren(levels[0].get_cell(89));
+  // printchildren(levels[0].get_cell(99));
+  // printinterface(levels[0].get_cell(4));
+  // printinterface(levels[0].get_cell(14));
+  // printinterface(levels[0].get_cell(24));
+  // printinterface(levels[0].get_cell(34));
+  // printinterface(levels[0].get_cell(44));
+  // printinterface(levels[0].get_cell(54));
+  // printinterface(levels[0].get_cell(64));
+  // printinterface(levels[0].get_cell(74));
+  // printinterface(levels[0].get_cell(84));
+  // printinterface(levels[0].get_cell(94));
+
+  // cout << "child: " << (levels[0].get_cell(95))(1).local.me << endl; 
+  // cout << "child: " << (levels[0].get_cell(95))(3).local.me << endl; 
+  // printneighbours(levels[1].get_cell(1));
+  // cout << "child: " << (levels[0].get_cell(5))(1).local.me << endl; 
+  // cout << "Start level " << level << endl;
+  // First determine if next level exists.
+  bool go_to_next_level = false;
   if (level < MAX_LEVELS-1)
   {
-    if ( levels[level+1].get_active_cells() > 0 )
-    {
-      // cout << "Calling iteration from level " << level << endl; 
-      iteration( level+1 );
-      // cout << "Calling iteration from level " << level << endl; 
-      iteration( level+1 );
-    }
+    if ( levels[level+1].get_active_cells() > 0 ) go_to_next_level = true;
   }
-  // cout << "Iterating Level "<< level << endl;
-  levels[level].iteration( relax_model, vc_model );
+  // Main recursive iteration.
+  // cout << "Collide level " << level << endl;
+  // printdist(levels[1].get_cell(ccc));
+  levels[level].collide( relax_model, vc_model );
+  // printdist(levels[1].get_cell(ccc));
+  if ( go_to_next_level )
+  {
+    // cout << "Explode level " << level << endl;
+    // printdist(levels[1].get_cell(ccc));
+    levels[level].explode();
+    // printdist(levels[1].get_cell(ccc));
+    iteration( level+1 );
+    iteration( level+1 );
+  }
+  // cout << "Stream level " << level << endl;
+  // printdist(levels[1].get_cell(ccc));
+  levels[level].stream();
+  // printdist(levels[1].get_cell(ccc));
+  // cout << "Coalesce level " << level << endl;
+  // printdist(levels[1].get_cell(ccc));
+  if ( go_to_next_level ) levels[level].coalesce();
+  // printdist(levels[1].get_cell(ccc));
 }
 
 void Grid::initialize(size_t cell_count_x, size_t cell_count_y, 
@@ -50,7 +137,9 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
 
   // Testing refine operation.
   // levels[0].refine_all();
-  // levels[0].refine_half();
+  levels[0].refine_half( cell_count_x, cell_count_y );
+  // cout << "Successful refinement" << endl;
+  // levels[0].print_cell_status( cell_count_x, cell_count_y );
 }
 
 void Grid::set_coarse_solution(
@@ -125,3 +214,7 @@ size_t Grid::active_cells() const
   return total;
 }
 
+void Grid::reconstruct_macro()
+{
+  for(size_t i = 0; i < MAX_LEVELS; ++i) levels[i].reconstruct_macro();
+}

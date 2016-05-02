@@ -16,13 +16,17 @@ class GridLevel
 public:
   GridLevel();
   // Performs one whole iteration at this grid level.
-  void iteration( std::size_t relax_model, std::size_t vc_model );
   void refined_cell_bc() { bcs.refined_cell_bc(); }
   
   // Basic
+  void collide( std::size_t relax_model, std::size_t vc_model );
+  void stream();
+  void explode();
+  void coalesce();
   std::vector<Cell>& get_cells() { return cells; }
   const Cell* cell( std::size_t index ) const { return &cells[index]; }
   Cell& get_cell( std::size_t index ) { return cells[index]; }
+  void reconstruct_macro();
 
   // Initialization
   void initialize( double scale_increase, double nu, double nuc, 
@@ -40,6 +44,7 @@ public:
   std::vector<Cell>* get_grandchild_grid()
     { return &( child_grid->get_next_grid_level()->get_cells() ); }
 
+
   void refresh_active_cells();
   void set_interface( std::size_t i )
     { cells[i].state.interface = true; }
@@ -49,6 +54,7 @@ public:
   void refine_all();
   // void refine_range(std::size_t start_index, std::size_t end_index);
   void refine_half( std::size_t i_cells, std::size_t j_cells );
+  void print_cell_status( std::size_t i_cells, std::size_t j_cells );
   
   // Mainly for post-processing purposes.
   std::size_t get_active_cells() const { return active_cells; }
@@ -87,7 +93,6 @@ private:
     { return cells[ cells[ci].local.neighbours[ni] ];}
 
   // Iteration
-  void reconstruct_macro();
   void bufferize_parallel();
   void stream_parallel();
 

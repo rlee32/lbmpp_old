@@ -68,6 +68,8 @@ void Cell::initialize()
   local.nn[2] = 2;
   local.nn[3] = 2;
   local.fully_interior_cell = true;
+  bc.corner = -1;
+
 }
 
 void Cell::reconstruct_distribution( double rho, double u, double v )
@@ -93,6 +95,9 @@ void Cell::reconstruct_distribution( double rho, double u, double v )
 void Cell::create_interface_children( vector<Cell>& child_cells, 
   vector<Cell>& grandchild_cells )
 {
+  state.interface = true;
+  for(size_t i = 0; i < 8; ++i) bc.coalesce[i] = false;
+  action.link_children = true;
   // create the children.
   for ( size_t i = 0; i < 4; ++i )
   {
@@ -288,63 +293,84 @@ void Cell::link_children( vector<Cell>& pg, vector<Cell>& cg )
     }
   }
 }
-
-// Currently just averages children.
-// Need to account for cut cells, with different-volume cells.
-// cg: child grid ( grid level one below the current cell's )
-void Cell::coalesce( vector<Cell>& cg )
+// Only active interface cells will coalesce.
+void Cell::coalesce()
 {
-  // Only interfaces will coalesce.
-  if ( state.interface )
+  if ( state.active and state.interface and has_children() )
   {
-    double fcavg = 0;
-    double favg[8] = {};
-    double uavg = 0;
-    double vavg = 0;
-    double rhoavg = 0;
-    int nc = 0;
+// cout << "Coalesced " << local.me << endl;
+// cout << "\tf before: ";
+// for(int j = 0; j < 8; ++j) cout << state.f[j] << " ";
+// cout << endl;
+    // double rhoavg = 0;
+    // double uavg = 0;
+    // double vavg = 0;
+    // double fcavg = 0;
+    double favg[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
     // Sum over children.
+    // Assume all or nothing existence
+// cout << "\tmy children are: ";
     for(int i = 0; i < 4; ++i)
     {
-      int ci = local.children[i];
-      if ( ci > -1 )
-      {
-        Cell& c = cg[ ci ];
-        uavg += c.state.u;
-        vavg += c.state.v;
-        rhoavg += c.state.rho;
-        fcavg += c.state.fc;
-        for(int j = 0; j < 8; ++j) favg[j] += c.state.f[j];
-        ++nc;
-      }
+// cout << local.children[i] << " ";
+      Cell& c = (*this)(i);
+      // uavg += c.state.u;
+      // vavg += c.state.v;
+      // rhoavg += c.state.rho;
+      // fcavg += c.state.fc;
+      for(size_t j = 0; j < 8; ++j) if(bc.coalesce[j]) favg[j] += c.state.f[j];
     }
+// cout << endl;
+// cout << "\tthe neighbours of " << local.children[0] << "are: ";
+//   for (int i = 0; i < 8; ++i) cout << (*this)(0).local.neighbours[i] << " ";
+//   cout << endl;
+// cout << "\tf of " << local.children[0] << ": ";
+// for (int i = 0; i < 8; ++i) cout << (*this)(0).state.f[i] << " ";
+// cout << endl;
     // Average.
-    if (nc > 0)
+    // state.u = 0.25 * uavg;
+    // state.v = 0.25 * vavg;
+    // state.rho = 0.25 * rhoavg;
+    // state.fc = 0.25 * fcavg;
+    for(size_t j = 0; j < 8; ++j) if(bc.coalesce[j]) state.f[j] = 0.25*favg[j];
+    // vector<size_t>::iterator it = bc.coalesce.begin();
+    // for( ; it != bc.coalesce.end(); ++it) state.f[*it] = 0.25 * favg[*it];
+// cout << "\tf after: ";
+// for(int j = 0; j < 8; ++j) cout << state.f[j] << " ";
+// cout << endl;
+  }
+}
+// Only active interface cells will explode.
+void Cell::explode()
+{
+  if ( state.active and state.interface and has_children() )
+  {
+    for(int i = 0; i < 4; ++i)
     {
-      state.u = uavg / nc;
-      state.v = vavg / nc;
-      state.rho = rhoavg / nc;
-      state.fc = fcavg / nc;
-      for(int j = 0; j < 8; ++j) state.f[j] = favg[j] / nc;
+// cout << "Exploded f to " << local.children[i] << ": ";
+      Cell& c = (*this)(i);
+      c.state.rho = state.rho;
+      c.state.u = state.u;
+      c.state.v = state.v;
+      c.state.fc = state.fc;
+      for(int j = 0; j < 8; ++j) c.state.f[j] = state.f[j];
+      for(int j = 0; j < 8; ++j) c.state.b[j] = state.f[j];
+// for (int i = 0; i < 8; ++i) cout << c.state.f[i] << " ";
+// cout << endl;  
+
     }
   }
 }
 
-// For cut cells, the distribution of particles should ensure MME conservation.
-// For homogeneous explosion, no problem.
-// cg: child grid
-void Cell::explode_homogeneous( vector<Cell>& cg )
-{
-  for ( size_t c = 0; c < 4; ++c )
-  {
-    // cout << local.children[c] << endl;
-    cg[ local.children[c] ].state = state;
-  }
-}
 void Cell::activate_children( vector<Cell>& cg )
 {
-  explode_homogeneous( cg );
-  for ( size_t i = 0; i < 4; ++i ) cg[ local.children[i] ].state.active = true;
+  for ( size_t i = 0; i < 4; ++i )
+  {
+    // homogeneous explosion.
+    cg[ local.children[i] ].state = state;
+    cg[ local.children[i] ].state.active = true;
+    cg[ local.children[i] ].state.interface = false;
+  }
 }
 
 // Creates activated children.
@@ -372,12 +398,19 @@ void Cell::refine( vector<Cell>& next_level_cells,
   }
   else
   {
-    // cout << "ACTIVATION" << endl;
     activate_children( next_level_cells );
   }
-  // cycle through neighbours 
+  // cycle through neighbours to make sure children have neighbours
+  // and to notify interfaces of directions to coalesce.
   for(size_t i = 0; i < 8; ++i)
   {
+  //   cout << i << endl;
+  //   cout << "\t has neighbour" << has_neighbour(i) << endl;
+  //   if (has_neighbour(i)){ 
+  //   cout << "\trefine: " << (*this)[i].action.refine << endl;
+  //   cout << "\thas children: " << (*this)[i].has_children() << endl;
+  // }
+  //   cin.ignore();
     if ( has_neighbour(i) )
     {
       // if not slated to refine and does not have children,
@@ -388,6 +421,7 @@ void Cell::refine( vector<Cell>& next_level_cells,
         (*this)[i].create_interface_children(
           next_level_cells, grandchild_cells);
       }
+      if ( (*this)[i].state.interface ) (*this)[i].bc.coalesce[i] = true;
     }
   }
   state.active = false;
@@ -396,7 +430,7 @@ void Cell::refine( vector<Cell>& next_level_cells,
 void Cell::collide( size_t relax_model, size_t vc_model, double omega, 
   double scale_decrease, double scale_increase, double nuc )
 {
-  if ( state.active and not state.interface )
+  if ( state.active )
   {
     // Relaxation
     switch( relax_model )
@@ -817,7 +851,7 @@ void Cell::next_f_mrt( const double m[9], double omega )
 // g: grid level of this cell
 void Cell::stream_parallel( vector<Cell>& g )
 {
-  if( state.active )
+  if( state.active or state.interface )
   {
     for(size_t i = 0; i < 8; ++i)
     {
@@ -827,10 +861,34 @@ void Cell::stream_parallel( vector<Cell>& g )
   }
 }
 
+// static void printdist(Cell& cell)
+// {
+//   cout << "cell f: ";
+//   for(int i = 0; i < 8; ++i ) cout << cell.state.f[i] << " ";
+//   cout <<endl;
+// }
+// static void printb(Cell& cell)
+// {
+//   cout << "cell b: ";
+//   for(int i = 0; i < 8; ++i ) cout << cell.state.b[i] << " ";
+//   cout <<endl;
+// }
+// static const int ccc = 10;
+
+void Cell::bufferize_parallel()
+{
+  // if (local.me == ccc) printdist((*this));
+  // if (local.me == ccc) printb((*this));
+  if( state.active or state.interface )
+  {
+    for(size_t i = 0; i < 8; ++i) state.f[i] = state.b[i];
+  }
+}
+
 // First, must populate vc.g, because if no neighbour then vc.g value is used.
 void Cell::stream_body_force_parallel()
 {
-  if( state.active )
+  if( state.active or state.interface )
   {
     for(size_t i = 0; i < 8; ++i)
     {
@@ -844,18 +902,13 @@ void Cell::stream_body_force_parallel()
 
 void Cell::bufferize_body_force_parallel()
 {
-  for(size_t i = 0; i < 8; ++i) vc.g[i] = vc.b[i];
+  if( state.active or state.interface )
+  {
+    for(size_t i = 0; i < 8; ++i) vc.g[i] = vc.b[i];
+  }
 }
 
-void Cell::bufferize_parallel()
-{
-  for(size_t i = 0; i < 8; ++i) state.f[i] = state.b[i];
-}
-
-double Cell::get_mag() const
-{
-  return sqrt(state.u*state.u + state.v*state.v);
-}
+double Cell::get_mag() const { return sqrt(state.u*state.u + state.v*state.v); }
 
 void Cell::reconstruct_macro()
 {
@@ -876,6 +929,7 @@ void Cell::reconstruct_macro()
 // Actually stores the bounced distribution in the buffer.
 void Cell::bounce_back(char side)
 {
+  // cout << "Applying wall to " << local.me << " on " << side << endl;
   // cout << "applying bounce back" << endl;
   switch(side)
   {
@@ -908,6 +962,7 @@ void Cell::bounce_back(char side)
 // Actually stores the bounced distribution in the buffer.
 void Cell::moving_wall(char side, double U)
 {
+  // cout << "Applying moving wall to " << local.me << endl;
   double incident = 0;
   double rho = 0;
   double A = 0;

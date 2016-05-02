@@ -11,28 +11,59 @@ BoundaryConditions::BoundaryConditions()
 // We assume that the first and last cells in Face::cells are the corners!!!
 void BoundaryConditions::apply_bc()
 {
+  // for (size_t i = 0; i < 4; ++i)
+  // {
+  //   Face& f = faces[i];
+  //   if (f.cells.size() > 0)
+  //   {
+  //     // Corner cells.
+  //     // Applying moving wall to corners can dramatically reduce maximum Re!
+  //     // So we apply the neighbouring BCs here.
+  //     if (f.type == 'm')
+  //     {
+  //       cell_bc( f.cells[0], get_prev_type(f.side), f.side );
+  //       cell_bc( f.cells[f.cells.size()-1], get_next_type(f.side), f.side );
+  //     }
+  //     else
+  //     {
+  //       cell_bc( f.cells[0], f.type, f.side );
+  //       cell_bc( f.cells[f.cells.size()-1], f.type, f.side );
+  //     }
+  //     // cout << "Non-corner " << f.cells.size() << endl;
+  //     // Non-corner cells.
+  //     for( size_t i = 1; i < f.cells.size()-1; ++i )
+  //     {
+  //       // cout << i << ", " << f.type << ", " << f.side << endl;
+  //       cell_bc( f.cells[i], f.type, f.side );
+  //     }
+  //   }
+  // }
   for (size_t i = 0; i < 4; ++i)
   {
     Face& f = faces[i];
-    // Corner cells.
-    // Applying moving wall to corners can dramatically reduce maximum Re!
-    // So we apply the neighbouring BCs here.
-    if (f.type == 'm')
+    if (f.cells.size() > 0)
     {
-      cell_bc( f.cells[0], get_prev_type(f.side), f.side );
-      cell_bc( f.cells[f.cells.size()-1], get_next_type(f.side), f.side );
-    }
-    else
-    {
-      cell_bc( f.cells[0], f.type, f.side );
-      cell_bc( f.cells[f.cells.size()-1], f.type, f.side );
-    }
-    // cout << "Non-corner " << f.cells.size() << endl;
-    // Non-corner cells.
-    for( size_t i = 1; i < f.cells.size()-1; ++i )
-    {
-      // cout << i << ", " << f.type << ", " << f.side << endl;
-      cell_bc( f.cells[i], f.type, f.side );
+      // Corner cells.
+      // Applying moving wall to corners can dramatically reduce maximum Re!
+      // So we apply the neighbouring BCs here.
+      if (f.type == 'm')
+      {
+        for( size_t i = 0; i < f.cells.size(); ++i )
+        {
+          char t = ( (*g)[f.cells[i]].bc.corner > -1 ) ? 'w' : f.type;
+          cell_bc(f.cells[i],t,f.side);
+        }
+      }
+      else
+      {
+        for( size_t i = 0; i < f.cells.size(); ++i )
+        {
+          // cout << i << ", " << f.type << ", " << f.side << endl;
+          cell_bc( f.cells[i], f.type, f.side );
+        }
+      }
+      // cout << "Non-corner " << f.cells.size() << endl;
+      // Non-corner cells.
     }
   }
 }
@@ -57,8 +88,9 @@ void BoundaryConditions::refined_cell_bc()
 void BoundaryConditions::facilitate_split( int ci, char side )
 {
   Cell& c = (*g)[ ci ];
-  if ( c.action.refine )
+  if ( c.action.refine or c.action.link_children )
   {
+    if ( c.bc.corner > -1 ) c(c.bc.corner).bc.corner = c.bc.corner;
     switch( side )
     {
       case 'l':
