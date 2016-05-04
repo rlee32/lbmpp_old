@@ -138,7 +138,7 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   // Testing refine operation.
   // levels[0].refine_all();
   // levels[0].refine_half( cell_count_x, cell_count_y );
-  levels[0].refine_three_parts( cell_count_x, cell_count_y );
+  // levels[0].refine_three_parts( cell_count_x, cell_count_y );
   // levels[0].refine_three_parts_rotated( cell_count_x, cell_count_y );
   // levels[0].refine_three_parts_rotated_flipped( cell_count_x, cell_count_y );
   // cout << "Successful refinement" << endl;
