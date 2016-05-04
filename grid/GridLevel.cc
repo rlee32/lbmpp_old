@@ -374,7 +374,7 @@ void GridLevel::refine_half( size_t i_cells, size_t j_cells )
 // This is to be called on course grid.
 void GridLevel::refine_three_parts( size_t i_cells, size_t j_cells )
 {
-  size_t coarse_boundary = i_cells/2;
+  size_t coarse_boundary = i_cells/3;
   // assuming row-major coarse grid
   size_t medium_cells = 0;
   for(size_t j = 0; j < j_cells; ++j)

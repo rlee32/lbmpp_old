@@ -120,7 +120,8 @@ void BoundaryConditions::facilitate_split( int ci, char side )
 void BoundaryConditions::cell_bc( int ci, char type, char side ) const
 {
   Cell& c = (*g)[ ci ];
-  if ( c.state.active or c.state.interface )
+  // if ( c.state.active or c.state.interface )
+  if ( c.state.active )
   {
     switch( type )
     {

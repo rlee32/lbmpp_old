@@ -119,9 +119,9 @@ plot( x, vc/U, 'DisplayName', ...
 
 % MRT 60 / 120 / 240
 % Refined
-M = 0.20;
+M = 0.21
 [x, y, uc, vc] = get_centerlines( ...
-    '../results/centerlines/centerlines_G60_M200_T50_RM3_VCM0_VCF0_Re1000.tsv');
+    '../results/centerlines/centerlines_G60_M210_T50_RM3_VCM0_VCF0_Re1000.tsv');
 U = M / sqrt(3);
 figure(1);
 plot( y, uc/U, 'DisplayName', ...
