@@ -78,18 +78,18 @@ figure(2);
 plot( x, vc/U, 'DisplayName', ...
     ['MRT, M=' num2str(M) ', 50x25 + 100x50'] );
 
-% MRT 50 / 100 / 200
-% Refined
-M = 0.2;
-[x, y, uc, vc] = get_centerlines( ...
-    '../results/centerlines/centerlines_G50_M200_T50_RM3_VCM0_VCF0_Re1000_refine.tsv');
-U = M / sqrt(3);
-figure(1);
-plot( y, uc/U, 'DisplayName', ...
-    ['MRT, M=' num2str(M) ', 50x25 + 100x50 + 200x100'] );
-figure(2);
-plot( x, vc/U, 'DisplayName', ...
-    ['MRT, M=' num2str(M) ', 50x25 + 100x50 + 200x100'] );
+% % MRT 50 / 100 / 200
+% % Refined
+% M = 0.2;
+% [x, y, uc, vc] = get_centerlines( ...
+%     '../results/centerlines/centerlines_G50_M200_T50_RM3_VCM0_VCF0_Re1000_refine.tsv');
+% U = M / sqrt(3);
+% figure(1);
+% plot( y, uc/U, 'DisplayName', ...
+%     ['MRT, M=' num2str(M) ', 50x25 + 100x50 + 200x100'] );
+% figure(2);
+% plot( x, vc/U, 'DisplayName', ...
+%     ['MRT, M=' num2str(M) ', 50x25 + 100x50 + 200x100'] );
 
 % % MRT 30 / 60 / 120
 % % Refined
