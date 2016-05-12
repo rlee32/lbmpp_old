@@ -104,8 +104,8 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 10000]
 (val/pics/mrt_10000_m.png)
 </p>
-4. Re = 21000:  
 
+<!--
 ### MRT + Viscosity Counteraction (VC)
 
 1. Re = 100:  
@@ -114,18 +114,14 @@ These validation cases are compared with data from papers found in the
 
 3. Re = 10000:  
 
-4. Re = 21000:  
-
 ### MRT + Dynamic Grid (DG)
 
 1. Re = 100:  
 
 2. Re = 1000:  
 
-3. Re = 10000:  
-
-4. Re = 21000:  
-
+3. Re = 10000:   
+-->
 
 ## Stability Limits
 
@@ -135,17 +131,9 @@ These validation cases are compared with data from papers found in the
 
 ## Implementation Details
 
-1. The top corner lattice cells apply stationary walls to 
-both of their boundaries, as opposed to one stationary wall 
-and one moving wall. If one side is a moving wall, then the 
-maximum Reynolds number is severely reduced due to instability.  
-2. The lattice links are indexed as follows:  
-<p align="center">
-![Lattice Link Indices]
-(ref/lattice_indices.png)
-</p>
+See 'report.pdf' located in 'ref/'.
 
-## Interesting Notes
+## Miscellaneous Interesting Notes
 
 1. You cannot use OpenMP on STL iterator for-loops, 
   due to the presence of '!= v.end()'.  
