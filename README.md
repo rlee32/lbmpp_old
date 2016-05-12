@@ -24,8 +24,7 @@ The following are the main parameters:
 2. Characteristic length: This is not necessarily related to the 
   grid (though in the lid-driven cavity case it is). It is determined by the 
   physics of your problem.   
-3. Reynolds number: Perhaps the most important parameter. This is determined by 
-  the physics of your problem.  
+3. Reynolds number: This is determined by the physics of your problem.  
 
 The complete list of parameters can be found in 'settings'.  
 
