@@ -13,7 +13,9 @@ Modify 'settings' to your needs.
 To run: './lbmpp'.  
 For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.  
 
-## Main Parameters
+## Parameters
+
+The following are the main parameters:  
 
 1. Mach number: this is the ratio of the boundary condition velocity to the 
   lattice speed of sound, which is 1 / sqrt(3) for grid and time steps of 1. 
