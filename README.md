@@ -1,7 +1,7 @@
 A C++ LBM code.  
 
 Focus is on incompressible, isothermal high-Re flows. 
-The ultimate goal is to simulate multi-element airfoils.
+The ultimate goal is solution-adaptive multi-element airfoil simulations.
 
 ## Assumptions
 
@@ -49,24 +49,24 @@ These validation cases are compared with data from papers found in the
 1. Re = 100, Grid = 101x101  
 <p align="center">
 ![SRT Re = 100]
-(val/srt_100_u.bmp)
+(val/pics/srt_100_u.bmp)
 ![SRT Re = 100]
-(val/srt_100_v.bmp)
+(val/pics/srt_100_v.bmp)
 ![SRT Re = 100]
-(val/srt_100_s.bmp)
+(val/pics/srt_100_s.bmp)
 ![SRT Re = 100]
-(val/srt_100_m.png)
+(val/pics/srt_100_m.png)
 </p>
 2. Re = 1000, Grid = 151x151  
 <p align="center">
 ![SRT Re = 1000]
-(val/srt_1000_u.bmp)
+(val/pics/srt_1000_u.bmp)
 ![SRT Re = 1000]
-(val/srt_1000_v.bmp)
+(val/pics/srt_1000_v.bmp)
 ![SRT Re = 1000]
-(val/srt_1000_s.bmp)
+(val/pics/srt_1000_s.bmp)
 ![SRT Re = 1000]
-(val/srt_1000_m.png)
+(val/pics/srt_1000_m.png)
 </p>
 
 ### Multiple-Relaxation Time (MRT)
@@ -74,35 +74,35 @@ These validation cases are compared with data from papers found in the
 1. Re = 100, Grid 101x101    
 <p align="center">
 ![MRT Re = 100]
-(val/mrt_100_u.bmp)
+(val/pics/mrt_100_u.bmp)
 ![MRT Re = 100]
-(val/mrt_100_v.bmp)
+(val/pics/mrt_100_v.bmp)
 ![MRT Re = 100]
-(val/mrt_100_s.bmp)
+(val/pics/mrt_100_s.bmp)
 ![MRT Re = 100]
-(val/mrt_100_m.png)
+(val/pics/mrt_100_m.png)
 </p>
 2. Re = 1000, Grid 151x151  
 <p align="center">
 ![MRT Re = 1000]
-(val/mrt_1000_u.bmp)
+(val/pics/mrt_1000_u.bmp)
 ![MRT Re = 1000]
-(val/mrt_1000_v.bmp)
+(val/pics/mrt_1000_v.bmp)
 ![MRT Re = 1000]
 (val/pics/mrt_1000_s.bmp)
 ![MRT Re = 1000]
-(val/mrt_1000_m.png)
+(val/pics/mrt_1000_m.png)
 </p>
 3. Re = 10000, Grid 257x257  
 <p align="center">
 ![MRT Re = 10000]
-(val/mrt_10000_u.bmp)
+(val/pics/mrt_10000_u.bmp)
 ![MRT Re = 10000]
-(val/mrt_10000_v.bmp)
+(val/pics/mrt_10000_v.bmp)
 ![MRT Re = 10000]
-(val/mrt_10000_s.bmp)
+(val/pics/mrt_10000_s.bmp)
 ![MRT Re = 10000]
-(val/mrt_10000_m.png)
+(val/pics/mrt_10000_m.png)
 </p>
 4. Re = 21000:  
 
