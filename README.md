@@ -3,6 +3,16 @@ A C++ LBM code.
 Focus is on incompressible, isothermal high-Re flows. 
 The ultimate goal is solution-adaptive multi-element airfoil simulations.
 
+## Usage
+
+Run 'make' to compile with visualizer. 
+Run 'make NOVIZ=1' to compile without visualizer (it will be slightly faster). 
+
+Modify 'settings' to your needs.  
+
+To run: './lbmpp'.  
+For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.  
+
 ## Main Parameters
 
 1. Mach number: this is the ratio of the boundary condition velocity to the 
@@ -17,16 +27,6 @@ The ultimate goal is solution-adaptive multi-element airfoil simulations.
   the physics of your problem.  
 
 The complete list of parameters can be found in 'settings'.  
-
-## Usage
-
-Run 'make' to compile with visualizer. 
-Run 'make NOVIZ=1' to compile without visualizer (it will be slightly faster). 
-
-Modify 'settings' to your needs.  
-
-To run: './lbmpp'. 
-For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
 
 ## Assumptions, Implementation Details, and Validation
 
