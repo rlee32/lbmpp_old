@@ -3,12 +3,6 @@ A C++ LBM code.
 Focus is on incompressible, isothermal high-Re flows. 
 The ultimate goal is solution-adaptive multi-element airfoil simulations.
 
-## Assumptions
-
-1. Incompressible and isothermal fluid.  
-2. Coarsest grid and time steps are equal to 1.  
-3. D2Q9 lattice sites.  
-
 ## Main Parameters
 
 1. Mach number: this is the ratio of the boundary condition velocity to the 
@@ -24,11 +18,6 @@ The ultimate goal is solution-adaptive multi-element airfoil simulations.
 
 The complete list of parameters can be found in 'settings'.  
 
-## Development Notes / TODO
-
-1. Characterize spatial order of accuracy of grid interfaces.
-2. Solution-adaptive refinement.
-
 ## Usage
 
 Run 'make' to compile with visualizer. 
@@ -39,10 +28,22 @@ Modify 'settings' to your needs.
 To run: './lbmpp'. 
 For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
 
+## Assumptions, Implementation Details, and Validation
 
-## Implementation Details and Validation
+See 'ref/report.pdf'.  
 
-See 'ref/report.pdf'.
+## Development Notes / TODO
+
+1. Characterize spatial order of accuracy of grid interfaces.  
+2. Solution-adaptive refinement.  
+
+<!--
+## Assumptions
+
+1. Incompressible and isothermal fluid.  
+2. Coarsest grid and time steps are equal to 1.  
+3. D2Q9 lattice sites.  
+-->
 
 <!--
 ### Single-Relaxation Time (SRT) (a.k.a. Standard LBM)
