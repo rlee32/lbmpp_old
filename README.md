@@ -11,7 +11,7 @@ Run 'make NOVIZ=1' to compile without visualizer (it will be slightly faster).
 Modify 'settings' to your needs.  
 
 To run: './lbmpp'.  
-For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.  
+For custom maximum window size, run: './lbmpp \<maximum resolution dimension\>'.  
 
 ## Parameters
 
