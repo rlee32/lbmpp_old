@@ -20,8 +20,7 @@ The following are the main parameters:
 1. Mach number: this is the ratio of the boundary condition velocity to the 
   lattice speed of sound, which is 1 / sqrt(3) for grid and time steps of 1. 
   The Mach number should not be set too high for compressibility to affect the 
-  results, but increasing Mach number allows for faster convergence and more 
-  stability via more viscosity.  
+  results, but increasing Mach number allows for less timesteps to convergence.  
 2. Characteristic length: This is not necessarily related to the 
   grid (though in the lid-driven cavity case it is). It is determined by the 
   physics of your problem.   
