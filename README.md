@@ -89,7 +89,7 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 1000]
 (val/mrt_1000_v.bmp)
 ![MRT Re = 1000]
-(val/mrt_1000_s.bmp)
+(val/pics/mrt_1000_s.bmp)
 ![MRT Re = 1000]
 (val/mrt_1000_m.png)
 </p>
