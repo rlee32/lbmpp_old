@@ -22,11 +22,12 @@ The ultimate goal is solution-adaptive multi-element airfoil simulations.
 3. Reynolds number: Perhaps the most important parameter. This is determined by 
   the physics of your problem.  
 
+The complete list of parameters can be found in 'settings'.  
+
 ## Development Notes / TODO
 
-1. Dynamic Grid (DG) (solution-adaptive grid method)  
-2. Viscosity counteraction with spatial variation terms.  
-
+1. Characterize spatial order of accuracy of grid interfaces.
+2. Solution-adaptive refinement.
 
 ## Usage
 
@@ -39,11 +40,11 @@ To run: './lbmpp'.
 For custom maximum window size, run: './lbmpp <maximum resolution dimension>'.
 
 
-## Validation Cases
+## Implementation Details and Validation
 
-These validation cases are compared with data from papers found in the 
-'ref' folder.  
+See 'ref/report.pdf'.
 
+<!--
 ### Single-Relaxation Time (SRT) (a.k.a. Standard LBM)
 
 1. Re = 100, Grid = 101x101  
@@ -104,6 +105,7 @@ These validation cases are compared with data from papers found in the
 ![MRT Re = 10000]
 (val/pics/mrt_10000_m.png)
 </p>
+-->
 
 <!--
 ### MRT + Viscosity Counteraction (VC)
@@ -123,20 +125,26 @@ These validation cases are compared with data from papers found in the
 3. Re = 10000:   
 -->
 
+<!--
 ## Stability Limits
 
 ### SRT
 
 1. Re = 4000, Grid = 151x151, Unstable.  
+-->
 
+<!--
 ## Implementation Details
 
-See 'report.pdf' located in 'ref/'.
+See 'ref/report.pdf'.
+-->
 
+<!--
 ## Miscellaneous Interesting Notes
 
 1. You cannot use OpenMP on STL iterator for-loops, 
   due to the presence of '!= v.end()'.  
+-->
 
 
 
