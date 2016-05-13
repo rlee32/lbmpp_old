@@ -14,9 +14,10 @@ L 129 # Characteristic Length. Must ensure consistency with cell count.
 # 2: Two-relaxation time (not implemented).
 # 3: Multiple-relaxation time.
 relax_model 3
-# Viscosity counteraction model
+# Viscosity counteraction model (discontinued development due to 
+#   inability to reproduce accurate results at relatively low Re)
 # This can reduce computation speed on the order of 10%, but ideally would 
-#   stabilize runs at lower grid resolutions. 
+#   stabilize runs at lower grid resolutions.
 # 0: no viscosity counteraction.
 # 1: steady body force assumption with no spatial term ( inaccurate, explicit ).
 # 2: include spatial term ( explicit ).
