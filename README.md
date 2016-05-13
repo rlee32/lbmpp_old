@@ -1,7 +1,7 @@
 A C++ LBM code.  
 
 Focus is on incompressible, isothermal high-Re flows. 
-The ultimate goal is solution-adaptive multi-element airfoil simulations.
+The ultimate goal is solution-adaptive rotor-stator simulations.
 
 ## Usage
 
