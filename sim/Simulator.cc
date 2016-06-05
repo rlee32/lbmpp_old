@@ -82,6 +82,7 @@ void Simulator::read_settings(string filename)
         {
           if ( not parameter.compare(face_order[i]) ) { iss >> bc[i]; }
         }
+        if ( not parameter.compare("experimental") ) iss >> experimental;
       }
     }
     U = M / sqrt(3);
@@ -94,7 +95,7 @@ void Simulator::read_settings(string filename)
       rho0, u0, v0, 
       nu, nuc, 
       face_order_char, bc, U,
-      relax_model, vc_model );
+      relax_model, vc_model, experimental );
     if ( u0file != "" and v0file != "" ) read_coarse_solution();
   }
 }

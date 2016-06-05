@@ -26,7 +26,7 @@ public:
     double rho0, double u0, double v0, 
     double nu, double nuc,
     char sides[4], char bc[4], double U,
-    double relax_model, double vc_model );
+    double relax_model, double vc_model, bool experimental );
   void set_coarse_solution(
     double rho0, std::vector<double>& u, std::vector<double>& v );
   // 
@@ -49,4 +49,7 @@ private:
   double relax_model;
   double vc_model;
   std::size_t cell_count[2];// Coarsest level cell dimension.
+  bool experimental; // if true, run experimental stuff.
+
+  void experimental_initialize();
 };

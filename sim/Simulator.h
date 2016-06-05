@@ -82,6 +82,8 @@ private:
   std::string output_suffix;
   static const size_t output_precision = 16;
 
+  bool experimental;
+
   // Preprocessing 
   void read_settings(std::string filename);
   void process_settings();

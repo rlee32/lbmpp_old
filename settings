@@ -54,3 +54,7 @@ display_interval 1000
 
 # set this to 1 for saving pictures at display_interval (for a movie).
 picset 0
+
+# This flag activates routines used only for hard-coded experimental features.
+# Allows switching between normal and experimental versions without recompiling.
+experimental 0

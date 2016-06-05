@@ -2,6 +2,20 @@
 
 using namespace std;
 
+
+void Grid::experimental_initialize()
+{
+  // Testing refine operation.
+  // levels[0].refine_all();
+  // levels[0].refine_half( cell_count_x, cell_count_y );
+  // levels[0].refine_three_parts( cell_count_x, cell_count_y );
+  // levels[0].refine_three_parts_rotated( cell_count_x, cell_count_y );
+  // levels[0].refine_three_parts_rotated_flipped( cell_count_x, cell_count_y );
+  // cout << "Successful refinement" << endl;
+  // levels[0].print_cell_status( cell_count_x, cell_count_y );
+}
+
+
 // void printdist(Cell& cell)
 // {
 //   // cout << "grid f: ";
@@ -109,7 +123,7 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
   double rho0, double u0, double v0, 
   double nu0, double nuc0,
   char sides[4], char bc[4], double U,
-  double relax_model_, double vc_model_ )
+  double relax_model_, double vc_model_, bool experimental_ )
 {
   // Assign parameters.
   relax_model = relax_model_;
@@ -135,14 +149,8 @@ void Grid::initialize(size_t cell_count_x, size_t cell_count_y,
     &levels[0].get_cells(), &levels[1].get_cells() );
   levels[0].create_coarse_grid( cell_count_x, cell_count_y, default_cell );
 
-  // Testing refine operation.
-  // levels[0].refine_all();
-  // levels[0].refine_half( cell_count_x, cell_count_y );
-  // levels[0].refine_three_parts( cell_count_x, cell_count_y );
-  // levels[0].refine_three_parts_rotated( cell_count_x, cell_count_y );
-  // levels[0].refine_three_parts_rotated_flipped( cell_count_x, cell_count_y );
-  // cout << "Successful refinement" << endl;
-  // levels[0].print_cell_status( cell_count_x, cell_count_y );
+  experimental = experimental_;
+  if (experimental) experimental_initialize();
 }
 
 void Grid::set_coarse_solution(
